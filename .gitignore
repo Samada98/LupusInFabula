@@ -1,0 +1,16 @@
+## Visual Studio / .NET build
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Logs
+*.log
+
+## System files
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8" />
+    <title>Lupus in Tabula</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+    <style>
+        /* ---------- BASE ---------- */
+        :root {
+            --brand: #8b0000;
+            --brand-2: #b22222;
+            --ok: #4a90e2;
+            --warn: #f39c12;
+            --bg: #fff;
+            --text: #333;
+            --border: #444;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            text-align: center;
+            padding: 5px;
+            color: var(--text);
+            margin: 0;
+            font-size: 18px;
+        }
+
+        h1 {
+            color: var(--brand);
+            text-shadow: 2px 2px #fff;
+            margin: 10px 0;
+        }
+
+        h2, h3 {
+            margin: 8px 0;
+        }
+
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+        }
+
+        button {
+            background: var(--brand);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background: var(--brand-2);
+            }
+
+        /* ---------- SCHERMATE ---------- */
+        .screen {
+            display: none;
+        }
+
+            .screen.active {
+                display: block;
+            }
+
+        /* ---------- ACCESSO ---------- */
+        #screenAccess {
+            max-width: 400px;
+            margin: 30px auto;
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .accessRow {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        #name, #roomIdInput {
+            font-size: 16px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            padding: 10px;
+            height: 40px;
+            width: 100%;
+        }
+
+        #name {
+            flex: 7;
+        }
+
+        #roomIdInput {
+            flex: 3;
+        }
+
+        .buttonRow {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+            .buttonRow button {
+                flex: 1;
+                min-width: 120px;
+            }
+
+        /* ---------- LOBBY ---------- */
+        #inviteBox {
+            margin-top: 10px;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fff8f0;
+            display: none;
+        }
+
+        #inviteLink {
+            font-weight: bold;
+            color: #064420;
+            word-break: break-all;
+            width: 100%;
+        }
+
+        #playerList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .playerCard {
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .online {
+            background-color: #b2f7b0;
+            color: #064420;
+        }
+
+        .offline {
+            background-color: #ffb3b3;
+            color: #5c0000;
+        }
+
+        /* ---------- LOG ---------- */
+        #log, #gameLog, #gameLogPlayer {
+            list-style: none;
+            padding: 6px;
+            max-width: 95%;
+            margin: 10px auto;
+            text-align: left;
+            border: 2px dashed var(--border);
+            background: #fff8dc;
+            height: 150px;
+            overflow-y: auto;
+            border-radius: 8px;
+        }
+
+        /* ---------- RUOLI ---------- */
+        .rolesBox {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            max-width: 95%;
+            margin: 10px auto;
+            padding: 10px;
+            background: var(--bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .number-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+        }
+
+            .number-control label {
+                flex: 1;
+                text-align: left;
+                font-weight: bold;
+            }
+
+        .count {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 20px;
+            background-color: #ffffff;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .inc-btn, .dec-btn {
+            cursor: pointer;
+            font-size: 22px;
+            user-select: none;
+            padding: 2px 6px;
+            background: #eee;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        /* ---------- TABELLA HOST ---------- */
+        #playersTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px auto;
+        }
+
+            #playersTable th, #playersTable td {
+                border: 1px solid var(--border);
+                padding: 4px;
+                text-align: center;
+                font-size: 14px;
+            }
+
+        /* ---------- GRIGLIA GIOCATORI ---------- */
+        .playersGrid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            padding: 6px;
+        }
+
+        .playersGridItem {
+            padding: 10px 15px;
+            border-radius: 10px;
+            color: #fff;
+            min-width: 120px;
+            text-align: center;
+            position: relative;
+        }
+
+        .voters {
+            font-size: 12px;
+            margin-top: 6px;
+            color: #fff;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 3px 6px;
+        }
+
+        /* ---------- ROLE CARD ---------- */
+        #overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        #roleCard {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            text-align: center;
+            z-index: 1000;
+            max-width: 92%;
+            width: 420px;
+        }
+
+            #roleCard h2 {
+                margin: 0 0 10px;
+                font-size: 22px;
+            }
+
+            #roleCard p {
+                font-size: 16px;
+                margin: 0;
+            }
+
+        #closeRoleCard {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: var(--brand);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+            #closeRoleCard:hover {
+                background: var(--brand-2);
+            }
+
+        .voters ul li {
+            font-size: 12px;
+            line-height: 1.2;
+            margin: 2px 0;
+        }
+
+
+        /* ---------- MEDIA QUERY ---------- */
+        @media (max-width: 500px) {
+            .count {
+                width: 32px;
+                height: 32px;
+                line-height: 32px;
+                font-size: 18px;
+            }
+
+            .inc-btn, .dec-btn {
+                font-size: 18px;
+                padding: 2px 4px;
+            }
+
+            #playersTable th, #playersTable td {
+                font-size: 12px;
+                padding: 3px;
+            }
+
+            #hostControls button {
+                width: 100%;
+                margin-top: 6px;
+            }
+
+            .playersGridItem {
+                min-width: 100px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🐺 Lupus in Fabula 🎲</h1>
+
+    <!-- ACCESSO -->
+    <div id="screenAccess" class="screen active">
+        <h2>Accesso</h2>
+        <div class="accessRow">
+            <input id="name" placeholder="Inserisci il tuo nome" aria-label="Nome" />
+            <input id="roomIdInput" placeholder="ID stanza" aria-label="ID Stanza" />
+        </div>
+        <div class="buttonRow">
+            <button id="createBtn" onclick="createRoom()" disabled>🎪 Crea stanza</button>
+            <button id="joinBtn" onclick="joinRoom()" disabled>➡️ Unisciti</button>
+        </div>
+    </div>
+
+    <!-- LOBBY -->
+    <div id="screenLobby" class="screen">
+        <h2>Lobby</h2>
+        <p><strong>Host:</strong> <span id="hostNameText"></span></p>
+        <p><strong>ID Stanza:</strong> <span id="currentRoomIdText"></span></p>
+
+        <div id="inviteBox">
+            <p>Invita altri giocatori con questo link:</p>
+            <input id="inviteLink" type="text" readonly />
+            <div class="buttonRow" style="margin-top:6px;">
+                <button onclick="copyInvite()">📋 Copia link</button>
+                <button onclick="shareInvite()">📤 Condividi</button>
+            </div>
+        </div>
+
+        <h3>👥 Giocatori connessi:</h3>
+        <div id="playerList"></div>
+
+        <div id="hostControls" style="display:none;">
+            <h3>⚔️ Imposta ruoli e avvia partita</h3>
+            <div class="rolesBox">
+                <div class="number-control"><label>🐺 Lupi</label><span class="dec-btn" aria-label="Diminuisci lupi">➖</span><span class="count">0</span><span class="inc-btn" aria-label="Aumenta lupi">➕</span></div>
+                <div class="number-control"><label>🌾 Contadini</label><span class="dec-btn" aria-label="Diminuisci contadini">➖</span><span class="count">0</span><span class="inc-btn" aria-label="Aumenta contadini">➕</span></div>
+                <div class="number-control"><label>💋 Puttane</label><span class="dec-btn" aria-label="Diminuisci puttane">➖</span><span class="count">0</span><span class="inc-btn" aria-label="Aumenta puttane">➕</span></div>
+                <div class="number-control"><label>🔮 Veggenti</label><span class="dec-btn" aria-label="Diminuisci veggenti">➖</span><span class="count">0</span><span class="inc-btn" aria-label="Aumenta veggenti">➕</span></div>
+                <div class="number-control"><label>🦧 Scemo</label><span class="dec-btn" aria-label="Diminuisci scemo">➖</span><span class="count">0</span><span class="inc-btn" aria-label="Aumenta scemo">➕</span></div>
+                <div class="number-control"><label>🏹 Cacciatore</label><span class="dec-btn" aria-label="Diminuisci cacciatore">➖</span><span class="count">0</span><span class="inc-btn" aria-label="Aumenta cacciatore">➕</span></div>
+                <div class="number-control"><label>🧪 Strega</label><span class="dec-btn" aria-label="Diminuisci strega">➖</span><span class="count">0</span><span class="inc-btn" aria-label="Aumenta strega">➕</span></div>
+                <div class="number-control"><label>🌙 Lara</label> <span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
+                <div class="number-control"><label>🎖️ Sindaco</label><span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
+                <div class="number-control"><label>🔫 Sicario</label><span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
+
+                <button onclick="startGame()">🚀 Avvia partita</button>
+            </div>
+            <h3>📜 Log eventi:</h3>
+            <ul id="log"></ul>
+        </div>
+    </div>
+
+    <!-- GIOCO HOST -->
+    <div id="screenGame" class="screen">
+        <h2>🎲 Partita in corso</h2>
+        <p>👑 Host della partita: <span id="hostNameInGame"></span></p>
+        <h3>👥 Giocatori e ruoli:</h3>
+        <table id="playersTable" border="1"></table>
+        <button id="votingBtn" onclick="toggleVoting()">Votazione</button>
+        <!-- 🔄 nuovo pulsante Restart -->
+        <button id="restartBtn" onclick="restartGame()">🔄 Restart</button>
+        <h3>📜 Log eventi:</h3>
+        <ul id="gameLog"></ul>
+    </div>
+
+
+    <!-- GIOCO GIOCATORI -->
+    <div id="screenGamePlayer" class="screen">
+        <h2>🎲 Partita in corso</h2>
+        <p>👑 Host: <span id="hostNamePlayer"></span></p>
+        <h3>👥 Giocatori:</h3>
+        <div id="playersGrid" class="playersGrid"></div>
+        <button id="showRoleBtn" style="display:none;">Mostra ruolo</button>
+        <h3>📜 Log eventi:</h3>
+        <ul id="gameLogPlayer"></ul>
+    </div>
+
+    <!-- Overlay + Role Card -->
+    <div id="overlay"></div>
+    <div id="roleCard" role="dialog" aria-modal="true" aria-labelledby="roleTitle">
+        <h2 id="roleTitle">🃏 Il tuo ruolo</h2>
+        <p id="roleText">Nessun ruolo</p>
+        <p id="roleDescription" style="margin-top:10px; font-style:italic; color:#555;">Descrizione</p>
+        <button id="closeRoleCard">Chiudi</button>
+    </div>
+
+    <script>
+        // ---------- SignalR ----------
+        const connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
+
+        // ---------- Stato globale ----------
+        let currentRoomId = null,
+            isHost = false,
+            myRole = null,
+            votingOpen = false,
+            myVote = null,
+            currentPlayers = [],
+            gameStarted = false;
+
+        // ---- Alias login -> nome visualizzato ----
+        // usa SEMPRE chiavi in minuscolo
+        const NAME_MAP = {
+            "nico": "N1k0GgAY",
+            "nicolo": "N1k0gAY",
+            "gioia": "TriS5tezZa",
+            "carly": "Carmine",
+            "carlotta": "Carmine",
+            "carli": "Carmine",
+            "benni": "Benagol",
+            "benny": "Benagol",
+            "matte": "MaTTe0R0Li",
+            "matteo": "MaTTe0R0Li"
+        };
+
+        // normalizza per confronto case-insensitive (e spazi)
+        function normalizeName(s) {
+            return (s || "").trim().toLowerCase();
+        }
+        function applyNameMapping(inputName) {
+            const raw = (inputName || "").trim();
+            const mapped = NAME_MAP[normalizeName(raw)];
+            return mapped || raw;
+        }
+
+
+        const roleNames = {
+            wolf: "🐺 Lupo",
+            villager: "👨‍🌾 Contadino",
+            seer: "🔮 Veggente",
+            guard: "💋 Puttana",
+            scemo: "🦧 Scemo",
+            hunter: "🏹 Cacciatore",
+            witch: "🧪 Strega",
+            lara: "🌙 Lara",
+            mayor: "🎖️ Sindaco",
+            hitman: "🔫 Sicario"
+        };
+
+        const roleDescriptions = {
+            wolf: "Di notte scegliete insieme una vittima.\nVincete se i lupi eliminano tutti gli altri.",
+            villager: "Non hai poteri speciali.\nUsa l'astuzia per smascherare i lupi.",
+            seer: "Ogni notte puoi scoprire se un giocatore è lupo.",
+            guard: "Ogni notte puoi proteggere un giocatore o te stessa\ndall'attacco dei lupi.",
+            scemo: "Vinci se vieni eliminato dai voti del villaggio.",
+            hunter: "Se vieni eliminato, puoi scegliere immediatamente\nun altro giocatore da portare con te.",
+            witch: "Hai due pozioni: una per salvare una vittima, una per uccidere.\nPuoi usarle solo una volta ciascuna.",
+            lara: "All'inizio sei una cittadina.\nSe vieni uccisa dai lupi, diventi un Lupo.\nVinci con i cittadini finché sei cittadina,\nma se diventi Lupo vinci con i lupi.",
+            mayor: "Durante le votazioni il tuo voto conta doppio.",
+            hitman: "Hai una pistola con un solo colpo.\nPuoi usarla una volta in tutta la partita per eliminare un giocatore."
+        };
+
+
+        // ---------- Riferimenti DOM ----------
+        const overlay = document.getElementById("overlay");
+        const roleCard = document.getElementById("roleCard");
+        const closeRoleBtn = document.getElementById("closeRoleCard");
+        const roleText = document.getElementById("roleText");
+        const roleDescEl = document.getElementById("roleDescription");
+
+        // ---------- Funzioni Role Card ----------
+        function openRoleCard() {
+            overlay.style.display = "block";
+            roleCard.style.display = "block";
+        }
+
+        function closeRoleCard() {
+            overlay.style.display = "none";
+            roleCard.style.display = "none";
+        }
+
+        document.getElementById("showRoleBtn").onclick = () => {
+            if (myRole) {
+                roleText.textContent = roleNames[myRole] || myRole;
+                roleDescEl.textContent = roleDescriptions[myRole] || "Nessuna descrizione disponibile.";
+                openRoleCard();
+            } else {
+                alert("❌ Nessun ruolo assegnato ancora.");
+            }
+        };
+
+        closeRoleBtn.onclick = closeRoleCard;
+        overlay.onclick = closeRoleCard;
+        window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeRoleCard(); });
+
+        // ---------- Connessione ----------
+        async function startConn() {
+            try {
+                await connection.start();
+                logLobby("✅ Connesso al server");
+                document.getElementById("createBtn").disabled = false;
+                document.getElementById("joinBtn").disabled = false;
+            } catch (err) {
+                console.error(err);
+                logLobby("❌ Connessione fallita, riprovo...");
+                setTimeout(startConn, 2000);
+            }
+        }
+        startConn();
+
+        // ---------- UI ----------
+        function showScreen(id) {
+            document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
+            document.getElementById(id).style.display = "block";
+        }
+
+        function logLobby(msg) {
+            const li = document.createElement("li");
+            li.textContent = msg;
+            const logEl = document.getElementById("log");
+            logEl.appendChild(li);
+            if (logEl.children.length > 80) logEl.removeChild(logEl.firstChild);
+        }
+
+        function logGame(msg) {
+            const logEl = isHost ? document.getElementById("gameLog") : document.getElementById("gameLogPlayer");
+            const li = document.createElement("li");
+            li.textContent = msg;
+            logEl.appendChild(li);
+            if (logEl.children.length > 80) logEl.removeChild(logEl.firstChild);
+        }
+
+        // ---------- Eventi server ----------
+        connection.on("UpdateLobby", (players, hostName) => {
+            document.getElementById("hostNameText").textContent = hostName || "Sconosciuto";
+            document.getElementById("hostNameInGame").textContent = hostName || "Sconosciuto";
+            document.getElementById("hostNamePlayer").textContent = hostName || "Sconosciuto";
+
+            const list = document.getElementById("playerList");
+            list.innerHTML = "";
+            players.forEach(p => {
+                const d = document.createElement("div");
+                d.classList.add("playerCard", p.isOnline ? "online" : "offline");
+                d.textContent = `${p.name} ${p.isOnline ? "" : "(offline)"}`;
+                list.appendChild(d);
+            });
+
+            if (!gameStarted) showScreen("screenLobby");
+        });
+
+        connection.on("JoinError", msg => alert(msg));
+
+        connection.on("ReceiveRole", role => {
+            myRole = role;
+            document.getElementById("showRoleBtn").style.display = "inline-block";
+        });
+
+        connection.on("GameStarted", (players) => {
+            gameStarted = true;
+            currentPlayers = players || [];
+            if (!isHost) {
+                document.getElementById("playersGrid").innerHTML = "";
+                document.getElementById("gameLogPlayer").innerHTML = "";
+            }
+            isHost ? (showScreen("screenGame"), renderHostTable(currentPlayers))
+                : (showScreen("screenGamePlayer"), renderPlayers(currentPlayers));
+        });
+
+        connection.on("VotingStarted", () => {
+            votingOpen = true;
+            logGame("🗳️ Votazioni aperte!");
+            renderPlayers(currentPlayers);
+            if (isHost) {
+                const btn = document.getElementById("votingBtn");
+                btn.style.backgroundColor = "#4A90E2";
+                btn.textContent = "Il dado è tratto";
+            }
+        });
+
+        connection.on("VotingEnded", () => {
+            votingOpen = false;
+            logGame("🛑 Votazioni chiuse!");
+            renderPlayers(currentPlayers);
+            if (isHost) {
+                const btn = document.getElementById("votingBtn");
+                btn.style.backgroundColor = "var(--brand)";
+                btn.textContent = "Votazione";
+            }
+        });
+
+        connection.on("UpdateVotes", (players) => {
+            currentPlayers = players || [];
+            renderPlayers(currentPlayers);
+            if (isHost) renderHostTable(currentPlayers);
+        });
+
+        connection.on("JoinedAsHost", (players) => {
+            isHost = true;
+            currentPlayers = players || [];
+            showScreen("screenGame");
+            renderHostTable(currentPlayers);
+        });
+
+        connection.on("PlayerEliminated", (playerName) => {
+            const player = currentPlayers.find(p => p.name === playerName);
+            if (player) player.eliminated = true;
+            renderHostTable(currentPlayers);
+            renderPlayers(currentPlayers);
+            logGame(`⚰️ ${playerName} è stato eliminato!`);
+        });
+
+        connection.on("GameRestarted", (players, hostName) => {
+            // Stato locale
+            gameStarted = false;
+            votingOpen = false;
+            myVote = null;
+            myRole = null;
+            currentPlayers = players || [];
+
+            // Chiudi eventuale role card aperta e nascondi il pulsante ruolo
+            const overlayEl = document.getElementById("overlay");
+            const roleCardEl = document.getElementById("roleCard");
+            if (overlayEl) overlayEl.style.display = "none";
+            if (roleCardEl) roleCardEl.style.display = "none";
+            const roleBtn = document.getElementById("showRoleBtn");
+            if (roleBtn) roleBtn.style.display = "none";
+
+            // Aggiorna intestazioni host/nome stanza ovunque
+            document.getElementById("hostNameText").textContent = hostName || "Sconosciuto";
+            document.getElementById("hostNameInGame").textContent = hostName || "Sconosciuto";
+            document.getElementById("hostNamePlayer").textContent = hostName || "Sconosciuto";
+            document.getElementById("currentRoomIdText").textContent = currentRoomId || "";
+
+            // Ricostruisci lista lobby (null-safe)
+            const list = document.getElementById("playerList");
+            if (list) {
+                list.innerHTML = "";
+                (players || []).forEach(p => {
+                    const d = document.createElement("div");
+                    d.classList.add("playerCard", p.isOnline ? "online" : "offline");
+                    d.textContent = `${p.name} ${p.isOnline ? "" : "(offline)"}`;
+                    list.appendChild(d);
+                });
+            }
+
+            // Pulisci viste/registri di gioco
+            const grid = document.getElementById("playersGrid");
+            if (grid) grid.innerHTML = "";
+            const gameLogHost = document.getElementById("gameLog");
+            if (gameLogHost) gameLogHost.innerHTML = "";
+            const gameLogPlayer = document.getElementById("gameLogPlayer");
+            if (gameLogPlayer) gameLogPlayer.innerHTML = "";
+            const playersTable = document.getElementById("playersTable");
+            if (playersTable) playersTable.innerHTML = "";
+
+            // Torna alla lobby
+            showScreen("screenLobby");
+
+            // Se sei host: mostra controlli host e ripristina bottone votazioni
+            if (isHost) {
+                const hostCtrls = document.getElementById("hostControls");
+                if (hostCtrls) hostCtrls.style.display = "block";
+                const btn = document.getElementById("votingBtn");
+                if (btn) {
+                    btn.style.backgroundColor = "var(--brand)";
+                    btn.textContent = "Votazione";
+                    btn.title = "Apri votazioni";
+                }
+            }
+
+            // Log in lobby
+            logLobby("🔄 La partita è stata riavviata, siete tornati in lobby.");
+        });
+
+
+
+        // ---------- Render ----------
+        function renderHostTable(players) {
+            const tbody = document.querySelector("#playersTable");
+            tbody.innerHTML = "";
+            const header = document.createElement("tr");
+            header.innerHTML = "<th>Nome</th><th>Ruolo</th><th>Stato</th><th>Voti</th><th>Azioni</th>";
+            tbody.appendChild(header);
+
+            players.forEach(p => {
+                const tr = document.createElement("tr");
+                const nameDisplay = p.eliminated ? `☠️ ${p.name}` : p.name;
+                const nameStyle = p.eliminated ? "color:gray;text-decoration:line-through;" : "";
+                const roleDisplay = p.role ? (roleNames[p.role] || p.role) : "";
+                tr.innerHTML = `
+                        <td style="${nameStyle}">${nameDisplay}</td>
+                        <td>${roleDisplay}</td>
+                        <td style="color:${p.isOnline ? 'green' : 'red'}">${p.isOnline ? 'Online' : 'Offline'}</td>
+                        <td>${p.votes || 0}</td>
+                        <td>${!p.eliminated ? `<button onclick="eliminatePlayer('${p.name}')">Elimina</button>` : ""}</td>
+                    `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderPlayers(players) {
+            const container = document.getElementById("playersGrid");
+            container.innerHTML = "";
+
+            players.forEach(p => {
+                const card = document.createElement("div");
+                card.className = "playersGridItem";
+
+                // Nome con icona sindaco
+                let displayName = p.eliminated ? `☠️ ${p.name}` : p.name;
+                if (p.role === "sindaco") displayName += " 🎖️";
+
+                const baseText = (!p.eliminated && p.votes > 0)
+                    ? `${displayName} (${p.votes})`
+                    : displayName;
+                card.textContent = baseText;
+
+                card.style.backgroundColor = p.eliminated ? "#888" : (votingOpen ? (myVote === p.name ? "#f39c12" : "#4A90E2") : "#999");
+                card.style.cursor = (votingOpen && !p.eliminated) ? "pointer" : "default";
+                card.style.opacity = p.isOnline ? "1" : "0.6";
+
+                if (votingOpen && Array.isArray(p.votedBy) && p.votedBy.length > 0) {
+                    const votersList = document.createElement("div");
+                    votersList.className = "voters";
+
+                    const title = document.createElement("div");
+                    title.textContent = "Votato da:";
+                    votersList.appendChild(title);
+
+                    const ul = document.createElement("ul");
+                    ul.style.margin = "4px 0 0";
+                    ul.style.padding = "0";
+                    ul.style.listStyle = "none";
+
+                    p.votedBy.forEach(name => {
+                        const li = document.createElement("li");
+                        li.textContent = name;
+                        ul.appendChild(li);
+                    });
+
+                    votersList.appendChild(ul);
+                    card.appendChild(votersList);
+                }
+
+                if (votingOpen && !p.eliminated) {
+                    card.onclick = async () => {
+                        myVote = p.name;
+                        renderPlayers(currentPlayers);
+                        try { await connection.invoke("VotePlayer", currentRoomId, p.name); }
+                        catch (e) { console.error(e); }
+                    };
+                }
+
+                container.appendChild(card);
+            });
+        }
+
+        // ---------- Azioni ----------
+        async function createRoom() {
+            const rawName = document.getElementById("name").value || "Host";
+            const name = applyNameMapping(rawName);   // 👈 applica alias
+            isHost = true;
+            try {
+                const id = await connection.invoke("CreateRoom", name);
+                currentRoomId = id;
+                document.getElementById("currentRoomIdText").textContent = currentRoomId;
+                document.getElementById("hostNameText").textContent = name;
+                logLobby(`🎪 Stanza creata: ${currentRoomId}`);
+                showScreen("screenLobby");
+                document.getElementById("hostControls").style.display = "block";
+
+                const inviteLink = `${window.location.origin}${window.location.pathname}?roomId=${encodeURIComponent(currentRoomId)}`;
+                document.getElementById("inviteLink").value = inviteLink;
+                document.getElementById("inviteBox").style.display = "block";
+            } catch (err) {
+                console.error(err);
+                logLobby("❌ Errore nella creazione della stanza");
+            }
+        }
+        async function joinRoom() {
+            const rawName = document.getElementById("name").value || "Giocatore";
+            const name = applyNameMapping(rawName);   // 👈 applica alias
+            const roomId = document.getElementById("roomIdInput").value;
+            if (!roomId) { alert("Inserisci l'ID stanza"); return; }
+
+
+            currentRoomId = roomId;
+            myRole = null;
+            votingOpen = false;
+            myVote = null;
+
+            try {
+                // Chiamo il server e ricevo lo stato della stanza
+                const result = await connection.invoke("JoinRoom", roomId, name);
+
+                // allinea lo stato locale
+                isHost = !!result.isHost;
+                myRole = result.role || null;
+                currentPlayers = result.players || [];
+                votingOpen = !!result.votingOpen;
+
+                // Host: ripristina schermata + stato del pulsante
+                if (isHost) {
+                    showScreen("screenGame");
+                    renderHostTable(currentPlayers);
+                    document.getElementById("hostControls").style.display = "block";
+
+                    const btn = document.getElementById("votingBtn");
+                    if (votingOpen) {
+                        btn.style.backgroundColor = "#4A90E2";
+                        btn.textContent = "Il dado è tratto";
+                    } else {
+                        btn.style.backgroundColor = "var(--brand)";
+                        btn.textContent = "Votazione";
+                    }
+                }
+                // Giocatore: se partita avviata, mostra subito griglia votabile se votingOpen
+                else if (result.gameStarted) {
+                    showScreen("screenGamePlayer");
+                    renderPlayers(currentPlayers); // usa votingOpen: se true, abilita i click
+                } else {
+                    showScreen("screenLobby");
+                }
+
+                // Se ha già un ruolo, mostra il tasto card
+                if (myRole) document.getElementById("showRoleBtn").style.display = "inline-block";
+            } catch (err) {
+                console.error(err);
+                logLobby("❌ Errore durante il join");
+            }
+        }
+        async function startGame() {
+            if (!isHost) { alert("❌ Solo l'host può avviare la partita!"); return; }
+
+            const counts = document.querySelectorAll(".rolesBox .count");
+            let totalRoles = 0;
+            const roles = ["wolves", "villagers", "seers", "guard", "scemo", "hunter", "witch", "lara", "mayor", "hitman"];
+            const roleValues = {};
+            counts.forEach((c, i) => {
+                let val = parseInt(c.textContent) || 0;
+                roleValues[roles[i]] = val;
+                totalRoles += val;
+            });
+
+            if (totalRoles < currentPlayers.length) { alert("❌ Ruoli insufficienti!"); return; }
+
+            try {
+                await connection.invoke(
+                    "StartGame",
+                    currentRoomId,
+                    roleValues.wolves,
+                    roleValues.villagers,
+                    roleValues.seers,
+                    roleValues.guard,
+                    roleValues.scemo,
+                    roleValues.hunter,
+                    roleValues.witch,
+                    roleValues.lara,
+                    roleValues.mayor,
+                    roleValues.hitman
+                );
+
+                logLobby("🚀 Partita avviata!");
+            } catch (err) {
+                console.error(err);
+                logLobby("❌ Errore nell'avvio della partita");
+            }
+        }
+        async function restartGame() {
+            if (!isHost) return;
+            if (!confirm("Vuoi davvero riavviare la partita e tornare in lobby?")) return;
+            try {
+                await connection.invoke("RestartGame", currentRoomId);
+            } catch (err) {
+                console.error(err);
+                alert("Errore durante il riavvio della partita");
+            }
+        }
+        function toggleVoting() {
+            if (!isHost) return;
+            if (!votingOpen) connection.invoke("OpenVoting", currentRoomId).catch(err => console.error(err));
+            else connection.invoke("CloseVoting", currentRoomId).catch(err => console.error(err));
+        }
+        async function eliminatePlayer(playerName) {
+            if (!isHost) return;
+            if (!confirm(`Sei sicuro di eliminare ${playerName}?`)) return;
+            try { await connection.invoke("EliminatePlayer", currentRoomId, playerName); }
+            catch (err) { console.error(err); alert("Errore durante l'eliminazione"); }
+        }
+
+        // ---------- Invite ----------
+        function copyInvite() {
+            const input = document.getElementById("inviteLink");
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(input.value).then(() => alert("📋 Link copiato!")).catch(() => fallbackCopy(input));
+            } else fallbackCopy(input);
+        }
+        function fallbackCopy(input) {
+            const tmp = document.createElement("textarea");
+            tmp.value = input.value;
+            tmp.style.position = "absolute";
+            tmp.style.left = "-9999px";
+            document.body.appendChild(tmp);
+            tmp.select();
+            try { const ok = document.execCommand("copy"); alert(ok ? "📋 Link copiato!" : "⚠️ Copia manuale"); }
+            catch { alert("⚠️ Copia manuale"); }
+            document.body.removeChild(tmp);
+        }
+        function shareInvite() {
+            const link = document.getElementById("inviteLink").value;
+            if (navigator.share) navigator.share({ title: "Invito Lupus in Tabula", text: "Entra nella mia stanza!", url: link }).catch(err => console.log(err));
+            else alert("Copia il link manualmente: " + link);
+        }
+
+        // ---------- Prefill roomId da ?roomId=
+        window.addEventListener("load", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomIdFromLink = urlParams.get("roomId");
+            if (roomIdFromLink) {
+                document.getElementById("roomIdInput").value = roomIdFromLink;
+                logLobby(`🔗 Sei stato invitato alla stanza: ${roomIdFromLink}`);
+            }
+        });
+
+        // ---------- Incremento/Decremento ruoli ----------
+        document.querySelectorAll('.number-control').forEach(container => {
+            const decBtn = container.querySelector('.dec-btn');
+            const incBtn = container.querySelector('.inc-btn');
+            const countEl = container.querySelector('.count');
+            decBtn.onclick = () => { let val = parseInt(countEl.textContent) || 0; if (val > 0) countEl.textContent = val - 1; };
+            incBtn.onclick = () => { let val = parseInt(countEl.textContent) || 0; countEl.textContent = val + 1; };
+        });
+    </script>
+
+</body>
+</html>
