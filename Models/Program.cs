@@ -1,16 +1,35 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using LupusInTabula.Hubs; // <-- corretto namespace per GameHub
+﻿using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.SignalR;
+using LupusInTabula.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Fai in modo che ascolti su tutte le interfacce (0.0.0.0)
-builder.WebHost.UseUrls("http://0.0.0.0:8080");
+// ✅ Porta dinamica: 8080 su Render, 5000 in locale
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
-// Registrazione dei servizi
-builder.Services.AddSignalR();
+// ✅ SignalR: ping più frequenti e timeout più tollerante
+builder.Services.AddSignalR(o =>
+{
+    o.KeepAliveInterval = TimeSpan.FromSeconds(15);      // server→client ping
+    o.ClientTimeoutInterval = TimeSpan.FromSeconds(120); // tolleranza
+});
+
+// (se non usi MVC puoi rimuoverlo)
 builder.Services.AddControllersWithViews();
 
+// ✅ Compressione (aiuta anche con long polling)
+builder.Services.AddResponseCompression(options => { options.EnableForHttps = true; });
+
 var app = builder.Build();
+
+// ✅ Rispetta gli header del proxy (https corretto dietro Render)
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
+app.UseResponseCompression();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
