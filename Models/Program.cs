@@ -4,7 +4,7 @@ using LupusInTabula.Hubs; // <-- corretto namespace per GameHub
 var builder = WebApplication.CreateBuilder(args);
 
 // Fai in modo che ascolti su tutte le interfacce (0.0.0.0)
-builder.WebHost.UseUrls("http://0.0.0.0:5000");
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
 // Registrazione dei servizi
 builder.Services.AddSignalR();
