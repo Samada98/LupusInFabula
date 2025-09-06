@@ -26,7 +26,7 @@ namespace LupusInTabula.Hubs
 
             foreach (var p in room.Players)
             {
-                p.Role = null;
+                p.Role = "";
                 p.CurrentVote = null;
                 p.Eliminated = false;
                 // p.IsOnline resta com'è
@@ -165,11 +165,13 @@ namespace LupusInTabula.Hubs
         }
 
         // ---------- Avvio gioco ----------
-        public async Task StartGame(string roomId, int wolves, int villagers, int seers, int guards, int scemo, int hunter, int witch, int lara, int mayor, int hitman)
+        public async Task StartGame(
+            string roomId, int wolves, int villagers, int seers, int guards, int scemo, int hunter, int witch, int lara, int mayor, int hitman)
         {
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (room.HostConnectionId != Context.ConnectionId) return;
 
+            // 1) Costruisci la lista ruoli
             var roles = new List<string>();
             roles.AddRange(Enumerable.Repeat("wolf", wolves));
             roles.AddRange(Enumerable.Repeat("villager", villagers));
@@ -182,20 +184,42 @@ namespace LupusInTabula.Hubs
             roles.AddRange(Enumerable.Repeat("mayor", mayor));
             roles.AddRange(Enumerable.Repeat("hitman", hitman));
 
-            var rnd = new Random();
+            // Candidati reali (solo chi può giocare ora)
+            var candidates = room.Players
+                .Where(p => p.IsOnline && !p.Eliminated)
+                .ToList();
+
+            // 2) Validazione: ruoli sufficienti?
+            if (roles.Count < candidates.Count)
+            {
+                await Clients.Caller.SendAsync("JoinError", "Ruoli insufficienti per i giocatori presenti.");
+                return;
+            }
+
+            // 3) Reset ruoli a tutti prima di assegnare (coerenza)
+            foreach (var p in room.Players)
+                p.Role = ""; // evita null se la tua classe non è nullable
+
+            // 4) Shuffle sia ruoli che candidati per massima casualità
+            var rnd = Random.Shared;
             roles = roles.OrderBy(_ => rnd.Next()).ToList();
+            candidates = candidates.OrderBy(_ => rnd.Next()).ToList();
 
-            for (int i = 0; i < room.Players.Count && i < roles.Count; i++)
-                room.Players[i].Role = roles[i];
+            // 5) Assegna
+            for (int i = 0; i < candidates.Count; i++)
+                candidates[i].Role = roles[i];
 
+            // 6) Stato partita
             room.GameStarted = true;
             room.VotingOpen = false;
             foreach (var p in room.Players)
                 p.CurrentVote = null;
 
+            // 7) Invia il ruolo SOLO ai giocatori online (il resto riceve vuoto)
             foreach (var p in room.Players.Where(p => p.IsOnline))
                 await Clients.Client(p.ConnectionId).SendAsync("ReceiveRole", p.Role);
 
+            // 8) Aggiorna tutti
             await Clients.Group(roomId).SendAsync("GameStarted", MapPlayers(room));
             await Clients.Group(roomId).SendAsync("UpdateVotes", MapPlayers(room));
         }
@@ -239,8 +263,9 @@ namespace LupusInTabula.Hubs
         public async Task EliminatePlayer(string roomId, string playerName)
         {
             if (!Rooms.TryGetValue(roomId, out var room)) return;
+            if (room.HostConnectionId != Context.ConnectionId) return; // 👈 solo host
 
-            var player = room.Players.FirstOrDefault(p => p.Name == playerName);
+            var player = room.Players.FirstOrDefault(p => p.Name.Equals(playerName, StringComparison.OrdinalIgnoreCase));
             if (player == null) return;
 
             player.Eliminated = true;
@@ -306,5 +331,51 @@ namespace LupusInTabula.Hubs
 
             await Clients.Caller.SendAsync("ReceiveHostRoomInfo", roomInfo);
         }
+        // --- Keep-alive dal client: nessuna logica, evita timeout inutili
+        public Task Heartbeat() => Task.CompletedTask;
+        // --- Uscita esplicita: host o giocatore
+        public async Task LeaveRoom(string roomId)
+        {
+            if (!Rooms.TryGetValue(roomId, out var room))
+                return;
+
+            // Host che esce
+            if (room.HostConnectionId == Context.ConnectionId)
+            {
+                // Scollega l'host (non distruggiamo la stanza: potrà rientrare con hostKey)
+                room.HostConnectionId = null;
+
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
+
+                // Aggiorna gli altri
+                await Clients.Group(roomId).SendAsync("UpdateLobby", ToLobbyPlayers(room), room.HostName);
+                await Clients.Group(roomId).SendAsync("UpdateVotes", MapPlayers(room));
+
+                // Se vuoi: chiudi eventuale votazione aperta
+                // room.VotingOpen = false; await Clients.Group(roomId).SendAsync("VotingEnded");
+                return;
+            }
+
+            // Giocatore che esce
+            var player = room.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
+            if (player != null)
+            {
+                player.IsOnline = false;
+                player.ConnectionId = null;
+            }
+
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
+
+            await Clients.Group(roomId).SendAsync("UpdateLobby", ToLobbyPlayers(room), room.HostName);
+            await Clients.Group(roomId).SendAsync("UpdateVotes", MapPlayers(room));
+
+            // (Opzionale) Se non c'è più nessuno online, puoi cancellare la stanza
+            // if (room.HostConnectionId == null && room.Players.All(p => !p.IsOnline))
+            // {
+            //     Rooms.TryRemove(room.Id, out _);
+            // }
+        }
+
+
     }
 }
