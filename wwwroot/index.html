@@ -443,7 +443,15 @@
 
     <script>
         // ---------- SignalR ----------
-        const connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
+        // PRIMA: const connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/gamehub")
+            .withAutomaticReconnect([0, 1000, 5000, 10000, 20000, 30000]) // backoff
+            .build();
+
+        // tolleranze lato client
+        connection.serverTimeoutInMilliseconds = 120000;     // 120s
+        connection.keepAliveIntervalInMilliseconds = 15000;  // 15s
 
         // ---------- Stato globale ----------
         let currentRoomId = null,
@@ -542,22 +550,50 @@
         // ---------- Connessione ----------
         async function startConn() {
             try {
-                await connection.start();
-                logLobby("✅ Connesso al server");
-                document.getElementById("createBtn").disabled = false;
-                document.getElementById("joinBtn").disabled = false;
+                if (connection.state !== "Connected") {
+                    await connection.start();
+                    logLobby("✅ Connesso al server");
+                    document.getElementById("createBtn").disabled = false;
+                    document.getElementById("joinBtn").disabled = false;
+                }
             } catch (err) {
                 console.error(err);
                 logLobby("❌ Connessione fallita, riprovo...");
                 setTimeout(startConn, 2000);
             }
         }
+        connection.onclose(() => {  // <— aggiungi
+            setTimeout(startConn, 1000);
+        });
         startConn();
+
+        let hbTimer = null;
+        function startHeartbeat() {
+            if (hbTimer) return;
+            hbTimer = setInterval(() => {
+                if (connection.state === "Connected") {
+                    connection.invoke("Heartbeat").catch(() => { });
+                }
+            }, 20000); // ping ogni ~20s
+        }
+        function stopHeartbeat() {
+            if (hbTimer) { clearInterval(hbTimer); hbTimer = null; }
+        }
 
         // ---------- UI ----------
         function showScreen(id) {
+            // nascondi tutte le schermate
             document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
+            // mostra la schermata richiesta
             document.getElementById(id).style.display = "block";
+
+            // 🔸 Heartbeat: attivalo solo quando NON siamo nella schermata di accesso
+            // (quindi in Lobby, Host game e Player game)
+            if (id === "screenAccess") {
+                stopHeartbeat();
+            } else {
+                startHeartbeat();
+            }
         }
 
         function logLobby(msg) {
@@ -718,7 +754,9 @@
             logLobby("🔄 La partita è stata riavviata, siete tornati in lobby.");
         });
 
-
+        connection.on("ReceiveHostKey", (hostKey) => {
+            localStorage.setItem("lupus_hostKey", hostKey);
+        });
 
         // ---------- Render ----------
         function renderHostTable(players) {
@@ -754,7 +792,7 @@
 
                 // Nome con icona sindaco
                 let displayName = p.eliminated ? `☠️ ${p.name}` : p.name;
-                if (p.role === "sindaco") displayName += " 🎖️";
+                if (p.role === "mayor") displayName += " 🎖️";
 
                 const baseText = (!p.eliminated && p.votes > 0)
                     ? `${displayName} (${p.votes})`
@@ -804,17 +842,26 @@
         // ---------- Azioni ----------
         async function createRoom() {
             const rawName = document.getElementById("name").value || "Host";
-            const name = applyNameMapping(rawName);   // 👈 applica alias
+            const name = applyNameMapping(rawName);   // alias
             isHost = true;
+
             try {
+                // crea stanza sul server
                 const id = await connection.invoke("CreateRoom", name);
+
+                // 🔹 salva per auto-rejoin e per riconoscere l’host vero
                 currentRoomId = id;
+                localStorage.setItem("lupus_roomId", id);
+                localStorage.setItem("lupus_name", name);
+
+                // UI
                 document.getElementById("currentRoomIdText").textContent = currentRoomId;
                 document.getElementById("hostNameText").textContent = name;
                 logLobby(`🎪 Stanza creata: ${currentRoomId}`);
                 showScreen("screenLobby");
                 document.getElementById("hostControls").style.display = "block";
 
+                // link invito
                 const inviteLink = `${window.location.origin}${window.location.pathname}?roomId=${encodeURIComponent(currentRoomId)}`;
                 document.getElementById("inviteLink").value = inviteLink;
                 document.getElementById("inviteBox").style.display = "block";
@@ -825,50 +872,46 @@
         }
         async function joinRoom() {
             const rawName = document.getElementById("name").value || "Giocatore";
-            const name = applyNameMapping(rawName);   // 👈 applica alias
+            const name = applyNameMapping(rawName);
             const roomId = document.getElementById("roomIdInput").value;
             if (!roomId) { alert("Inserisci l'ID stanza"); return; }
-
 
             currentRoomId = roomId;
             myRole = null;
             votingOpen = false;
             myVote = null;
 
-            try {
-                // Chiamo il server e ricevo lo stato della stanza
-                const result = await connection.invoke("JoinRoom", roomId, name);
+            // se il nome è quello dell'host salvato, allega hostKey
+            const savedHostName = (localStorage.getItem("lupus_name") || "").trim().toLowerCase();
+            const hostKey = localStorage.getItem("lupus_hostKey") || null;
+            const isHostName = name.trim().toLowerCase() === savedHostName;
+            const hostKeyToSend = isHostName ? hostKey : null;
 
-                // allinea lo stato locale
+            try {
+                const result = await connection.invoke("JoinRoom", roomId, name, hostKeyToSend);
+
+                // stato locale + persistenza minima
                 isHost = !!result.isHost;
                 myRole = result.role || null;
                 currentPlayers = result.players || [];
                 votingOpen = !!result.votingOpen;
+                localStorage.setItem("lupus_roomId", currentRoomId);
+                localStorage.setItem("lupus_name", name);
 
-                // Host: ripristina schermata + stato del pulsante
                 if (isHost) {
                     showScreen("screenGame");
                     renderHostTable(currentPlayers);
                     document.getElementById("hostControls").style.display = "block";
-
                     const btn = document.getElementById("votingBtn");
-                    if (votingOpen) {
-                        btn.style.backgroundColor = "#4A90E2";
-                        btn.textContent = "Il dado è tratto";
-                    } else {
-                        btn.style.backgroundColor = "var(--brand)";
-                        btn.textContent = "Votazione";
-                    }
-                }
-                // Giocatore: se partita avviata, mostra subito griglia votabile se votingOpen
-                else if (result.gameStarted) {
+                    if (votingOpen) { btn.style.backgroundColor = "#4A90E2"; btn.textContent = "Il dado è tratto"; }
+                    else { btn.style.backgroundColor = "var(--brand)"; btn.textContent = "Votazione"; }
+                } else if (result.gameStarted) {
                     showScreen("screenGamePlayer");
-                    renderPlayers(currentPlayers); // usa votingOpen: se true, abilita i click
+                    renderPlayers(currentPlayers);
                 } else {
                     showScreen("screenLobby");
                 }
 
-                // Se ha già un ruolo, mostra il tasto card
                 if (myRole) document.getElementById("showRoleBtn").style.display = "inline-block";
             } catch (err) {
                 console.error(err);
@@ -976,6 +1019,39 @@
             decBtn.onclick = () => { let val = parseInt(countEl.textContent) || 0; if (val > 0) countEl.textContent = val - 1; };
             incBtn.onclick = () => { let val = parseInt(countEl.textContent) || 0; countEl.textContent = val + 1; };
         });
+        // quando la pagina si carica, se ho dati salvati provo a rientrare
+        window.addEventListener("load", () => {
+            const rid = localStorage.getItem("lupus_roomId");
+            const nm = localStorage.getItem("lupus_name");
+            if (!rid || !nm) return;
+
+            // precompila i campi
+            document.getElementById("name").value = nm;
+            document.getElementById("roomIdInput").value = rid;
+
+            // aspetta la connessione e prova il join
+            const tryJoin = () => {
+                if (connection.state !== "Connected") { setTimeout(tryJoin, 800); return; }
+                joinRoom().catch(() => setTimeout(tryJoin, 1500));
+            };
+            tryJoin();
+        });
+
+        // se si riconnette, riprova il join (utile quando il server si “risveglia”)
+        connection.onreconnected(() => {
+            const rid = localStorage.getItem("lupus_roomId");
+            const nm = localStorage.getItem("lupus_name");
+            if (rid && nm) joinRoom().catch(() => { });
+        });
+        document.addEventListener("visibilitychange", () => {
+            if (!document.hidden) {
+                if (connection.state !== "Connected") startConn();
+                const rid = localStorage.getItem("lupus_roomId");
+                const nm = localStorage.getItem("lupus_name");
+                if (rid && nm) joinRoom().catch(() => { });
+            }
+        });
+
     </script>
 
 </body>

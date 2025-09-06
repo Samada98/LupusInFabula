@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SignalR;
 using LupusInTabula.Hubs;
+using System.IO.Compression;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,13 +15,28 @@ builder.Services.AddSignalR(o =>
 {
     o.KeepAliveInterval = TimeSpan.FromSeconds(15);      // server→client ping
     o.ClientTimeoutInterval = TimeSpan.FromSeconds(120); // tolleranza
+    o.EnableDetailedErrors = true;                       // 👈 utile per diagnosticare
 });
 
 // (se non usi MVC puoi rimuoverlo)
 builder.Services.AddControllersWithViews();
 
-// ✅ Compressione (aiuta anche con long polling)
-builder.Services.AddResponseCompression(options => { options.EnableForHttps = true; });
+// ✅ Compressione (abilita anche application/octet-stream per fallback SignalR)
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+    {
+        "application/octet-stream" // 👈 utile per SignalR long polling / server-sent events
+    });
+});
+// (facoltativo) taratura livello gzip un po’ più spinto
+builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = CompressionLevel.Fastest);
+
+// (OPZIONALE) Solo se il front-end NON è servito dallo stesso dominio
+// builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
+//     .AllowAnyHeader().AllowAnyMethod().AllowCredentials()
+//     .SetIsOriginAllowed(_ => true)));
 
 var app = builder.Build();
 
@@ -29,7 +46,16 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
+// (OPZIONALE) Se usi CORS
+// app.UseCors();
+
 app.UseResponseCompression();
+
+// ✅ WebSockets keep-alive coerente
+app.UseWebSockets(new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(15)
+});
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

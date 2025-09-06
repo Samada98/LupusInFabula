@@ -11,5 +11,7 @@ namespace LupusInTabula.Models
         public bool GameStarted { get; set; }
         public bool VotingOpen { get; set; }
         public List<Player> Players { get; set; } = new();
+        public string HostKey { get; set; } = "";
+
     }
 }

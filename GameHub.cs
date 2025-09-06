@@ -11,14 +11,16 @@ namespace LupusInTabula.Hubs
     public class GameHub : Hub
     {
         private static readonly ConcurrentDictionary<string, GameRoom> Rooms = new();
+
+        private static bool Same(string a, string b) =>
+            string.Equals(a?.Trim(), b?.Trim(), StringComparison.OrdinalIgnoreCase);
+
         // ---------- Restart partita ----------
         public async Task RestartGame(string roomId)
         {
-            // Solo l'host della stanza può riavviare
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (room.HostConnectionId != Context.ConnectionId) return;
 
-            // Reset stato stanza
             room.GameStarted = false;
             room.VotingOpen = false;
 
@@ -27,18 +29,13 @@ namespace LupusInTabula.Hubs
                 p.Role = null;
                 p.CurrentVote = null;
                 p.Eliminated = false;
-                // p.IsOnline resta com'è (non toccarlo)
+                // p.IsOnline resta com'è
             }
 
-            // Notifica tutti i client:
-            // 1) evento dedicato per far tornare alla Lobby
             await Clients.Group(roomId).SendAsync("GameRestarted", ToLobbyPlayers(room), room.HostName);
-
-            // 2) refresh liste/contatori coerenti con lo stato azzerato
             await Clients.Group(roomId).SendAsync("UpdateLobby", ToLobbyPlayers(room), room.HostName);
             await Clients.Group(roomId).SendAsync("UpdateVotes", MapPlayers(room));
         }
-
 
         // ---------- Creazione stanza ----------
         public async Task<string> CreateRoom(string hostName)
@@ -46,160 +43,98 @@ namespace LupusInTabula.Hubs
             var room = new GameRoom
             {
                 HostConnectionId = Context.ConnectionId,
-                HostName = hostName
+                HostName = hostName,
+                HostKey = Guid.NewGuid().ToString("N") // 🔑 chiave segreta host
             };
 
             Rooms[room.Id] = room;
 
             await Groups.AddToGroupAsync(Context.ConnectionId, room.Id);
+
+            // Invia subito lobby all’host
             await Clients.Caller.SendAsync("UpdateLobby", ToLobbyPlayers(room), room.HostName);
+
+            // Invia la hostKey SOLO all’host che ha creato (il tuo client la deve salvare)
+            await Clients.Caller.SendAsync("ReceiveHostKey", room.HostKey);
 
             return room.Id;
         }
 
-        // ---------- Join stanza ----------
-        public async Task<JoinResult> JoinRoom(string roomId, string name)
+        // ---------- Join (con controllo host) ----------
+        // AGGIUNTA: hostKey opzionale per validare il "vero" host
+        public async Task<JoinResult> JoinRoom(string roomId, string name, string hostKey = null)
         {
             if (!Rooms.TryGetValue(roomId, out var room))
             {
-                // stanza non esiste
                 await Clients.Caller.SendAsync("JoinError", "Stanza non trovata");
-                return new JoinResult(
-                    Ok: false,
-                    Error: "Stanza non trovata",
-                    RoomId: roomId,
-                    HostName: "",
-                    IsHost: false,
-                    GameStarted: false,
-                    VotingOpen: false,
-                    Role: null,
-                    Players: new List<PlayerDto>()
-                );
+                return new JoinResult(false, "Stanza non trovata", roomId, "", false, false, false, null, new List<PlayerDto>());
             }
 
-            bool isHost = room.HostName.Equals(name, StringComparison.OrdinalIgnoreCase);
+            bool isHostName = string.Equals(name?.Trim(), room.HostName?.Trim(), StringComparison.OrdinalIgnoreCase);
 
-            // Cerca player esistente (anche se offline)
+            // ---- Nome host: consenti solo se hostKey valida (host vero), altrimenti blocca
+            if (isHostName)
+            {
+                if (!string.IsNullOrEmpty(hostKey) &&
+                    string.Equals(hostKey, room.HostKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    // rientro host: riaggancia/sostituisci
+                    room.HostConnectionId = Context.ConnectionId;
+                    await Groups.AddToGroupAsync(Context.ConnectionId, room.Id);
+
+                    await Clients.Group(room.Id).SendAsync("UpdateLobby", ToLobbyPlayers(room), room.HostName);
+                    await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+                    if (room.VotingOpen) await Clients.Caller.SendAsync("VotingStarted");
+                    else await Clients.Caller.SendAsync("VotingEnded");
+
+                    return new JoinResult(true, null, room.Id, room.HostName, true, room.GameStarted, room.VotingOpen, null, MapPlayers(room));
+                }
+
+                await Clients.Caller.SendAsync("JoinError", "Il nome dell'host è riservato.");
+                return new JoinResult(false, "Il nome dell'host è riservato.", room.Id, room.HostName, false, room.GameStarted, room.VotingOpen, null, MapPlayers(room));
+            }
+
+            // ---- Nome NON host: gestione normale con anti-duplicati
             var player = room.Players.FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
-            // Se il nome è già online connesso da un altro client, blocca (come prima)
-            if (player != null && player.IsOnline)
+            if (player != null && player.IsOnline && player.ConnectionId != Context.ConnectionId)
             {
                 await Clients.Caller.SendAsync("JoinError", "Nome già presente nella stanza");
-                return new JoinResult(
-                    Ok: false,
-                    Error: "Nome già presente nella stanza",
-                    RoomId: room.Id,
-                    HostName: room.HostName,
-                    IsHost: false,
-                    GameStarted: room.GameStarted,
-                    VotingOpen: room.VotingOpen,
-                    Role: null,
-                    Players: MapPlayers(room)
-                );
+                return new JoinResult(false, "Nome già presente nella stanza", room.Id, room.HostName, false, room.GameStarted, room.VotingOpen, null, MapPlayers(room));
             }
 
-            // Se chi entra è l'host
-            if (isHost)
+            if (player == null)
             {
-                // NON aggiungo l'host a room.Players: resta fuori dall'elenco votabile
-                // Se hai bisogno di tracciare "host online/offline", puoi aggiungere un flag in GameRoom,
-                // altrimenti basta aggiornare la ConnectionId.
-                room.HostConnectionId = Context.ConnectionId;
-
-                await Groups.AddToGroupAsync(Context.ConnectionId, room.Id);
-                await Clients.Group(room.Id).SendAsync("UpdateLobby", ToLobbyPlayers(room), room.HostName);
-                await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
-                // Ribatti lo stato votazioni al caller dopo il join/rejoin
-                if (room.VotingOpen)
-                    await Clients.Caller.SendAsync("VotingStarted");
-                else
-                    await Clients.Caller.SendAsync("VotingEnded");
-
-                return new JoinResult(
-                    Ok: true,
-                    Error: null,
-                    RoomId: room.Id,
-                    HostName: room.HostName,
-                    IsHost: true,
-                    GameStarted: room.GameStarted,
-                    VotingOpen: room.VotingOpen,
-                    Role: null, // l'host non ha ruolo
-                    Players: MapPlayers(room)
-                );
-            }
-
-            else
-            {
-                // Giocatore normale
-                if (player == null)
-                {
-                    if (room.GameStarted)
-                    {
-                        await Clients.Caller.SendAsync("JoinError", "Partita già iniziata. Non puoi entrare.");
-                        return new JoinResult(
-                            Ok: false,
-                            Error: "Partita già iniziata. Non puoi entrare.",
-                            RoomId: room.Id,
-                            HostName: room.HostName,
-                            IsHost: false,
-                            GameStarted: room.GameStarted,
-                            VotingOpen: room.VotingOpen,
-                            Role: null,
-                            Players: MapPlayers(room)
-                        );
-                    }
-
-                    player = new Player
-                    {
-                        Name = name,
-                        ConnectionId = Context.ConnectionId,
-                        IsOnline = true
-                    };
-                    room.Players.Add(player);
-                }
-                else
-                {
-                    player.ConnectionId = Context.ConnectionId;
-                    player.IsOnline = true;
-                }
-
-                await Groups.AddToGroupAsync(Context.ConnectionId, room.Id);
-
-                await Clients.Group(room.Id).SendAsync("UpdateLobby", ToLobbyPlayers(room), room.HostName);
-                await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
-
-                // Se la partita è già iniziata e il giocatore rientra (caso particolare: era già dentro e si è disconnesso)
                 if (room.GameStarted)
                 {
-                    // opzionale: puoi anche inviare gli eventi come prima
-                    // await Clients.Caller.SendAsync("GameStarted", MapPlayers(room));
-                    // if (!string.IsNullOrEmpty(player.Role))
-                    //     await Clients.Caller.SendAsync("ReceiveRole", player.Role);
-                    // if (room.VotingOpen)
-                    //     await Clients.Caller.SendAsync("VotingStarted");
-                    // else
-                    //     await Clients.Caller.SendAsync("VotingEnded");
+                    await Clients.Caller.SendAsync("JoinError", "Partita già iniziata. Non puoi entrare.");
+                    return new JoinResult(false, "Partita già iniziata. Non puoi entrare.", room.Id, room.HostName, false, room.GameStarted, room.VotingOpen, null, MapPlayers(room));
                 }
-                
-                // Ribatti lo stato votazioni al caller dopo il join/rejoin
-                if (room.VotingOpen)
-                    await Clients.Caller.SendAsync("VotingStarted");
-                else
-                    await Clients.Caller.SendAsync("VotingEnded");
 
-                return new JoinResult(
-                    Ok: true,
-                    Error: null,
-                    RoomId: room.Id,
-                    HostName: room.HostName,
-                    IsHost: false,
-                    GameStarted: room.GameStarted,
-                    VotingOpen: room.VotingOpen,
-                    Role: player.Role,
-                    Players: MapPlayers(room)
-                );
+                player = new Player
+                {
+                    Name = name.Trim(),
+                    ConnectionId = Context.ConnectionId,
+                    IsOnline = true
+                };
+                room.Players.Add(player);
             }
+            else
+            {
+                // riconnessione stesso nome
+                player.ConnectionId = Context.ConnectionId;
+                player.IsOnline = true;
+            }
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, room.Id);
+
+            await Clients.Group(room.Id).SendAsync("UpdateLobby", ToLobbyPlayers(room), room.HostName);
+            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+
+            if (room.VotingOpen) await Clients.Caller.SendAsync("VotingStarted");
+            else await Clients.Caller.SendAsync("VotingEnded");
+
+            return new JoinResult(true, null, room.Id, room.HostName, false, room.GameStarted, room.VotingOpen, player.Role, MapPlayers(room));
         }
 
         // ---------- Disconnessione ----------
@@ -208,22 +143,29 @@ namespace LupusInTabula.Hubs
             var room = GetRoomByConnectionId(Context.ConnectionId);
             if (room != null)
             {
-                var player = room.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
-                if (player != null)
+                // Host che chiude: NON azzeriamo nulla, semplicemente resta senza connessione
+                if (room.HostConnectionId == Context.ConnectionId)
                 {
-                    player.IsOnline = false;
-                    // Non rimuovere l'host: resta offline
-                    await Clients.Group(room.Id).SendAsync("UpdateLobby", ToLobbyPlayers(room), room.HostName);
-                    await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+                    // l’host risulterà “offline” lato UI se lo mostri tra i players (di default non è nella lista)
                 }
+                else
+                {
+                    var player = room.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
+                    if (player != null)
+                    {
+                        player.IsOnline = false;
+                    }
+                }
+
+                await Clients.Group(room.Id).SendAsync("UpdateLobby", ToLobbyPlayers(room), room.HostName);
+                await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
             }
 
             await base.OnDisconnectedAsync(exception);
         }
 
-
         // ---------- Avvio gioco ----------
-        public async Task StartGame(string roomId,int wolves, int villagers, int seers, int guards, int scemo, int hunter, int witch,int lara, int mayor, int hitman)
+        public async Task StartGame(string roomId, int wolves, int villagers, int seers, int guards, int scemo, int hunter, int witch, int lara, int mayor, int hitman)
         {
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (room.HostConnectionId != Context.ConnectionId) return;
@@ -246,13 +188,11 @@ namespace LupusInTabula.Hubs
             for (int i = 0; i < room.Players.Count && i < roles.Count; i++)
                 room.Players[i].Role = roles[i];
 
-            // Azzeriamo voti e status
             room.GameStarted = true;
             room.VotingOpen = false;
             foreach (var p in room.Players)
                 p.CurrentVote = null;
 
-            // invio ruolo al singolo
             foreach (var p in room.Players.Where(p => p.IsOnline))
                 await Clients.Client(p.ConnectionId).SendAsync("ReceiveRole", p.Role);
 
@@ -269,8 +209,8 @@ namespace LupusInTabula.Hubs
             room.VotingOpen = true;
             foreach (var p in room.Players) p.CurrentVote = null;
 
-            await Clients.Group(roomId).SendAsync("VotingStarted");
-            await Clients.Group(roomId).SendAsync("UpdateVotes", MapPlayers(room));
+            await Clients.Group(room.Id).SendAsync("VotingStarted");
+            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
         }
 
         public async Task CloseVoting(string roomId)
@@ -279,8 +219,8 @@ namespace LupusInTabula.Hubs
             if (room.HostConnectionId != Context.ConnectionId) return;
 
             room.VotingOpen = false;
-            await Clients.Group(roomId).SendAsync("VotingEnded");
-            await Clients.Group(roomId).SendAsync("UpdateVotes", MapPlayers(room));
+            await Clients.Group(room.Id).SendAsync("VotingEnded");
+            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
         }
 
         public async Task VotePlayer(string roomId, string targetName)
@@ -289,11 +229,10 @@ namespace LupusInTabula.Hubs
             if (!room.VotingOpen) return;
 
             var voter = room.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
-            if (voter == null) return;
-            if (voter.Eliminated) return;
+            if (voter == null || voter.Eliminated) return;
 
             voter.CurrentVote = targetName;
-            await Clients.Group(roomId).SendAsync("UpdateVotes", MapPlayers(room));
+            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
         }
 
         // ---------- Eliminazione giocatore ----------
@@ -306,8 +245,8 @@ namespace LupusInTabula.Hubs
 
             player.Eliminated = true;
 
-            await Clients.Group(roomId).SendAsync("UpdateVotes", MapPlayers(room));
-            await Clients.Group(roomId).SendAsync("PlayerEliminated", playerName);
+            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+            await Clients.Group(room.Id).SendAsync("PlayerEliminated", playerName);
         }
 
         // ---------- Helpers ----------
@@ -316,28 +255,22 @@ namespace LupusInTabula.Hubs
 
         private static List<PlayerDto> MapPlayers(GameRoom room)
         {
-            // Dizionari case-insensitive
             var voteCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             var voteDetails = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
-            // Conta i voti: il Sindaco pesa 2
             foreach (var voter in room.Players.Where(p => !p.Eliminated && !string.IsNullOrEmpty(p.CurrentVote)))
             {
                 var target = voter.CurrentVote!;
                 var isMayor = string.Equals(voter.Role, "mayor", StringComparison.OrdinalIgnoreCase);
                 var weight = isMayor ? 2 : 1;
 
-                if (!voteCounts.ContainsKey(target))
-                    voteCounts[target] = 0;
+                if (!voteCounts.ContainsKey(target)) voteCounts[target] = 0;
                 voteCounts[target] += weight;
 
-                if (!voteDetails.ContainsKey(target))
-                    voteDetails[target] = new List<string>();
-
+                if (!voteDetails.ContainsKey(target)) voteDetails[target] = new List<string>();
                 voteDetails[target].Add(isMayor ? $"{voter.Name} (x2)" : voter.Name);
             }
 
-            // Mappa i giocatori verso il DTO
             return room.Players
                 .Select(p => new PlayerDto(
                     Name: p.Name,
@@ -350,6 +283,7 @@ namespace LupusInTabula.Hubs
                 ))
                 .ToList();
         }
+
         private GameRoom GetRoomByConnectionId(string connectionId)
         {
             return Rooms.Values.FirstOrDefault(r =>
@@ -358,6 +292,19 @@ namespace LupusInTabula.Hubs
             );
         }
 
+        // Info stanza per host (resta invariato)
+        public async Task SendHostRoomInfo(string roomId)
+        {
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
+            if (room.HostConnectionId != Context.ConnectionId) return;
 
+            var roomInfo = new
+            {
+                RoomId = room.Id,
+                Players = room.Players.Select(p => new { Name = p.Name, IsOnline = p.IsOnline }).ToList()
+            };
+
+            await Clients.Caller.SendAsync("ReceiveHostRoomInfo", roomInfo);
+        }
     }
 }
