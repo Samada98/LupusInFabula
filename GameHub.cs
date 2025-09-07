@@ -274,6 +274,47 @@ namespace LupusInTabula.Hubs
             await Clients.Group(room.Id).SendAsync("PlayerEliminated", playerName);
         }
 
+        // ---------- Espulsione giocatore (solo in lobby, solo host) ----------
+        public async Task KickPlayer(string roomId, string playerName)
+        {
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
+
+            // Solo l'host
+            if (room.HostConnectionId != Context.ConnectionId) return;
+
+            // Solo in lobby (se preferisci permetterlo anche a partita iniziata, rimuovi questo guard)
+            if (room.GameStarted) return;
+
+            // Non permettere di espellere l'host
+            if (Same(playerName, room.HostName)) return;
+
+            var player = room.Players.FirstOrDefault(p =>
+                string.Equals(p.Name, playerName, StringComparison.OrdinalIgnoreCase));
+
+            if (player == null) return;
+
+            var kickedConn = player.ConnectionId;
+
+            // Rimuovi dal gruppo e dalla stanza
+            room.Players.Remove(player);
+
+            if (!string.IsNullOrEmpty(kickedConn))
+            {
+                try
+                {
+                    await Clients.Client(kickedConn).SendAsync("Kicked", room.Id, room.HostName);
+                }
+                catch { /* best effort */ }
+
+                await Groups.RemoveFromGroupAsync(kickedConn, room.Id);
+            }
+
+            // Aggiorna tutti in lobby
+            await Clients.Group(room.Id).SendAsync("UpdateLobby", ToLobbyPlayers(room), room.HostName);
+            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+        }
+
+
         // ---------- Helpers ----------
         private static List<object> ToLobbyPlayers(GameRoom room) =>
             room.Players.Select(p => new { Name = p.Name, IsOnline = p.IsOnline }).ToList<object>();
