@@ -2,24 +2,50 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8" />
-    <!-- Viewport + safe-area per iPhone -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Lupus in Tabula</title>
+    <meta name="theme-color" content="#8b0000">
+    <title>Lupus in Fabula</title>
 
-    <!-- Font + SignalR -->
+    <!-- Font + SignalR (CDN) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js" defer></script>
+
+    <!-- Config + Loader con fallback -->
+    <script>
+        // URL dell'hub. Se front e back sono sulla stessa origine, lascia "/gamehub".
+        // Se sono su domini diversi, imposta l'URL assoluto, es:
+        // window.HUB_URL = "https://api.tuodominio.com/gamehub";
+        window.HUB_URL = "/gamehub";
+
+        // Assicura che SignalR esista, altrimenti carica la copia locale
+        function ensureSignalR(callback) {
+            if (window.signalR) return callback();
+            var s = document.createElement('script');
+            s.src = '/js/signalr.min.js';  // <-- fallback locale (metti il file in wwwroot/js)
+            s.defer = true;
+            s.onload = callback;
+            s.onerror = function () {
+                console.error('Impossibile caricare SignalR (CDN e locale).');
+                alert('⚠️ Errore nel caricare la libreria SignalR.');
+            };
+            document.head.appendChild(s);
+        }
+
+        // Avvia l'app quando SignalR è pronto
+        function boot() { ensureSignalR(() => window.initApp && window.initApp()); }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+        else boot();
+    </script>
 
     <style>
-        /* ======================= THEME / VARIABILI ======================= */
         :root {
             --brand: #8b0000;
             --brand-2: #b22222;
             --ok: #4a90e2;
             --warn: #f39c12;
-            --bg: #ffffff;
+            --bg: #fff;
             --text: #1f2937;
             --muted: #6b7280;
             --border: #e5e7eb;
@@ -29,27 +55,24 @@
             --tie: #FEF3C7;
             --lead-accent: #F59E0B;
             --tie-accent: #FBBF24;
-            /* safe-area iOS */
             --sa-left: env(safe-area-inset-left,0px);
             --sa-right: env(safe-area-inset-right,0px);
-            --sa-balanced: max(env(safe-area-inset-left,0px), env(safe-area-inset-right,0px));
+            --sa-balanced: max(env(safe-area-inset-left,0px),env(safe-area-inset-right,0px));
         }
 
-        /* =================== MOBILE: CENTRATURA & NO PAN-X =================== */
         html, body {
             width: 100%;
             max-width: 100%;
             height: 100%;
             overflow-x: hidden;
-            touch-action: pan-y;
+            touch-action: pan-y
         }
 
         img, video, canvas {
             max-width: 100%;
-            height: auto;
+            height: auto
         }
 
-        /* ======================= RESET BASE / TIPOGRAFIA ======================= */
         * {
             box-sizing: border-box
         }
@@ -58,24 +81,23 @@
             font-family: "Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
             margin: 0;
             color: var(--text);
-            background: radial-gradient(1200px 800px at 80% -10%, #ffd0c2 0%, transparent 60%), radial-gradient(1000px 700px at -10% 90%, #ffe9b0 0%, transparent 60%), linear-gradient(135deg,#fff7f3 0%,#ffe9e3 35%,#fff6e6 100%);
+            background: radial-gradient(1200px 800px at 80% -10%, #ffd0c2 0%, transparent 60%),radial-gradient(1000px 700px at -10% 90%, #ffe9b0 0%, transparent 60%),linear-gradient(135deg,#fff7f3 0%,#ffe9e3 35%,#fff6e6 100%);
             min-height: 100svh;
             display: grid;
-            place-items: stretch;
+            place-items: stretch
         }
 
         h1, h2, h3 {
             margin: 0 0 8px
         }
 
-        /* ============================ CONTROLLI ============================ */
         input, button {
             font-family: inherit;
             font-size: 16px;
             border-radius: 12px;
             border: 1.5px solid var(--border);
             padding: 12px 14px;
-            transition: box-shadow .2s,transform .04s,background-color .2s,border-color .2s;
+            transition: box-shadow .2s,transform .04s,background-color .2s,border-color .2s
         }
 
         input {
@@ -113,7 +135,6 @@
             background: #111827
         }
 
-        /* ====== BOTTONE KICK (solo host in lobby) ====== */
         .kickBtn {
             margin-left: 8px;
             padding: 4px 8px;
@@ -129,14 +150,12 @@
                 filter: brightness(1.05)
             }
 
-        /* ============================== LAYOUT ============================== */
         .app-shell {
             width: 100%;
             min-height: 100svh;
             display: grid;
             grid-template-rows: auto 1fr auto;
-            overflow-x: clip;
-            /* (prima qui avevamo il padding laterale) */
+            overflow-x: clip
         }
 
         .brandbar {
@@ -173,22 +192,6 @@
             text-align: center
         }
 
-        .net-banner {
-            display: none;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: #111827;
-            color: #fff;
-            text-align: center;
-            padding: 6px 10px;
-            font-size: 14px
-        }
-
-            .net-banner.show {
-                display: block
-            }
-
         .screen {
             display: none
         }
@@ -197,24 +200,33 @@
                 display: block
             }
 
-        /* =============================== LOGIN =============================== */
-        /* Nascosta di default: la mostriamo solo quando è .active */
         #screenAccess {
-            /* niente display qui: evita di battere .screen { display:none } */
             place-items: center;
-            padding: 16px;
+            padding: 16px
         }
 
-            /* Quando è attiva, il login usa la griglia */
             #screenAccess.active {
-                display: grid;
+                display: grid
             }
 
-        /* (Extra safety) qualunque .screen con [hidden] è sempre nascosta */
-        .screen[hidden] {
-            display: none !important;
+            #screenAccess:not(.active) {
+                display: none !important
+            }
+
+        #screenGamePlayer #showRoleBtn {
+            display: block;
+            margin: 10px auto 0
         }
 
+        #screenGamePlayer .btn-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px
+        }
+
+        .screen[hidden] {
+            display: none !important
+        }
 
         .login-card {
             width: min(520px,92vw);
@@ -224,7 +236,7 @@
             border: 1px solid rgba(255,255,255,.6);
             box-shadow: 0 20px 40px rgba(0,0,0,.12);
             padding: 22px;
-            animation: floatIn .6s ease both;
+            animation: floatIn .6s ease both
         }
 
         @keyframes floatIn {
@@ -290,16 +302,12 @@
             box-shadow: 0 24px 40px rgba(139,0,0,.18)
         }
 
-        /* =============================== PANELS ============================== */
-        /* === FIX login: padding solo su Lobby/Game === */
-        /* Aggiungo i "gutter" laterali SOLO a lobby/gioco, NON al login */
         #screenLobby, #screenGame, #screenGamePlayer {
             padding-left: max(8px,var(--sa-balanced));
-            padding-right: max(8px,var(--sa-balanced));
+            padding-right: max(8px,var(--sa-balanced))
         }
 
         .panel {
-            /* più affidabile di 95vw con safe-area */
             max-width: 1000px;
             width: 100%;
             margin: 12px auto;
@@ -307,10 +315,9 @@
             border: 1px solid var(--border);
             border-radius: 16px;
             box-shadow: 0 8px 20px rgba(0,0,0,.06);
-            padding: 14px;
+            padding: 14px
         }
 
-        /* Invito (lobby) */
         #inviteBox {
             margin-top: 8px;
             padding: 10px;
@@ -327,7 +334,6 @@
             border: 1px dashed #a3e635
         }
 
-        /* Lista giocatori (lobby) */
         #playerList {
             display: flex;
             flex-wrap: wrap;
@@ -351,7 +357,6 @@
             color: #7f1d1d
         }
 
-        /* Log */
         #log, #gameLog, #gameLogPlayer {
             list-style: none;
             margin: 0;
@@ -360,10 +365,9 @@
             overflow: auto;
             border: 1px dashed var(--border);
             background: #fffdf7;
-            border-radius: 12px;
+            border-radius: 12px
         }
 
-        /* ====================== RUOLI (picker host in lobby) ====================== */
         .rolesBox {
             display: grid;
             gap: 8px
@@ -404,7 +408,6 @@
             font-size: 18px
         }
 
-        /* ===================== TABELLA HOST (gioco in corso) ===================== */
         #playersTable {
             width: 100%;
             border-collapse: collapse;
@@ -437,7 +440,6 @@
                 box-shadow: inset 4px 0 0 var(--tie-accent)
             }
 
-        /* ============================= GRIGLIA PLAYER ============================= */
         .playersGrid {
             display: grid;
             grid-template-columns: repeat(auto-fill,minmax(140px,1fr));
@@ -454,8 +456,16 @@
             place-items: center;
             position: relative;
             box-shadow: 0 8px 16px rgba(0,0,0,.12);
-            font-size: 15px;
+            font-size: 15px
         }
+
+            .playersGridItem[role="button"] {
+                outline: none
+            }
+
+            .playersGridItem:focus-visible {
+                box-shadow: 0 0 0 4px var(--ring)
+            }
 
         .voters {
             font-size: 12px;
@@ -466,7 +476,6 @@
             padding: 4px 6px
         }
 
-        /* =============================== ROLE MODAL =============================== */
         #overlay {
             display: none;
             position: fixed;
@@ -499,7 +508,6 @@
             margin-top: 14px
         }
 
-        /* =============================== ROLES GUIDE ============================== */
         .rolesGuideGrid {
             display: grid;
             grid-template-columns: repeat(auto-fill,minmax(240px,1fr));
@@ -535,24 +543,47 @@
                 color: var(--muted)
             }
 
-        /* ========================== CONTATORE GIOCATORI ========================== */
         .countWrap {
-            display: inline-flex;
-            gap: 8px;
+            display: flex; /* da inline-flex -> flex */
+            justify-content: space-between;
             align-items: baseline;
+            flex-wrap: wrap; /* consenti a capo su mobile se serve */
+            gap: 8px;
             background: #f8fafc;
             border: 1px solid var(--border);
             padding: 6px 10px;
             border-radius: 999px;
-            font-weight: 800
+            font-weight: 800;
+            width: 100%; /* occupa tutta la riga */
+            max-width: 100%;
+            white-space: normal; /* niente overflow */
         }
+
+        .count-left {
+            font-weight: 800;
+        }
+
+        .count-right {
+            margin-left: auto;
+            font-weight: 800;
+        }
+        @media (max-width:560px) {
+            .countWrap {
+                justify-content: center;
+                line-height: 1.2;
+            }
+                /* Metti “Mancano: …” a capo per guadagnare spazio */
+                .countWrap .muted {
+                    display: block;
+                }
+        }
+
 
             .countWrap .muted {
                 color: var(--muted);
                 font-weight: 600
             }
 
-        /* ======================= HOST + ID NELLA STESSA RIGA ====================== */
         .hostRow {
             display: flex;
             flex-wrap: wrap;
@@ -567,14 +598,12 @@
                 border-radius: 6px;
                 padding: 2px 6px;
                 font-family: ui-monospace,SFMono-Regular,Menlo,monospace;
-                overflow-wrap: anywhere;
+                overflow-wrap: anywhere
             }
 
-        /* ============================== MEDIA QUERIES ============================= */
         @media (max-width:600px) {
-            /* background centrato meglio sui telefoni */
             body {
-                background: radial-gradient(1200px 800px at 50% -10%, #ffd0c2 0%, transparent 55%), radial-gradient(1000px 700px at 50% 110%, #ffe9b0 0%, transparent 55%), linear-gradient(135deg,#fff7f3 0%,#ffe9e3 35%,#fff6e6 100%);
+                background: radial-gradient(1200px 800px at 50% -10%, #ffd0c2 0%, transparent 55%), radial-gradient(1000px 700px at 50% 110%, #ffe9b0 0%, transparent 55%), linear-gradient(135deg,#fff7f3 0%,#ffe9e3 35%,#fff6e6 100%)
             }
         }
 
@@ -600,29 +629,56 @@
             }
         }
 
-        /* ✅ Lobby nascosta di default */
-        #screenLobby {
-            display: none;
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important
+            }
         }
 
-            /* ✅ Lobby visibile SOLO quando ha .active */
+        #nicoEasterEgg {
+            display: none
+        }
+
+        #screenLobby {
+            display: none
+        }
+
             #screenLobby.active {
                 display: flex;
                 flex-direction: column;
-                gap: 12px;
+                gap: 12px
             }
-
 
             #screenLobby .panel {
                 margin: 0 auto
             }
-        /* gap gestisce lo spazio verticale */
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            white-space: nowrap;
+            border: 0
+        }
+        .centered-heading {
+            text-align: center;
+        }
+        /* Fai occupare al bottone tutta la riga della grid */
+        .btn-row .btn-full {
+            grid-column: 1 / -1; /* span su tutte le colonne */
+            width: 100%; /* allunga il contenuto */
+            justify-self: stretch; /* evita che resti centrato */
+        }
+
     </style>
 </head>
-
 <body>
     <div class="app-shell">
-        <!-- Top brand -->
         <header class="brandbar" aria-label="Intestazione">
             <div class="brand-mark" aria-hidden="true">🐺</div>
             <div>
@@ -630,7 +686,7 @@
                 <div class="brand-sub">Gioca con gli amici, ovunque.</div>
             </div>
         </header>
-        <div id="netBanner" class="net-banner" role="status" aria-live="polite">Riconnessione in corso…</div>
+
 
         <!-- ACCESSO -->
         <main id="screenAccess" class="screen active" aria-labelledby="accessoTitolo">
@@ -649,16 +705,16 @@
                 </div>
 
                 <div class="btn-row">
-                    <button id="createBtn" onclick="createRoom()" disabled>🎪 Crea stanza</button>
-                    <button id="joinBtn" onclick="joinRoom()" disabled>➡️ Unisciti</button>
+                    <button id="createBtn">🎪 Crea stanza</button>
+                    <button id="joinBtn">➡️ Unisciti</button>
                 </div>
 
-                <div class="helper">I pulsanti si attivano quando sei connesso al server.</div>
+                <div class="helper">Se il server è offline, vedrai un avviso. I bottoni restano usabili e provano a riconnettersi.</div>
             </section>
         </main>
 
         <!-- LOBBY -->
-        <section id="screenLobby" class="screen" aria-labelledby="lobbyTitolo">
+        <section id="screenLobby" class="screen" aria-labelledby="lobbyTitolo" aria-hidden="true" hidden>
             <div class="panel">
                 <h2 id="lobbyTitolo">Lobby</h2>
                 <p class="hostRow">
@@ -682,56 +738,54 @@
             </div>
 
             <div class="panel">
-                <h3>👥 Giocatori connessi</h3>
+                <h3 class="centered-heading">👥 Giocatori connessi</h3>
                 <div id="playerList"></div>
             </div>
 
-            <!-- SOLO HOST: selezione ruoli in un pannello dedicato -->
+            <!-- SOLO HOST -->
             <div id="hostControls" class="panel" style="display:none;">
-                <div class="countWrap" style="margin-bottom:10px;">
-                    👥 In stanza: <span id="playerCount">0</span>
-                    <span class="muted" id="playerCountOnline"></span>
+                <h3 class="centered-heading">⚔️ Imposta ruoli e avvia</h3>
+                <div class="countWrap" style="margin:6px 0 12px;">
+                    <span class="count-left">👥 In stanza:<span id="playerCount">0</span></span>
+                    <span class="muted">• Mancano: <strong id="rolesRemaining">0</strong></span>
                 </div>
 
-                <h3>⚔️ Imposta ruoli e avvia</h3>
                 <div class="rolesBox">
-                    <div class="number-control" data-role="wolves"><label>🐺 Lupi</label><span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
-                    <div class="number-control" data-role="villagers"><label>🌾 Contadini</label><span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
-                    <div class="number-control" data-role="guards"><label>💋 Puttane</label><span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
-                    <div class="number-control" data-role="seers"><label>🔮 Veggenti</label><span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
-                    <div class="number-control" data-role="scemo"><label>🦧 Scemo</label><span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
-                    <div class="number-control" data-role="hunter"><label>🏹 Cacciatore</label><span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
-                    <div class="number-control" data-role="witch"><label>🧪 Strega</label><span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
-                    <div class="number-control" data-role="lara"><label>🌙 Lara</label><span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
-                    <div class="number-control" data-role="mayor"><label>🎖️ Sindaco</label><span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
-                    <div class="number-control" data-role="hitman"><label>🔫 Sicario</label><span class="dec-btn">➖</span><span class="count">0</span><span class="inc-btn">➕</span></div>
+                    <div class="number-control" data-role="wolves"><label>🐺 Lupi</label><span class="dec-btn" role="button" aria-label="Diminuisci lupi" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" aria-label="Aumenta lupi" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="villagers"><label>🌾 Contadini</label><span class="dec-btn" role="button" aria-label="Diminuisci contadini" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" aria-label="Aumenta contadini" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="guards"><label>💋 Puttane</label><span class="dec-btn" role="button" aria-label="Diminuisci puttane" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" aria-label="Aumenta puttane" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="seers"><label>🔮 Veggenti</label><span class="dec-btn" role="button" aria-label="Diminuisci veggenti" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" aria-label="Aumenta veggenti" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="scemo"><label>🦧 Scemo</label><span class="dec-btn" role="button" aria-label="Diminuisci scemo" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" aria-label="Aumenta scemo" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="hunter"><label>🏹 Cacciatore</label><span class="dec-btn" role="button" aria-label="Diminuisci cacciatore" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" aria-label="Aumenta cacciatore" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="witch"><label>🧪 Strega</label><span class="dec-btn" role="button" aria-label="Diminuisci strega" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" aria-label="Aumenta strega" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="lara"><label>🌙 Lara</label><span class="dec-btn" role="button" aria-label="Diminuisci Lara" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" aria-label="Aumenta Lara" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="mayor"><label>🎖️ Sindaco</label><span class="dec-btn" role="button" aria-label="Diminuisci sindaco" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" aria-label="Aumenta sindaco" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="hitman"><label>🔫 Sicario</label><span class="dec-btn" role="button" aria-label="Diminuisci sicario" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" aria-label="Aumenta sicario" tabindex="0">➕</span></div>
                 </div>
 
                 <div class="btn-row" style="margin-top:10px;">
-                    <button onclick="startGame()">🚀 Avvia partita</button>
+                    <button class="btn-full" onclick="startGame()">🚀 Avvia partita</button>
                 </div>
             </div>
 
-            <!-- Ruoli: pannello separato -->
             <div class="panel" id="rolesPanelHost">
                 <h3>📘 Ruoli del gioco</h3>
                 <div id="rolesGuideHost" class="rolesGuideGrid"></div>
             </div>
 
-            <!-- Log: pannello separato -->
             <div class="panel" id="logPanelLobby">
                 <h3>📜 Log eventi</h3>
-                <ul id="log"></ul>
+                <ul id="log" aria-live="polite"></ul>
             </div>
         </section>
 
         <!-- GIOCO HOST -->
-        <section id="screenGame" class="screen" aria-labelledby="giocoHostTitolo">
+        <section id="screenGame" class="screen" aria-labelledby="giocoHostTitolo" aria-hidden="true" hidden>
             <div class="panel">
-                <h2 id="giocoHostTitolo">🎲 Partita in corso</h2>
+                <h2 id="giocoHostTitolo" class="centered-heading">🎲 Partita in corso</h2>
                 <p>👑 Host: <span id="hostNameInGame"></span> &nbsp;•&nbsp; 🏷️ ID: <code id="roomIdInGame"></code></p>
-
-                <h3>👥 Giocatori e ruoli</h3>
+               
+                <h3 class="centered-heading">👥 Giocatori e ruoli</h3>
                 <table id="playersTable" border="0"></table>
 
                 <div class="btn-row" style="margin-top:10px;">
@@ -741,22 +795,23 @@
                 </div>
 
                 <h3 style="margin-top:14px;">📜 Log eventi</h3>
-                <ul id="gameLog"></ul>
+                <ul id="gameLog" aria-live="polite"></ul>
             </div>
         </section>
 
         <!-- GIOCO GIOCATORI -->
-        <section id="screenGamePlayer" class="screen" aria-labelledby="giocoPlayerTitolo">
+        <section id="screenGamePlayer" class="screen" aria-labelledby="giocoPlayerTitolo" aria-hidden="true" hidden>
             <div class="panel">
-                <h2 id="giocoPlayerTitolo">🎲 Partita in corso</h2>
+                <h2 id="giocoPlayerTitolo" class="centered-heading">🎲 Partita in corso</h2>
                 <p>👑 Host: <span id="hostNamePlayer"></span></p>
 
-                <h3>👥 Giocatori</h3>
+                <h3 class="centered-heading">👥 Giocatori</h3>
                 <div id="playersGrid" class="playersGrid"></div>
 
                 <button id="showRoleBtn" style="display:none; margin-top:10px;">Mostra ruolo</button>
 
-                <h3 style="margin-top:14px;">📘 Ruoli del gioco</h3>
+                <h3 class="centered-heading">📘 Ruoli del gioco</h3>
+
                 <div id="rolesGuidePlayer" class="rolesGuideGrid"></div>
 
                 <div class="btn-row" style="margin-top:8px;">
@@ -764,14 +819,15 @@
                 </div>
 
                 <h3 style="margin-top:14px;">📜 Log eventi</h3>
-                <ul id="gameLogPlayer"></ul>
+                <ul id="gameLogPlayer" aria-live="polite"></ul>
             </div>
         </section>
 
         <!-- Overlay + Role Card -->
         <div id="overlay"></div>
-        <div id="roleCard" role="dialog" aria-modal="true" aria-labelledby="roleTitle">
+        <div id="roleCard" role="dialog" aria-modal="true" aria-labelledby="roleTitle" aria-hidden="true">
             <h2 id="roleTitle">🃏 Il tuo ruolo</h2>
+            <img id="nicoEasterEgg" alt="nico-gay" src="images/easter-egg.png" />
             <p id="roleText">Nessun ruolo</p>
             <p id="roleDescription" style="margin-top:10px; font-style:italic; color:#555;">Descrizione</p>
             <button id="closeRoleCard">Chiudi</button>
@@ -783,233 +839,313 @@
     </div>
 
     <script>
-        /* ====================== SignalR: setup ====================== */
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/gamehub")
-            .withAutomaticReconnect([0, 1000, 5000, 10000, 20000, 30000])
-            .build();
-        connection.serverTimeoutInMilliseconds = 120000;
-        connection.keepAliveIntervalInMilliseconds = 15000;
+        function initApp() {
+            if (!window.signalR) { console.error('SignalR non caricato'); return; }
 
-        /* ====================== Stato globale ====================== */
-        let currentRoomId = null, isHost = false, myRole = null, votingOpen = false, myVote = null, currentPlayers = [], gameStarted = false;
+            /* ====================== SignalR: setup ====================== */
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl(window.HUB_URL)
+                .withAutomaticReconnect([0, 1000, 5000, 10000, 20000, 30000])
+                .build();
+            connection.serverTimeoutInMilliseconds = 120000;
+            connection.keepAliveIntervalInMilliseconds = 15000;
 
-        /* Alias nomi rapidi */
-        const NAME_MAP = { "nico": "N1k0GgAY", "niko": "N1k0GgAY", "nicolo": "N1k0gAY", "gioia": "TriS5tezZa", "carly": "Carmine", "carlotta": "Carmine", "carli": "Carmine", "benni": "Benagol", "benny": "Benagol", "matte": "MaTTe0R0Li", "matteo": "MaTTe0R0Li" };
-        const normalizeName = s => (s || "").trim().toLowerCase();
-        const applyNameMapping = s => NAME_MAP[normalizeName(s || "")] || (s || "").trim();
+            /* ====================== Stato globale ====================== */
+            let currentRoomId = null, isHost = false, myRole = null, votingOpen = false, myVote = null, currentPlayers = [], gameStarted = false;
+            let myName = null;
 
-        /* Ruoli (nome + descrizione) */
-        const roleNames = { wolf: "🐺 Lupo", villager: "👨‍🌾 Contadino", seer: "🔮 Veggente", guard: "💋 Puttana", scemo: "🦧 Scemo", hunter: "🏹 Cacciatore", witch: "🧪 Strega", lara: "🌙 Lara", mayor: "🎖️ Sindaco", hitman: "🔫 Sicario" };
-        const roleDescriptions = {
-            wolf: `Di notte scegliete insieme una vittima.
-Vincete se i lupi eliminano tutti gli altri.`,
-            villager: `Non hai poteri speciali.
-Usa l'astuzia per smascherare i lupi.`,
-            seer: `Ogni notte puoi scoprire se un giocatore è lupo.`,
-            guard: `Ogni notte puoi proteggere un giocatore o te stessa
-dall'attacco dei lupi.`,
-            scemo: `Vinci se vieni eliminato dai voti del villaggio.`,
-            hunter: `Se vieni eliminato, puoi scegliere immediatamente
-un altro giocatore da portare con te.`,
-            witch: `Hai due pozioni: una per salvare una vittima, una per uccidere.
-Puoi usarle solo una volta ciascuna.`,
-            lara: `All'inizio sei una cittadina.
-Se vieni uccisa dai lupi, diventi un Lupo.
-Vinci con i cittadini finché sei cittadina,
-ma se diventi Lupo vinci con i lupi.`,
-            mayor: `Durante le votazioni il tuo voto conta doppio.`,
-            hitman: `Hai una pistola con un solo colpo.
-Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
-        };
+            const NAME_MAP = { "nico": "N1k0GgAY", "niko": "N1k0GgAY", "nicolo": "N1k0GgAY", "nicco": "N1k0GgAY", "gioia": "TriS5tezZa", "carly": "Carmine", "carlotta": "Carmine", "carli": "Carmine", "benni": "Benagol", "benny": "Benagol", "matte": "MaTTe0R0Li", "matteo": "MaTTe0R0Li" };
+            const normalizeName = s => (s || "").trim().toLowerCase();
+            const applyNameMapping = s => NAME_MAP[normalizeName(s || "")] || (s || "").trim();
 
-        /* ====================== Riferimenti DOM + modale ruolo ====================== */
-        const overlay = document.getElementById("overlay");
-        const roleCard = document.getElementById("roleCard");
-        const closeRoleBtn = document.getElementById("closeRoleCard");
-        const roleText = document.getElementById("roleText");
-        const roleDescEl = document.getElementById("roleDescription");
-        const netBanner = document.getElementById('netBanner');
+            const roleNames = { wolf: "🐺 Lupo", villager: "👨‍🌾 Contadino", seer: "🔮 Veggente", guard: "💋 Puttana", scemo: "🦧 Scemo", hunter: "🏹 Cacciatore", witch: "🧪 Strega", lara: "🌙 Lara", mayor: "🎖️ Sindaco", hitman: "🔫 Sicario" };
+            const roleDescriptions = {
+                wolf: `Di notte scegliete insieme una vittima.\nVincete se i lupi eliminano tutti gli altri.`,
+                villager: `Non hai poteri speciali.\nUsa l'astuzia per smascherare i lupi.`,
+                seer: `Ogni notte puoi scoprire se un giocatore è lupo.`,
+                guard: `Ogni notte puoi proteggere un giocatore o te stessa\ndall'attacco dei lupi.`,
+                scemo: `Vinci se vieni eliminato dai voti del villaggio.`,
+                hunter: `Se vieni eliminato, puoi scegliere immediatamente\nun altro giocatore da portare con te.`,
+                witch: `Hai due pozioni: una per salvare una vittima, una per uccidere.\nPuoi usarle solo una volta ciascuna.`,
+                lara: `All'inizio sei una cittadina.\nSe vieni uccisa dai lupi, diventi un Lupo.\nVinci con i cittadini finché sei cittadina,\nma se diventi Lupo vinci con i lupi.`,
+                mayor: `Durante le votazioni il tuo voto conta doppio.`,
+                hitman: `Hai una pistola con un solo colpo.\nPuoi usarla una volta in tutta la partita per eliminare un giocatore.`
+            };
 
-        function openRoleCard() { overlay.style.display = "block"; roleCard.style.display = "block"; }
-        function closeRoleCardFn() { overlay.style.display = "none"; roleCard.style.display = "none"; }
-        document.getElementById("showRoleBtn").onclick = () => {
-            if (myRole) { roleText.textContent = roleNames[myRole] || myRole; roleDescEl.textContent = roleDescriptions[myRole] || "Nessuna descrizione."; openRoleCard(); }
-            else alert("❌ Nessun ruolo assegnato ancora.");
-        };
-        closeRoleBtn.onclick = closeRoleCardFn; overlay.onclick = closeRoleCardFn;
-        window.addEventListener("keydown", e => { if (e.key === "Escape") closeRoleCardFn(); });
+            /* ====================== Riferimenti DOM ====================== */
+            const overlay = document.getElementById("overlay");
+            const roleCard = document.getElementById("roleCard");
+            const closeRoleBtn = document.getElementById("closeRoleCard");
+            const roleText = document.getElementById("roleText");
+            const roleDescEl = document.getElementById("roleDescription");
+            const nicoEE = document.getElementById("nicoEasterEgg");
+            // Collega i bottoni della schermata di accesso
+            const createBtn = document.getElementById("createBtn");
+            const joinBtn = document.getElementById("joinBtn");
 
-        /* ====================== Connessione ====================== */
-        async function startConn() {
-            try {
-                if (connection.state !== signalR.HubConnectionState.Connected) {
-                    await connection.start(); logLobby("✅ Connesso al server");
-                }
-            } catch (err) {
-                console.error(err); logLobby("❌ Connessione fallita, riprovo..."); setTimeout(startConn, 2000);
-            } finally { updateConnectionUI(); }
-        }
-        startConn();
+            createBtn?.addEventListener("click", createRoom);
+            joinBtn?.addEventListener("click", joinRoom);
 
-        function updateConnectionUI() {
-            const connected = connection.state === signalR.HubConnectionState.Connected;
-            netBanner?.classList.toggle('show', !connected);
-            const c = document.getElementById('createBtn'), j = document.getElementById('joinBtn');
-            if (c) c.disabled = !connected; if (j) j.disabled = !connected;
-        }
-        connection.onreconnecting(updateConnectionUI);
-        connection.onclose(() => { updateConnectionUI(); setTimeout(startConn, 1000); });
+            // Comodità: Enter nel campo ID stanza fa il join
+            document.getElementById("roomIdInput")
+                ?.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") joinRoom();
+                });
 
-        /* Heartbeat */
-        let hbTimer = null;
-        function startHeartbeat() { if (hbTimer) return; hbTimer = setInterval(() => { if (connection.state === signalR.HubConnectionState.Connected) connection.invoke("Heartbeat").catch(() => { }); }, 20000); }
-        function stopHeartbeat() { if (hbTimer) { clearInterval(hbTimer); hbTimer = null; } }
+            /* ====================== A11y: gestione modale ====================== */
+            let lastFocused = null;
+            function getFocusable(container) {
+                return container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            }
+            function openEasterEgg() { nicoEE.style.display = "block"; }
+            function closeRoleCardEEFn() { nicoEE.style.display = "none"; }
+            function openRoleCard() {
+                overlay.style.display = "block";
+                roleCard.style.display = "block";
+                roleCard.setAttribute('aria-hidden', 'false');
+                lastFocused = document.activeElement;
+                const focusables = getFocusable(roleCard);
+                (focusables[0] || closeRoleBtn).focus();
+                roleCard._trap = (e) => {
+                    if (e.key === 'Tab') {
+                        const f = Array.from(getFocusable(roleCard));
+                        const first = f[0], last = f[f.length - 1];
+                        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+                    }
+                };
+                roleCard.addEventListener('keydown', roleCard._trap);
+            }
+            function closeRoleCardFn() {overlay.style.display = "none";roleCard.style.display = "none";roleCard.setAttribute('aria-hidden', 'true');roleCard.removeEventListener('keydown', roleCard._trapcloseRoleCardEEFn();
+                if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+            }
+            closeRoleBtn.onclick = closeRoleCardFn; overlay.onclick = closeRoleCardFn;
+            window.addEventListener("keydown", e => { if (e.key === "Escape") closeRoleCardFn(); });
 
-        function showScreen(id) {
-            const screens = document.querySelectorAll(".screen");
-            screens.forEach(s => {
-                s.classList.remove("active");
-                s.setAttribute("aria-hidden", "true");
-                s.hidden = true;
-                if ("inert" in s) s.inert = true; // opzionale: blocca interazioni
-            });
+            document.getElementById("showRoleBtn").onclick = () => {
+                if (myRole) {
+                    closeRoleCardEEFn();
+                    roleText.textContent = roleNames[myRole] || myRole;
+                    roleDescEl.textContent = roleDescriptions[myRole] || "Nessuna descrizione.";
+                    openRoleCard();
+                    const currName = (localStorage.getItem("lupus_name") || "");
+                    if (["N1k0GgAY", "nicco"].includes(currName) || currName.toLowerCase().includes("nic")) openEasterEgg();
+                } else alert("❌ Nessun ruolo assegnato ancora.");
+            };
 
-            const target = document.getElementById(id);
-            if (target) {
-                target.classList.add("active");
-                target.removeAttribute("aria-hidden");
-                target.hidden = false;
-                if ("inert" in target) target.inert = false;
+            /* ====================== Connessione ====================== */
+            function updateConnectionUI() {
+                const connected = connection.state === signalR.HubConnectionState.Connected;
+                const c = document.getElementById("createBtn"), j = document.getElementById("joinBtn");
+                if (c) c.disabled = false;
+                if (j) j.disabled = false;
             }
 
-            if (id === "screenAccess") stopHeartbeat(); else startHeartbeat();
-        }
-        function logLobby(msg) {
-            const logEl = document.getElementById("log"); if (!logEl) return;
-            const li = document.createElement("li"); li.textContent = msg; logEl.appendChild(li);
-            if (logEl.children.length > 80) logEl.removeChild(logEl.firstChild);
-        }
-        function logGame(msg) {
-            const logEl = isHost ? document.getElementById("gameLog") : document.getElementById("gameLogPlayer"); if (!logEl) return;
-            const li = document.createElement("li"); li.textContent = msg; logEl.appendChild(li);
-            if (logEl.children.length > 80) logEl.removeChild(logEl.firstChild);
-        }
+            async function ensureConnection({ silent = false } = {}) {
+                if (connection.state === signalR.HubConnectionState.Connected) return true;
+                try {
+                    await connection.start();
+                    logLobby("✅ Connesso al server");
+                    updateConnectionUI();
+                    return true;
+                } catch (err) {
+                    console.error("Connessione fallita:", err);
+                    logLobby("❌ Server non raggiungibile (controlla percorso /gamehub). Riprova.");
+                    updateConnectionUI();
+                    return false;
+                }
+            }
 
-        /* ====================== Helpers UI ====================== */
-        function setRoomLabels() {
-            const rid = currentRoomId || "";
-            const ridHost = document.getElementById("roomIdInGame");
-            const ridLobby = document.getElementById("currentRoomIdText");
-            if (ridLobby) ridLobby.textContent = rid;
-            if (ridHost) ridHost.textContent = rid;
-        }
-        function updateLobbyCounters(players) {
-            const total = players.length, online = players.filter(p => p.isOnline).length;
-            const totalEl = document.getElementById("playerCount");
-            const onlineEl = document.getElementById("playerCountOnline");
-            if (totalEl) totalEl.textContent = total;
-            if (onlineEl) onlineEl.textContent = `(online: ${online})`;
-        }
-        function renderRolesGuide(containerId) {
-            const el = document.getElementById(containerId); if (!el) return;
-            el.innerHTML = "";
-            const order = ["wolf", "villager", "seer", "guard", "scemo", "hunter", "witch", "lara", "mayor", "hitman"];
-            order.forEach(k => {
-                const card = document.createElement("div"); card.className = "roleCardMini";
-                const title = document.createElement("div"); title.className = "title";
-                const badge = document.createElement("span"); badge.className = "badge";
-                const rn = roleNames[k] || k; const maybeEmoji = rn.split(" ")[0];
-                badge.textContent = /\p{Extended_Pictographic}/u.test(maybeEmoji) ? maybeEmoji : "🃏";
-                const text = document.createElement("span"); text.textContent = rn;
-                const desc = document.createElement("div"); desc.className = "desc"; desc.textContent = roleDescriptions[k] || "";
-                title.appendChild(badge); title.appendChild(text); card.appendChild(title); card.appendChild(desc); el.appendChild(card);
+            // Avvio soft (ma i bottoni non dipendono da questo)
+            (async () => {
+                try { await connection.start(); logLobby("✅ Connesso al server"); }
+                catch (e) { console.warn("Connessione iniziale fallita"); }
+                finally { updateConnectionUI(); }
+            })();
+
+            connection.onreconnecting(updateConnectionUI);
+            connection.onreconnected(() => {
+                updateConnectionUI();
+                const rid = localStorage.getItem("lupus_roomId");
+                const nm = localStorage.getItem("lupus_name");
+                const auto = localStorage.getItem("lupus_autoJoin") === "true";
+                if (auto && rid && nm) joinRoom().catch(() => { });
             });
-        }
+            connection.onclose(updateConnectionUI);
 
-        /* ====================== Eventi dal server ====================== */
-        connection.on("UpdateLobby", (players, hostName) => {
-            updateConnectionUI();
-
-            (document.getElementById("hostNameText") || {}).textContent = hostName || "Sconosciuto";
-            (document.getElementById("hostNameInGame") || {}).textContent = hostName || "Sconosciuto";
-            (document.getElementById("hostNamePlayer") || {}).textContent = hostName || "Sconosciuto";
-
-            const list = document.getElementById("playerList");
-            if (list) {
-                list.innerHTML = "";
-                players.forEach(p => {
-                    const d = document.createElement("div");
-                    d.classList.add("playerCard", p.isOnline ? "online" : "offline");
-                    const nameSpan = document.createElement("span");
-                    nameSpan.textContent = `${p.name} ${p.isOnline ? "" : "(offline)"}`;
-                    d.appendChild(nameSpan);
-
-                    if (isHost && !gameStarted) {
-                        const btn = document.createElement("button");
-                        btn.className = "kickBtn"; btn.title = `Espelli ${p.name}`; btn.textContent = "✖";
-                        btn.onclick = () => kickPlayer(p.name);
-                        d.appendChild(btn);
+            /* Heartbeat */
+            let hbTimer = null;
+            function startHeartbeat() {
+                if (hbTimer) return;
+                hbTimer = setInterval(() => {
+                    if (connection.state === signalR.HubConnectionState.Connected) {
+                        connection.invoke("Heartbeat").catch(() => { });
                     }
-                    list.appendChild(d);
+                }, 20000);
+            }
+            function stopHeartbeat() { if (hbTimer) { clearInterval(hbTimer); hbTimer = null; } }
+
+            function focusFirstInside(id) {
+                const target = document.getElementById(id);
+                if (!target) return;
+                const el = target.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                if (el) el.focus();
+            }
+
+            function showScreen(id) {
+                document.querySelectorAll(".screen").forEach(s => {
+                    s.classList.remove("active"); s.setAttribute("aria-hidden", "true"); s.hidden = true;
+                    if ("inert" in s) s.inert = true;
+                });
+                const target = document.getElementById(id);
+                if (target) { target.classList.add("active"); target.removeAttribute("aria-hidden"); target.hidden = false; if ("inert" in target) target.inert = false; }
+                if (id === "screenAccess") stopHeartbeat(); else startHeartbeat();
+                focusFirstInside(id);
+            }
+
+            function logLobby(msg) {
+                const logEl = document.getElementById("log"); if (!logEl) return;
+                const li = document.createElement("li"); li.textContent = msg; logEl.appendChild(li);
+                if (logEl.children.length > 80) logEl.removeChild(logEl.firstChild);
+            }
+            function logGame(msg) {
+                const logEl = isHost ? document.getElementById("gameLog") : document.getElementById("gameLogPlayer"); if (!logEl) return;
+                const li = document.createElement("li"); li.textContent = msg; logEl.appendChild(li);
+                if (logEl.children.length > 80) logEl.removeChild(logEl.firstChild);
+            }
+
+            /* ====================== Helpers UI ====================== */
+            function setRoomLabels() {
+                const rid = currentRoomId || "";
+                const ridHost = document.getElementById("roomIdInGame");
+                const ridLobby = document.getElementById("currentRoomIdText");
+                if (ridLobby) ridLobby.textContent = rid;
+                if (ridHost) ridHost.textContent = rid;
+            }
+            function updateLobbyCounters(players) {
+                const total = players.length;
+                const totalEl = document.getElementById("playerCount");
+                if (totalEl) totalEl.textContent = total;
+                updateRolesLeft(total);
+            }
+
+            function renderRolesGuide(containerId) {
+                const el = document.getElementById(containerId); if (!el) return;
+                el.innerHTML = "";
+                const order = ["wolf", "villager", "seer", "guard", "scemo", "hunter", "witch", "lara", "mayor", "hitman"];
+                order.forEach(k => {
+                    const card = document.createElement("div"); card.className = "roleCardMini";
+                    const title = document.createElement("div"); title.className = "title";
+                    const badge = document.createElement("span"); badge.className = "badge";
+                    const rn = roleNames[k] || k; const maybeEmoji = rn.split(" ")[0];
+                    badge.textContent = /\p{Extended_Pictographic}/u.test(maybeEmoji) ? maybeEmoji : "🃏";
+                    const text = document.createElement("span"); text.textContent = rn;
+                    const desc = document.createElement("div"); desc.className = "desc"; desc.textContent = roleDescriptions[k] || "";
+                    title.appendChild(badge); title.appendChild(text);
+                    card.appendChild(title); card.appendChild(desc);
+                    el.appendChild(card);
                 });
             }
 
-            updateLobbyCounters(players);
+                /* ====================== Eventi dal server ====================== */
+                connection.on("UpdateLobby", (players, hostName) => {
+                    updateConnectionUI();
 
-            // guida ruoli: host vs non-host (se vuoi anche per non-host, aggiungi un pannello con id="rolesGuideLobby")
-            renderRolesGuide("rolesGuideHost");
+                    (document.getElementById("hostNameText") || {}).textContent = hostName || "Sconosciuto";
+                    (document.getElementById("hostNameInGame") || {}).textContent = hostName || "Sconosciuto";
+                    (document.getElementById("hostNamePlayer") || {}).textContent = hostName || "Sconosciuto";
 
-            if (!gameStarted) showScreen("screenLobby");
-            refreshInviteUI(currentRoomId);
-            setRoomLabels();
+                    const list = document.getElementById("playerList");
+                    if (list) {
+                        list.innerHTML = "";
+                        players.forEach(p => {
+                            const pname = p.name ?? p.Name ?? "";
+                            const online = (typeof p.isOnline === "boolean") ? p.isOnline : !!p.IsOnline;
+
+                            const d = document.createElement("div");
+                            d.classList.add("playerCard", online ? "online" : "offline");
+
+                            const nameSpan = document.createElement("span");
+                            nameSpan.textContent = `${ pname || "(sconosciuto)" } ${ online ? "" : "(offline)" } `;
+                            d.appendChild(nameSpan);
+
+                            // Mostra la X solo se host, in lobby, e con un nome valido
+                            if (isHost && !gameStarted && pname) {
+                                const btn = document.createElement("button");
+                                btn.className = "kickBtn";
+                                btn.title = `Espelli ${ pname } `;
+                                btn.textContent = "✖";
+                                btn.addEventListener('click', () => kickPlayer(pname));
+                                d.appendChild(btn);
+                            }
+
+                            list.appendChild(d);
+                        });
+                    }
+
+                    updateLobbyCounters(players);
+                    renderRolesGuide("rolesGuideHost");
+
+                    if (!gameStarted) showScreen("screenLobby");
+                    refreshInviteUI(currentRoomId);
+                    setRoomLabels();
+                });
+
+            connection.on("JoinError", (msg) => {
+                // niente alert automatico: solo log in lobby
+                logLobby(`❌ ${msg}`);
+            });
+
+                connection.on("ReceiveRole", role => {
+                    myRole = role;
+                    const btn = document.getElementById("showRoleBtn");
+                    if (btn) btn.style.display = "inline-block";
+                });
+
+                connection.on("VotingStarted", () => {
+                    votingOpen = true; logGame("🗳️ Votazioni aperte!");
+                    renderPlayers(currentPlayers);
+                    if (isHost) {
+                        const btn = document.getElementById("votingBtn");
+                        if (btn) { btn.style.backgroundColor = "#4A90E2"; btn.textContent = "Il dado è tratto"; }
+                    }
+                });
+
+                connection.on("VotingEnded", () => {
+                    votingOpen = false; myVote = null; logGame("🛑 Votazioni chiuse!");
+                    renderPlayers(currentPlayers);
+                    if (isHost) {
+                        const btn = document.getElementById("votingBtn");
+                        if (btn) { btn.style.backgroundColor = "var(--brand)"; btn.textContent = "Votazione"; }
+                    }
+                });
+
+                connection.on("UpdateVotes", (players) => {
+                    currentPlayers = players || [];
+
+                    if (myName) {
+                        let mine = null;
+                        for (const p of currentPlayers) {
+                            if (!p.eliminated && Array.isArray(p.votedBy) && p.votedBy.includes(myName)) { mine = p.name; break; }
+                        }
+                        myVote = mine;
+                    }
+
+                    renderPlayers(currentPlayers);
+                    if (isHost) renderHostTable(currentPlayers);
+                });
+
+                connection.on("PlayerKicked", (playerName) => {
+                    logLobby(`🚫 ${ playerName } è stato espulso dall'host.`);
         });
-
-        connection.on("JoinError", msg => alert(msg));
-
-        connection.on("ReceiveRole", role => {
-            myRole = role;
-            const btn = document.getElementById("showRoleBtn"); if (btn) btn.style.display = "inline-block";
-        });
-
-        connection.on("GameStarted", (players) => {
-            gameStarted = true; currentPlayers = players || [];
-            if (!isHost) {
-                const grid = document.getElementById("playersGrid");
-                const gl = document.getElementById("gameLogPlayer");
-                if (grid) grid.innerHTML = "";
-                if (gl) gl.innerHTML = "";
-            }
-            if (isHost) { showScreen("screenGame"); renderHostTable(currentPlayers); }
-            else { showScreen("screenGamePlayer"); renderPlayers(currentPlayers); renderRolesGuide("rolesGuidePlayer"); }
-            refreshInviteUI(currentRoomId); setRoomLabels();
-        });
-
-        connection.on("VotingStarted", () => {
-            votingOpen = true; logGame("🗳️ Votazioni aperte!");
-            renderPlayers(currentPlayers);
-            if (isHost) {
-                const btn = document.getElementById("votingBtn");
-                if (btn) { btn.style.backgroundColor = "#4A90E2"; btn.textContent = "Il dado è tratto"; }
-            }
-        });
-
-        connection.on("VotingEnded", () => {
-            votingOpen = false; logGame("🛑 Votazioni chiuse!");
-            renderPlayers(currentPlayers);
-            if (isHost) {
-                const btn = document.getElementById("votingBtn");
-                if (btn) { btn.style.backgroundColor = "var(--brand)"; btn.textContent = "Votazione"; }
-            }
-        });
-
-        connection.on("UpdateVotes", (players) => { currentPlayers = players || []; renderPlayers(currentPlayers); if (isHost) renderHostTable(currentPlayers); });
-
-        connection.on("JoinedAsHost", (players) => { isHost = true; currentPlayers = players || []; showScreen("screenGame"); renderHostTable(currentPlayers); refreshInviteUI(currentRoomId); });
 
         connection.on("PlayerEliminated", (playerName) => {
-            const player = currentPlayers.find(p => p.name === playerName); if (player) player.eliminated = true;
-            renderHostTable(currentPlayers); renderPlayers(currentPlayers); logGame(`⚰️ ${playerName} è stato eliminato!`);
+            const player = currentPlayers.find(p => p.name === playerName);
+            if (player) player.eliminated = true;
+            if (myVote === playerName) myVote = null;
+            renderHostTable(currentPlayers);
+            renderPlayers(currentPlayers);
+            logGame(`⚰️ ${playerName} è stato eliminato!`);
         });
 
         connection.on("GameRestarted", (players, hostName) => {
@@ -1026,9 +1162,11 @@ Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
             if (list) {
                 list.innerHTML = "";
                 (players || []).forEach(p => {
+                    const pname = p.name ?? p.Name ?? "";
+                    const online = (typeof p.isOnline === "boolean") ? p.isOnline : !!p.IsOnline;
                     const d = document.createElement("div");
-                    d.classList.add("playerCard", p.isOnline ? "online" : "offline");
-                    d.textContent = `${p.name} ${p.isOnline ? "" : "(offline)"}`;
+                    d.classList.add("playerCard", online ? "online" : "offline");
+                    d.textContent = `${pname} ${online ? "" : "(offline)"}`;
                     list.appendChild(d);
                 });
             }
@@ -1049,15 +1187,38 @@ Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
             refreshInviteUI(currentRoomId); renderRolesGuide("rolesGuideHost"); setRoomLabels();
         });
 
+        connection.on("GameStarted", (players) => {
+            gameStarted = true; myVote = null; currentPlayers = players || [];
+
+            if (!isHost) {
+                const grid = document.getElementById("playersGrid");
+                const gl = document.getElementById("gameLogPlayer");
+                if (grid) grid.innerHTML = "";
+                if (gl) gl.innerHTML = "";
+            }
+
+            if (isHost) { showScreen("screenGame"); renderHostTable(currentPlayers); }
+            else { showScreen("screenGamePlayer"); renderPlayers(currentPlayers); renderRolesGuide("rolesGuidePlayer"); }
+
+            refreshInviteUI(currentRoomId);
+            setRoomLabels();
+        });
+
         connection.on("ReceiveHostKey", (hostKey) => { localStorage.setItem("lupus_hostKey", hostKey); });
 
-        /* ====================== Render Host Table (highlight leader/tie) ====================== */
+        connection.on("Kicked", () => {
+            alert("Sei stato espulso dalla stanza dall'host.");
+            exitToLogin();
+        });
+
+        /* ====================== Render Host Table (XSS-safe) ====================== */
         function renderHostTable(players) {
-            const tbody = document.querySelector("#playersTable"); if (!tbody) return;
-            tbody.innerHTML = "";
+            const table = document.querySelector("#playersTable"); if (!table) return;
+            table.innerHTML = "";
+
             const header = document.createElement("tr");
-            header.innerHTML = "<th>Nome</th><th>Ruolo</th><th>Stato</th><th>Voti</th><th>Azioni</th>";
-            tbody.appendChild(header);
+            ["Nome", "Ruolo", "Stato", "Voti", "Azioni"].forEach(h => { const th = document.createElement("th"); th.textContent = h; header.appendChild(th); });
+            table.appendChild(header);
 
             const votes = players.filter(p => !p.eliminated).map(p => p.votes || 0);
             const maxVotes = votes.length ? Math.max(...votes) : 0;
@@ -1066,20 +1227,31 @@ Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
 
             players.forEach(p => {
                 const tr = document.createElement("tr");
-                if (maxVotes > 0 && !p.eliminated && (p.votes || 0) === maxVotes) {
-                    tr.className = isTie ? "row-tied" : "row-leader";
-                }
+                if (maxVotes > 0 && !p.eliminated && (p.votes || 0) === maxVotes) tr.className = isTie ? "row-tied" : "row-leader";
+
+                const tdName = document.createElement("td");
                 const nameDisplay = p.eliminated ? `☠️ ${p.name}` : p.name;
-                const nameStyle = p.eliminated ? "color:gray;text-decoration:line-through;" : "";
-                const roleDisplay = p.role ? (roleNames[p.role] || p.role) : "";
-                tr.innerHTML = `
-              <td style="${nameStyle}">${nameDisplay}</td>
-              <td>${roleDisplay}</td>
-              <td style="color:${p.isOnline ? 'green' : 'red'}">${p.isOnline ? 'Online' : 'Offline'}</td>
-              <td>${p.votes || 0}</td>
-              <td>${!p.eliminated ? `<button onclick="eliminatePlayer('${p.name}')">Elimina</button>` : ""}</td>
-            `;
-                tbody.appendChild(tr);
+                if (p.eliminated) { tdName.style.color = 'gray'; tdName.style.textDecoration = 'line-through'; }
+                tdName.appendChild(document.createTextNode(nameDisplay));
+
+                const tdRole = document.createElement("td"); tdRole.textContent = p.role ? (roleNames[p.role] || p.role) : "";
+
+                const tdStatus = document.createElement("td");
+                tdStatus.textContent = p.isOnline ? 'Online' : 'Offline';
+                tdStatus.style.color = p.isOnline ? 'green' : 'red';
+
+                const tdVotes = document.createElement("td"); tdVotes.textContent = String(p.votes || 0);
+
+                const tdActions = document.createElement("td");
+                if (!p.eliminated) {
+                    const btn = document.createElement("button");
+                    btn.textContent = 'Elimina';
+                    btn.addEventListener('click', () => eliminatePlayer(p.name));
+                    tdActions.appendChild(btn);
+                }
+
+                tr.append(tdName, tdRole, tdStatus, tdVotes, tdActions);
+                table.appendChild(tr);
             });
         }
 
@@ -1087,27 +1259,60 @@ Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
         function renderPlayers(players) {
             const container = document.getElementById("playersGrid"); if (!container) return;
             container.innerHTML = "";
+
             players.forEach(p => {
-                const card = document.createElement("div"); card.className = "playersGridItem";
+                const card = document.createElement("div");
+                card.className = "playersGridItem";
+
                 let displayName = p.eliminated ? `☠️ ${p.name}` : p.name;
                 if (p.role === "mayor") displayName += " 🎖️";
                 const baseText = (!p.eliminated && p.votes > 0) ? `${displayName} (${p.votes})` : displayName;
                 card.textContent = baseText;
-                card.style.backgroundColor = p.eliminated ? "#9ca3af" : (votingOpen ? (myVote === p.name ? "#f59e0b" : "#4A90E2") : "#6b7280");
+
+                const isMyPick = (myVote === p.name);
+                card.style.backgroundColor = p.eliminated ? "#9ca3af" : (votingOpen ? (isMyPick ? "#f59e0b" : "#4A90E2") : "#6b7280");
                 card.style.cursor = (votingOpen && !p.eliminated) ? "pointer" : "default";
                 card.style.opacity = p.isOnline ? "1" : ".7";
 
-                if (votingOpen && Array.isArray(p.votedBy) && p.votedBy.length > 0) {
+                if (votingOpen && !p.eliminated) {
+                    card.setAttribute('role', 'button');
+                    card.tabIndex = 0;
+                    card.title = isMyPick ? "Riclicca per togliere il voto" : "Clicca per votare";
+                    card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); } });
+                } else {
+                    card.removeAttribute('role');
+                    card.removeAttribute('tabindex');
+                    card.removeAttribute('title');
+                }
+
+                if (Array.isArray(p.votedBy) && p.votedBy.length > 0) {
                     const votersList = document.createElement("div"); votersList.className = "voters";
                     const title = document.createElement("div"); title.textContent = "Votato da:"; votersList.appendChild(title);
                     const ul = document.createElement("ul"); ul.style.margin = "4px 0 0"; ul.style.padding = "0"; ul.style.listStyle = "none";
                     p.votedBy.forEach(name => { const li = document.createElement("li"); li.textContent = name; ul.appendChild(li); });
-                    votersList.appendChild(ul); card.appendChild(votersList);
+                    votersList.appendChild(ul);
+                    card.appendChild(votersList);
                 }
 
                 if (votingOpen && !p.eliminated) {
-                    card.onclick = async () => { myVote = p.name; renderPlayers(currentPlayers); try { await connection.invoke("VotePlayer", currentRoomId, p.name); } catch (e) { console.error(e); } };
+                    card.onclick = async () => {
+                        const prev = myVote;
+                        if (myVote === p.name) {
+                            myVote = null; renderPlayers(currentPlayers);
+                            try {
+                                try { await connection.invoke("UnvotePlayer", currentRoomId); }
+                                catch (_) { try { await connection.invoke("VotePlayer", currentRoomId, null); } catch (_) { await connection.invoke("VotePlayer", currentRoomId, ""); } }
+                            } catch (e) { console.error("Unvote fallito:", e); myVote = prev; renderPlayers(currentPlayers); }
+                            return;
+                        }
+                        myVote = p.name; renderPlayers(currentPlayers);
+                        try { await connection.invoke("VotePlayer", currentRoomId, p.name); }
+                        catch (e) { console.error("Vote fallito:", e); myVote = prev; renderPlayers(currentPlayers); }
+                    };
+                } else {
+                    card.onclick = null;
                 }
+
                 container.appendChild(card);
             });
         }
@@ -1122,13 +1327,28 @@ Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
             });
             return counts;
         }
+        function calcAssignedRoles() {
+            const counts = readRoleCounts();
+            return Object.values(counts).reduce((a, b) => a + (parseInt(b) || 0), 0);
+        }
+        function updateRolesLeft(totalPlayersOverride = null) {
+            const totalPlayers = (typeof totalPlayersOverride === 'number') ? totalPlayersOverride : (parseInt(document.getElementById("playerCount")?.textContent) || 0);
+            const assigned = calcAssignedRoles();
+            const left = Math.max(0, totalPlayers - assigned);
+            const el = document.getElementById("rolesRemaining");
+            if (el) el.textContent = String(left);
+        }
 
-        function createRoom() {
+        async function createRoom() {
             const rawName = document.getElementById("name").value || "Host";
             const name = applyNameMapping(rawName);
-            isHost = true;
+            myName = name; isHost = true;
 
-            connection.invoke("CreateRoom", name).then(id => {
+            const ok = await ensureConnection();
+            if (!ok) { alert("Server non raggiungibile. Verifica che /gamehub sia mappato sul server."); return; }
+
+            try {
+                const id = await connection.invoke("CreateRoom", name);
                 currentRoomId = id;
                 localStorage.setItem("lupus_roomId", id);
                 localStorage.setItem("lupus_name", name);
@@ -1142,28 +1362,28 @@ Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
                 const hc = document.getElementById("hostControls"); if (hc) hc.style.display = "block";
                 renderRolesGuide("rolesGuideHost");
                 refreshInviteUI(currentRoomId);
-            }).catch(err => {
+            } catch (err) {
                 console.error(err);
                 logLobby("❌ Errore nella creazione della stanza");
-            });
+                alert("Errore nella creazione della stanza");
+            }
         }
 
         async function joinRoom() {
             const rawName = document.getElementById("name").value || "Giocatore";
             const name = applyNameMapping(rawName);
-            const roomId = document.getElementById("roomIdInput").value?.trim();
+            myName = name;
+            const roomId = (document.getElementById("roomIdInput").value || "").trim(); // <-- niente .toUpperCase()
             if (!roomId) { alert("Inserisci l'ID stanza"); return; }
 
-            if (connection.state !== signalR.HubConnectionState.Connected) {
-                try { await startConn(); } catch { }
-                if (connection.state !== signalR.HubConnectionState.Connected) { logLobby("❌ Non connesso al server."); return; }
-            }
+            const ok = await ensureConnection();
+            if (!ok) { logLobby("❌ Non connesso al server."); return; }
 
             currentRoomId = roomId; myRole = null; votingOpen = false; myVote = null;
 
             const savedHostName = (localStorage.getItem("lupus_name") || "").trim().toLowerCase();
             const hostKey = localStorage.getItem("lupus_hostKey") || null;
-            const isHostName = name.trim().toLowerCase() === savedHostName;
+            const isHostName = (name.trim().toLowerCase() === savedHostName);
             const hostKeyToSend = isHostName ? hostKey : null;
 
             try {
@@ -1181,10 +1401,7 @@ Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
                     if (gameStarted) { showScreen("screenGame"); renderHostTable(currentPlayers); }
                     else { showScreen("screenLobby"); const hostCtrls = document.getElementById("hostControls"); if (hostCtrls) hostCtrls.style.display = "block"; }
                     const btn = document.getElementById("votingBtn");
-                    if (btn) {
-                        if (votingOpen) { btn.style.backgroundColor = "#4A90E2"; btn.textContent = "Il dado è tratto"; }
-                        else { btn.style.backgroundColor = "var(--brand)"; btn.textContent = "Votazione"; }
-                    }
+                    if (btn) { if (votingOpen) { btn.style.backgroundColor = "#4A90E2"; btn.textContent = "Il dado è tratto"; } else { btn.style.backgroundColor = "var(--brand)"; btn.textContent = "Votazione"; } }
                 } else if (gameStarted) {
                     showScreen("screenGamePlayer"); renderPlayers(currentPlayers);
                 } else {
@@ -1196,7 +1413,8 @@ Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
                 updateLobbyCounters(result.players || []);
                 setRoomLabels(); refreshInviteUI(currentRoomId); updateConnectionUI();
             } catch (err) {
-                console.error(err); logLobby("❌ Errore durante il join");
+                console.error(err);
+                logLobby("❌ Errore durante il join");
             }
         }
 
@@ -1209,9 +1427,7 @@ Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
             try {
                 await connection.invoke("StartGame", currentRoomId, r.wolves, r.villagers, r.seers, r.guards, r.scemo, r.hunter, r.witch, r.lara, r.mayor, r.hitman);
                 logLobby("🚀 Partita avviata!");
-            } catch (err) {
-                console.error(err); logLobby("❌ Errore nell'avvio della partita");
-            }
+            } catch (err) { console.error(err); logLobby("❌ Errore nell'avvio della partita"); }
         }
 
         async function restartGame() {
@@ -1234,18 +1450,15 @@ Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
             catch (err) { console.error(err); alert("Errore durante l'eliminazione"); }
         }
 
-        // Espulsione (solo host, solo in lobby)
         async function kickPlayer(playerName) {
-            if (!isHost || gameStarted) return;
+            if (!isHost || gameStarted) return; // kick solo in lobby (coerente col server)
+            if (!playerName) return;
             if (!confirm(`Vuoi espellere ${playerName} dalla stanza?`)) return;
             try {
                 await connection.invoke("KickPlayer", currentRoomId, playerName);
                 logLobby(`🚫 Hai espulso ${playerName}`);
-            } catch (err) {
-                console.error(err); alert("Errore durante l'espulsione");
-            }
+            } catch (err) { console.error(err); alert("Errore durante l'espulsione"); }
         }
-        connection.on("Kicked", () => { alert("Sei stato espulso dalla stanza dall'host."); exitToLogin(); });
 
         /* ====================== Invite (lobby) ====================== */
         function refreshInviteUI(roomId) {
@@ -1291,36 +1504,37 @@ Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
             if (roomIdFromLink) { roomInput.value = roomIdFromLink; logLobby(`🔗 Sei stato invitato alla stanza: ${roomIdFromLink}`); }
             else if (ridLS) { roomInput.value = ridLS; }
 
-            // +/- handlers (host UI)
             document.querySelectorAll(".rolesBox .number-control").forEach(ctrl => {
                 const dec = ctrl.querySelector(".dec-btn"), inc = ctrl.querySelector(".inc-btn"), cnt = ctrl.querySelector(".count");
                 const get = () => parseInt(cnt.textContent) || 0;
-                dec?.addEventListener("click", () => { cnt.textContent = Math.max(0, get() - 1); });
-                inc?.addEventListener("click", () => { cnt.textContent = get() + 1; });
+                const decHandler = () => { cnt.textContent = Math.max(0, get() - 1); updateRolesLeft(); };
+                const incHandler = () => { cnt.textContent = get() + 1; updateRolesLeft(); };
+                dec?.addEventListener("click", decHandler);
+                inc?.addEventListener("click", incHandler);
+                updateRolesLeft();
+                // supporto tastiera
+                dec?.addEventListener("keydown", (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); decHandler(); } });
+                inc?.addEventListener("keydown", (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); incHandler(); } });
             });
 
-            // guida ruoli (se vuoi mostrarla anche ai non-host in lobby aggiungi un container con id="rolesGuideLobby")
             renderRolesGuide("rolesGuideHost");
 
             const wantAutoJoin = auto && nameInput.value.trim() && roomInput.value.trim();
-            const tryJoin = () => {
-                if (connection.state !== signalR.HubConnectionState.Connected) { startConn(); setTimeout(tryJoin, 800); return; }
-                joinRoom().catch(() => setTimeout(tryJoin, 1500));
-            };
-            if (wantAutoJoin) tryJoin(); else updateConnectionUI();
-        });
-
-        connection.onreconnected(() => {
-            updateConnectionUI();
-            const rid = localStorage.getItem("lupus_roomId");
-            const nm = localStorage.getItem("lupus_name");
-            const auto = localStorage.getItem("lupus_autoJoin") === "true";
-            if (auto && rid && nm) joinRoom().catch(() => { });
+            if (wantAutoJoin) {
+                const tryJoin = async () => {
+                    const ok = await ensureConnection();
+                    if (!ok) { setTimeout(tryJoin, 1200); return; }
+                    try { await joinRoom(); } catch { setTimeout(tryJoin, 1500); }
+                };
+                tryJoin();
+            } else {
+                updateConnectionUI();
+            }
         });
 
         document.addEventListener("visibilitychange", () => {
             if (!document.hidden) {
-                if (connection.state !== signalR.HubConnectionState.Connected) startConn();
+                ensureConnection();
                 const rid = localStorage.getItem("lupus_roomId");
                 const nm = localStorage.getItem("lupus_name");
                 const auto = localStorage.getItem("lupus_autoJoin") === "true";
@@ -1332,12 +1546,35 @@ Puoi usarla una volta in tutta la partita per eliminare un giocatore.`
         async function exitToLogin() {
             try { if (currentRoomId) { try { await connection.invoke('LeaveRoom', currentRoomId); } catch { } } } catch { }
             try { await connection.stop(); } catch { }
-            localStorage.removeItem('lupus_roomId'); localStorage.removeItem('lupus_hostKey'); localStorage.removeItem('lupus_autoJoin');
-            currentRoomId = null; isHost = false; myRole = null; votingOpen = false; myVote = null; currentPlayers = []; gameStarted = false;
-            ['log', 'gameLog', 'gameLogPlayer'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
-            (document.getElementById('playersGrid') || {}).innerHTML = '';
-            (document.getElementById('playersTable') || {}).innerHTML = '';
-            refreshInviteUI(null); showScreen('screenAccess');
+
+            currentRoomId = null;
+            isHost = false;
+            myRole = null;
+            votingOpen = false;
+            myVote = null;
+            gameStarted = false;
+
+            // Pulisci storage per evitare auto-join indesiderato
+            localStorage.removeItem('lupus_roomId');
+            localStorage.setItem('lupus_autoJoin', 'false');
+
+            showScreen('screenAccess');
+            updateConnectionUI();
+        }
+
+            /* ====================== Export per gli onclick inline ====================== */
+            Object.assign(window, {
+                createRoom,
+                joinRoom,
+                startGame,
+                toggleVoting,
+                restartGame,
+                exitToLogin,
+                eliminatePlayer,
+                kickPlayer,
+                copyInvite,
+                shareInvite,
+            });
         }
     </script>
 </body>
