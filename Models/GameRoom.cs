@@ -14,5 +14,9 @@ namespace LupusInTabula.Models
 
         public bool GameStarted { get; set; } = false;
         public bool VotingOpen { get; set; } = false;
+        public string? CoupleRomeoName { get; set; }
+        public string? CoupleJulietName { get; set; }
+        public string CoupleSleepAt { get; set; } = "romeo"; // "romeo" | "giulietta"
+
     }
 }
