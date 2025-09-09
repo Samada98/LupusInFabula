@@ -969,7 +969,9 @@
                     <input id="inviteLink" type="text" readonly />
                     <div class="btn-row" style="margin-top:8px;">
                         <button onclick="copyInvite()">📋 Copia link</button>
-                        <button class="btn-secondary" onclick="shareInvite()">📤 Condividi</button>
+                        <button id="shareBtn" type="button" class="btn-secondary" onclick="return shareInvite(event)">
+                            📤 Condividi
+                        </button>
                     </div>
                 </div>
 
@@ -1025,6 +1027,8 @@
 
         <!-- ====================== SCHERMATA HOST ====================== -->
         <section id="screenGame" class="screen" aria-labelledby="giocoHostTitolo" aria-hidden="true" hidden>
+
+            <!-- Panel 1: info + tabella + pulsanti -->
             <div class="panel">
                 <h2 id="giocoHostTitolo" class="centered-heading">🎲 Partita in corso</h2>
                 <p>👑 Host: <span id="hostNameInGame"></span> &nbsp;•&nbsp; 🏷️ ID: <code id="roomIdInGame"></code></p>
@@ -1037,21 +1041,25 @@
                     <button id="restartBtn" class="btn-secondary" onclick="restartGame()">🔄 Restart</button>
                     <button class="btn-secondary" onclick="exitToLogin()">⏏️ Esci</button>
                 </div>
+            </div> <!-- /panel 1 -->
+            <!-- Panel 2: log eventi -->
+            <div class="panel">
+                <h3 style="margin-top:14px;">📜 Log eventi</h3>
+                <ul id="gameLog" aria-live="polite"></ul>
+            </div> <!-- /panel 2 -->
+            <!-- Panel 3: ruoli in partita -->
+            <div class="panel">
+                <h3 class="centered-heading" style="margin-top:14px;">📘 Ruoli in partita</h3>
+                <div id="rolesSummaryHost" class="rolesGuideGrid"></div>
+            </div> <!-- /panel 3 -->
 
-                <div class="panel">
-                    <h3 style="margin-top:14px;">📜 Log eventi</h3>
-                    <ul id="gameLog" aria-live="polite"></ul>
-                </div>
+        </section>
 
-                <div class="panel">
-                    <h3 class="centered-heading" style="margin-top:14px;">📘 Ruoli in partita</h3>
-                    <div id="rolesSummaryHost" class="rolesGuideGrid"></div>
-
-
-</section>
 
         <!-- ====================== SCHERMATA GIOCATORI ====================== -->
         <section id="screenGamePlayer" class="screen" aria-labelledby="giocoPlayerTitolo" aria-hidden="true" hidden>
+
+            <!-- Panel 1: griglia giocatori + pulsanti -->
             <div class="panel">
                 <h2 id="giocoPlayerTitolo" class="centered-heading">🎲 Partita in corso</h2>
                 <p>👑 Host: <span id="hostNamePlayer"></span> &nbsp;•&nbsp; 🏷️ ID: <code id="roomIdPlayer"></code></p>
@@ -1063,15 +1071,20 @@
                 <div class="btn-row" style="justify-content:center; margin-top:8px;">
                     <button class="btn-secondary" onclick="exitToLogin()" style="width:min(360px,92%);">⏏️ Esci</button>
                 </div>
-
-                <h3 class="centered-heading">📘 Ruoli in partita</h3>
-
-                <div id="rolesGuidePlayer" class="rolesGuideGrid"></div>
-
+            </div> <!-- /panel 1 -->
+            <!-- Panel 2: log eventi -->
+            <div class="panel">
                 <h3 style="margin-top:14px;">📜 Log eventi</h3>
                 <ul id="gameLogPlayer" aria-live="polite"></ul>
-            </div>
+            </div> <!-- /panel 2 -->
+            <!-- Panel 3: ruoli in partita -->
+            <div class="panel">
+                <h3 class="centered-heading">📘 Ruoli in partita</h3>
+                <div id="rolesGuidePlayer" class="rolesGuideGrid"></div>
+            </div> <!-- /panel 3 -->
+
         </section>
+
 
         <!-- ====================== MODALE RUOLO ====================== -->
         <div id="overlay"></div>
@@ -1105,14 +1118,28 @@
         }
         function openEasterEgg() { if (nicoEE) nicoEE.style.display = "block"; }
         function closeRoleCardEEFn() { if (nicoEE) nicoEE.style.display = "none"; }
+        // === Focus utils (mancavano) ===
+        let lastFocusBeforeModal = null;
+
+        function safeFocus(el) {
+            if (!el) return;
+            const hadTI = el.hasAttribute('tabindex');
+            if (!hadTI) el.setAttribute('tabindex', '-1');   // crea un target focussabile temporaneo
+            try { el.focus({ preventScroll: true }); } catch { }
+            if (!hadTI) el.removeAttribute('tabindex');
+        }
 
         function openRoleCard() {
             if (!overlay || !roleCard) return;
+            lastFocusBeforeModal = document.activeElement; // ricordiamo da dove veniamo
+
             overlay.style.display = "block";
             roleCard.style.display = "block";
             roleCard.setAttribute('aria-hidden', 'false');
+
             const focusables = getFocusable(roleCard);
-            (focusables[0] || closeRoleBtn || roleCard).focus();
+            safeFocus(focusables[0] || closeRoleBtn || roleCard);
+
             roleCard._trap = (e) => {
                 if (e.key === 'Tab') {
                     const f = Array.from(getFocusable(roleCard));
@@ -1123,16 +1150,26 @@
             };
             roleCard.addEventListener('keydown', roleCard._trap);
         }
-
         function closeRoleCardFn() {
             if (!overlay || !roleCard) return;
-            overlay.style.display = "none";
-            roleCard.style.display = "none";
-            roleCard.setAttribute('aria-hidden', 'true');
-            if (roleCard._trap) roleCard.removeEventListener('keydown', roleCard._trap);
-            closeRoleCardEEFn();
-        }
 
+            // 1) sposta FUORI il focus prima di nascondere la modale
+            const fallback =
+                document.querySelector('#showRoleBtn, #joinBtn, #createBtn') || document.body;
+            const targetFocus =
+                (lastFocusBeforeModal && document.contains(lastFocusBeforeModal))
+                    ? lastFocusBeforeModal
+                    : fallback;
+            safeFocus(targetFocus);
+
+            // 2) ora puoi nascondere e mettere aria-hidden
+            roleCard.setAttribute('aria-hidden', 'true');
+            roleCard.style.display = "none";
+            overlay.style.display = "none";
+
+            if (roleCard._trap) roleCard.removeEventListener('keydown', roleCard._trap);
+            closeRoleCardEEFn(); // tua funzione per l'easter egg
+        }
         window.addEventListener("keydown", e => { if (e.key === "Escape") closeRoleCardFn(); });
 
         // === Helpers mapping nome (global) ===
@@ -1240,7 +1277,7 @@
                     if (roleDescEl) roleDescEl.textContent = roleDescriptions[myRole] || "Nessuna descrizione.";
                     openRoleCard();
                     const currName = (localStorage.getItem("lupus_name") || "");
-                    if (["N1k0GgAY", "nicco"].includes(currName) || currName.toLowerCase().includes("ni")) openEasterEgg();
+                    if (["N1k0GgAY", "nicco"].includes(currName) || currName.toLowerCase().includes("nic")) || currName.toLowerCase().includes("nik")) openEasterEgg();
                 };
             }
 
@@ -1285,43 +1322,36 @@
 
             function showScreen(id) {
                 const target = document.getElementById(id);
-                const focusCandidate = target
-                    ? target.querySelector('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')
-                    : null;
+                if (!target) return;
 
-                const active = document.activeElement;
+                // 1) attiva subito la target
+                if ("inert" in target) target.inert = false;
+                target.classList.add("active");
+                target.removeAttribute("aria-hidden");
+                target.hidden = false;
 
-                // Se l'elemento attivo è dentro una screen che sta per essere nascosta,
-                // sposta il focus PRIMA di applicare aria-hidden
-                document.querySelectorAll(".screen").forEach(s => {
-                    const willHide = (s !== target);
-                    if (willHide && s.contains(active)) {
-                        (focusCandidate || target || document.body).focus?.({ preventScroll: true });
-                    }
-                });
+                // 2) porta il focus dentro la target (prima di nascondere le altre)
+                const firstFocusable = target.querySelector(
+                    'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'
+                );
+                safeFocus(firstFocusable || target);
 
-                // Ora possiamo nascondere le altre screen senza lasciare focus “nascosto”
+                // 3) ora nascondi le altre schermate (e assicurati che non abbiano focus)
                 document.querySelectorAll(".screen").forEach(s => {
                     if (s === target) return;
+                    if (s.contains(document.activeElement)) {
+                        // nel caso improbabile in cui il focus sia ancora lì, rimuovilo
+                        try { document.activeElement.blur(); } catch { }
+                    }
                     s.classList.remove("active");
                     if ("inert" in s) s.inert = true;
                     s.setAttribute("aria-hidden", "true");
                     s.hidden = true;
                 });
 
-                // Mostra/attiva la screen target
-                if (target) {
-                    if ("inert" in target) target.inert = false;
-                    target.classList.add("active");
-                    target.removeAttribute("aria-hidden");
-                    target.hidden = false;
-                }
-
                 if (id === "screenAccess") stopHeartbeat(); else startHeartbeat();
                 setRoomLabels();
-                focusFirstInside(id);
             }
-
             function logLobby(msg) {
                 const logEl = document.getElementById("log"); if (!logEl) return;
                 const li = document.createElement("li"); li.textContent = msg; logEl.appendChild(li);
@@ -2333,6 +2363,55 @@
                 }
             }
 
+            function refreshInviteUI(roomId) {
+                const link = roomId
+                    ? `${location.origin}${location.pathname}?roomId=${encodeURIComponent(roomId)}`
+                    : '';
+                const box = document.getElementById('inviteBox');
+                const input = document.getElementById('inviteLink');
+                const shareBtn = document.getElementById('shareBtn');
+
+                if (box) box.style.display = roomId ? 'block' : 'none';
+                if (input) input.value = link;
+                if (shareBtn) shareBtn.style.display = roomId ? 'inline-block' : 'none';
+            }
+
+            function shareInvite(e) {
+                e?.preventDefault();
+
+                const input = document.getElementById('inviteLink');
+                const url = (input && input.value) ? input.value : location.href;
+
+                const fallbackCopy = () => {
+                    try {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            navigator.clipboard.writeText(url).then(() => alert('📋 Link copiato!'));
+                        } else {
+                            const ta = document.createElement('textarea');
+                            ta.value = url; ta.setAttribute('readonly', '');
+                            ta.style.position = 'fixed'; ta.style.top = '-9999px';
+                            document.body.appendChild(ta); ta.select();
+                            document.execCommand('copy'); ta.remove();
+                            alert('📋 Link copiato!');
+                        }
+                    } catch {
+                        alert('Copia questo link:\n' + url);
+                    }
+                };
+
+                if (navigator.share) {
+                    // chiamata sincrona (necessaria su iOS)
+                    navigator.share({ title: 'Lupus in Fabula', text: 'Entra nella mia stanza!', url })
+                        .catch(err => {
+                            // se l’utente annulla non disturbiamo; altri errori → copia
+                            if (!err || (err.name !== 'AbortError' && err.name !== 'NotAllowedError')) fallbackCopy();
+                        });
+                } else {
+                    fallbackCopy();
+                }
+                return false;
+            }
+
             async function restartGame() {
                 if (!isHost) return;
                 if (!confirm("Vuoi davvero riavviare la partita e tornare in lobby?")) return;
@@ -2379,13 +2458,7 @@
                 } catch (err) { console.error(err); alert("Errore durante l'espulsione"); }
             }
 
-            function refreshInviteUI(roomId) {
-                const link = roomId ? `${window.location.origin}${window.location.pathname}?roomId=${encodeURIComponent(roomId)}` : '';
-                const box = document.getElementById('inviteBox');
-                const input = document.getElementById('inviteLink');
-                if (roomId) { if (box) box.style.display = 'block'; if (input) input.value = link; }
-                else { if (box) box.style.display = 'none'; }
-            }
+           
             function copyInvite() {
                 const input = document.getElementById('inviteLink'); if (!input) return;
                 if (navigator.clipboard && window.isSecureContext) {
@@ -2399,13 +2472,6 @@
                 catch { alert('⚠️ Copia manuale'); }
                 document.body.removeChild(tmp);
             }
-            function shareInvite() {
-                const input = document.getElementById('inviteLink'); if (!input) return;
-                const link = input.value;
-                if (navigator.share) navigator.share({ title: 'Invito Lupus in Fabula', text: 'Entra nella mia stanza!', url: link }).catch(() => { });
-                else alert('Copia il link manualmente: ' + link);
-            }
-
             /* ========================== 10) PREFILL + AUTO-JOIN ========================== */
             window.addEventListener("load", () => {
                 const urlParams = new URLSearchParams(window.location.search);
