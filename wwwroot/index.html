@@ -543,8 +543,8 @@
             }
 
             #playersTable th.col-role, #playersTable td.col-role {
-                width: 40px;
-                text-align: center;
+                width: 160px;
+                text-align: left;
             }
 
             #playersTable th.col-status, #playersTable td.col-status {
@@ -615,27 +615,18 @@
         }
 
         @media (max-width:560px) {
-            #playersTable th, #playersTable td {
-                padding: 6px;
-                font-size: 13px;
+            #playersTable th.col-role, #playersTable td.col-role {
+                width: 120px;
+                text-align: left;
             }
-
-                #playersTable th.col-role, #playersTable td.col-role {
-                    width: 36px;
-                }
-
-                #playersTable th.col-status, #playersTable td.col-status {
-                    width: 24px;
-                }
-
-                #playersTable th.col-votes, #playersTable td.col-votes {
-                    width: 40px;
-                }
-
-                #playersTable th.col-actions, #playersTable td.col-actions {
-                    width: 40px;
-                }
         }
+        /* ellissi elegante se il testo è lungo */
+        #playersTable td.nowrap, #playersTable th.nowrap {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
 
         .playersGrid {
             display: grid;
@@ -894,6 +885,25 @@
         .status-dot--offline {
             background: #ef4444;
         }
+        .playersGridItem {
+            /* evita overflow orizzontale anche con nomi senza spazi */
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            hyphens: auto;
+            max-width: 100%;
+        }
+        .playerTitle {
+            white-space: normal;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2; /* mostra max 2 righe */
+            overflow: hidden;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            hyphens: auto;
+            text-align: center;
+        }
+
     </style>
 </head>
 
@@ -1028,10 +1038,17 @@
                     <button class="btn-secondary" onclick="exitToLogin()">⏏️ Esci</button>
                 </div>
 
-                <h3 style="margin-top:14px;">📜 Log eventi</h3>
-                <ul id="gameLog" aria-live="polite"></ul>
-            </div>
-        </section>
+                <div class="panel">
+                    <h3 style="margin-top:14px;">📜 Log eventi</h3>
+                    <ul id="gameLog" aria-live="polite"></ul>
+                </div>
+
+                <div class="panel">
+                    <h3 class="centered-heading" style="margin-top:14px;">📘 Ruoli in partita</h3>
+                    <div id="rolesSummaryHost" class="rolesGuideGrid"></div>
+
+
+</section>
 
         <!-- ====================== SCHERMATA GIOCATORI ====================== -->
         <section id="screenGamePlayer" class="screen" aria-labelledby="giocoPlayerTitolo" aria-hidden="true" hidden>
@@ -1047,7 +1064,8 @@
                     <button class="btn-secondary" onclick="exitToLogin()" style="width:min(360px,92%);">⏏️ Esci</button>
                 </div>
 
-                <h3 class="centered-heading">📘 Ruoli del gioco</h3>
+                <h3 class="centered-heading">📘 Ruoli in partita</h3>
+
                 <div id="rolesGuidePlayer" class="rolesGuideGrid"></div>
 
                 <h3 style="margin-top:14px;">📜 Log eventi</h3>
@@ -1079,6 +1097,7 @@
         let overlay = null, roleCard = null, closeRoleBtn = null, roleText = null, roleDescEl = null, nicoEE = null;
         let myRole = null; // visibile a showRoleBtn handler e modale
         let creatingRoom = false;
+        let selectedRoleCounts = null; // riepilogo ruoli scelti per questa partita
 
         // === Helpers A11Y per modale ruolo ===
         function getFocusable(container) {
@@ -1221,7 +1240,7 @@
                     if (roleDescEl) roleDescEl.textContent = roleDescriptions[myRole] || "Nessuna descrizione.";
                     openRoleCard();
                     const currName = (localStorage.getItem("lupus_name") || "");
-                    if (["N1k0GgAY", "nicco"].includes(currName) || currName.toLowerCase().includes("nic")) openEasterEgg();
+                    if (["N1k0GgAY", "nicco"].includes(currName) || currName.toLowerCase().includes("ni")) openEasterEgg();
                 };
             }
 
@@ -1231,6 +1250,8 @@
             /* ======================================================
                5) UI HELPERS
             ====================================================== */
+            const countsAreEmpty = (c) => !c || Object.values(c).every(v => !v);
+
             function setHostLabel(elId, hostName, isOnline) {
                 const el = document.getElementById(elId);
                 if (!el) return;
@@ -1565,6 +1586,97 @@
                 updateRolesLeft();
             }
             wireRoleControls();
+            function emptyCounts() {
+                return { wolves: 0, villagers: 0, guards: 0, seers: 0, scemo: 0, hunter: 0, witch: 0, lara: 0, mayor: 0, hitman: 0, medium: 0, couple: 0 };
+            }
+
+            // quando l’HOST avvia la partita leggiamo i numeri selezionati nei controlli
+            function countsFromControls() {
+                // readRoleCounts() c’è già ed è perfetta; attenzione: couple è già “raw” (numero coppie)
+                return readRoleCounts();
+            }
+
+            // fallback: ricava i conteggi dalla lista giocatori (se il server manda i ruoli)
+            function countsFromPlayers(players) {
+                const c = emptyCounts();
+                (players || []).forEach(p => {
+                    const r = (p.role ?? p.Role ?? "");
+                    if (!r) return;
+                    switch (r) {
+                        case "wolf": c.wolves++; break;
+                        case "villager": c.villagers++; break;
+                        case "guard": c.guards++; break;
+                        case "seer": c.seers++; break;
+                        case "scemo": c.scemo++; break;
+                        case "hunter": c.hunter++; break;
+                        case "witch": c.witch++; break;
+                        case "lara": c.lara++; break;
+                        case "mayor": c.mayor++; break;
+                        case "hitman": c.hitman++; break;
+                        case "medium": c.medium++; break;
+                        case "couple": c.couple++; break;           // nel caso il server usi "couple"
+                        case "romeo": case "giulietta": c.couple += 0.5; break; // romeo+giulietta = 1 coppia
+                    }
+                });
+                c.couple = Math.round(c.couple);
+                return c;
+            }
+
+            // UI: mostra SOLO i ruoli con count > 0
+            function renderSelectedRolesSummary(containerId, counts) {
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                el.innerHTML = "";
+
+                const order = [
+                    ["wolves", "wolf"], ["guards", "guard"], ["seers", "seer"], ["witch", "witch"],
+                    ["hunter", "hunter"], ["medium", "medium"], ["lara", "lara"], ["mayor", "mayor"],
+                    ["hitman", "hitman"], ["scemo", "scemo"], ["couple", "couple"], ["villagers", "villager"]
+                ];
+
+                order.forEach(([key, roleKey]) => {
+                    const raw = counts?.[key] || 0;            // es. couple = #coppie
+                    if (!raw) return;
+
+                    const card = document.createElement("div");
+                    card.className = "roleCardMini";
+
+                    const title = document.createElement("div");
+                    title.className = "title";
+
+                    const badge = document.createElement("span");
+                    badge.className = "badge";
+                    const rn = roleNames[roleKey] || roleKey;  // es. "🐺 Lupo"
+                    const maybeEmoji = rn.split(" ")[0] || "🃏";
+                    badge.textContent = /\p{Extended_Pictographic}/u.test(maybeEmoji) ? maybeEmoji : "🃏";
+
+                    const label = document.createElement("span");
+                    label.textContent = rn;                    // emoji + nome ruolo
+
+                    const cnt = document.createElement("span");
+                    cnt.style.marginLeft = "auto";
+                    cnt.style.fontWeight = "800";
+
+                    // 👇 qui la logica: 1 coppia => 2 giocatori
+                    const displayN = (key === "couple") ? raw * 2 : raw;
+                    cnt.textContent = "× " + displayN;
+
+                    title.appendChild(badge);
+                    title.appendChild(label);
+                    title.appendChild(cnt);
+                    card.appendChild(title);
+
+                    // (facoltativo) sotto mostra quante coppie sono
+                    if (key === "couple") {
+                        const sub = document.createElement("div");
+                        sub.className = "desc";
+                        sub.textContent = `${raw} coppia${raw !== 1 ? "e" : ""}`;
+                        card.appendChild(sub);
+                    }
+
+                    el.appendChild(card);
+                });
+            }
 
             /* ========================== 6) CONNESSIONE: START / RECONNECT ========================== */
             let connectPromise = null;
@@ -1633,23 +1745,34 @@
 
             /* ========================== 7) RENDERERS ========================== */
             function renderHostTable(players) {
-                const table = document.querySelector("#playersTable"); if (!table) return;
+                const table = document.querySelector("#playersTable");
+                if (!table) return;
                 table.innerHTML = "";
 
+                // Header
                 const header = document.createElement("tr");
                 [
                     { text: "Nome", class: "col-name" },
-                    { text: "🎭", class: "col-role" },
-                    { text: "🔗", class: "col-status" },
-                    { text: "🗣️", class: "col-votes" },
+                    { text: " 🎭  Ruolo", class: "col-role" },
+                    { text: "🔗  ", class: "col-status" },
+                    { text: "🗣️ ", class: "col-votes" },
                     { text: "📣", class: "col-actions" }
-                ].forEach(h => { const th = document.createElement("th"); th.textContent = h.text; if (h.class) th.className = h.class; header.appendChild(th); });
+                ].forEach(h => {
+                    const th = document.createElement("th");
+                    th.textContent = h.text;
+                    if (h.class) th.className = h.class;
+                    header.appendChild(th);
+                });
                 table.appendChild(header);
 
-                const votes = players.filter(p => !p.eliminated).map(p => p.votes || 0);
-                const maxVotes = votes.length ? Math.max(...votes) : 0;
-                const leaders = players.filter(p => !p.eliminated && (p.votes || 0) === maxVotes);
-                const isTie = (maxVotes > 0 && leaders.length > 1);
+                // Calcola leader/parità SOLO se la votazione è aperta
+                let maxVotes = 0, isTie = false;
+                if (votingOpen) {
+                    const votes = players.filter(p => !(p.eliminated ?? p.Eliminated)).map(p => (p.votes ?? p.Votes) || 0);
+                    maxVotes = votes.length ? Math.max(...votes) : 0;
+                    const leaders = players.filter(p => !(p.eliminated ?? p.Eliminated) && ((p.votes ?? p.Votes) || 0) === maxVotes);
+                    isTie = (maxVotes > 0 && leaders.length > 1);
+                }
 
                 const roleEmojiOf = (k) => {
                     const label = roleNames[k] || "";
@@ -1658,43 +1781,77 @@
                 };
 
                 players.forEach(p => {
-                    const tr = document.createElement("tr");
-                    if (maxVotes > 0 && !p.eliminated && (p.votes || 0) === maxVotes) tr.className = isTie ? "row-tied" : "row-leader";
-
-                    const tdName = document.createElement("td"); tdName.className = "col-name";
-                    const nameSpan = document.createElement("span"); nameSpan.className = "name-clamp";
-                    const nameDisplay = p.eliminated ? `☠️ ${p.name}` : p.name;
-                    if (p.eliminated) { tdName.style.color = 'gray'; tdName.style.textDecoration = 'line-through'; }
-                    nameSpan.textContent = nameDisplay; tdName.appendChild(nameSpan);
-
-                    const tdRole = document.createElement("td"); tdRole.className = "col-role";
-                    const rEmoji = p.role ? roleEmojiOf(p.role) : ""; const rLabel = p.role ? (roleNames[p.role] || p.role) : "";
-                    tdRole.textContent = rEmoji; if (rLabel) tdRole.title = rLabel;
-
-                    const tdStatus = document.createElement("td"); tdStatus.className = "col-status";
+                    const name = p.name ?? p.Name ?? "";
+                    const roleKey = p.role ?? p.Role ?? "";
+                    const eliminated = p.eliminated ?? p.Eliminated ?? false;
                     const isOn = (typeof p.isOnline === "boolean") ? p.isOnline : !!p.IsOnline;
-                    const dot = document.createElement("span"); dot.className = "status-dot-table " + (isOn ? "online" : "offline");
+                    const votes = (p.votes ?? p.Votes) || 0;
+
+                    const tr = document.createElement("tr");
+
+                    // Evidenziazione SOLO quando le votazioni sono aperte
+                    if (votingOpen && maxVotes > 0 && !eliminated && votes === maxVotes) {
+                        tr.className = isTie ? "row-tied" : "row-leader";
+                    }
+
+                    // Nome
+                    const tdName = document.createElement("td");
+                    tdName.className = "col-name";
+                    const nameSpan = document.createElement("span");
+                    nameSpan.className = "name-clamp";
+                    const nameDisplay = eliminated ? `☠️ ${name}` : name;
+                    if (eliminated) {
+                        tdName.style.color = 'gray';
+                        tdName.style.textDecoration = 'line-through';
+                    }
+                    nameSpan.textContent = nameDisplay;
+                    tdName.appendChild(nameSpan);
+
+                    // Ruolo (emoji + etichetta completa)
+                    const tdRole = document.createElement("td");
+                    tdRole.className = "col-role nowrap";
+                    if (roleKey) {
+                        const label = roleNames[roleKey] || roleKey;
+                        tdRole.textContent = label;     // ← niente doppia emoji
+                        tdRole.title = label;
+
+                        tdRole.title = label;
+                    } else {
+                        tdRole.textContent = "—";
+                        tdRole.style.color = "#9ca3af";
+                    }
+
+                    // Stato online/offline
+                    const tdStatus = document.createElement("td");
+                    tdStatus.className = "col-status";
+                    const dot = document.createElement("span");
+                    dot.className = "status-dot-table " + (isOn ? "online" : "offline");
                     dot.title = isOn ? "Online" : "Offline";
                     tdStatus.appendChild(dot);
 
-                    const tdVotes = document.createElement("td"); tdVotes.className = "col-votes"; tdVotes.textContent = String(p.votes || 0);
+                    // Voti
+                    const tdVotes = document.createElement("td");
+                    tdVotes.className = "col-votes";
+                    tdVotes.textContent = String(votes);
 
-                    const tdActions = document.createElement("td"); tdActions.className = "col-actions";
-                    if (p.eliminated) {
+                    // Azioni (elimina / resuscita)
+                    const tdActions = document.createElement("td");
+                    tdActions.className = "col-actions";
+                    if (eliminated) {
                         const reviveBtn = document.createElement("button");
                         reviveBtn.className = "btn-icon btn-icon--ok";
-                        reviveBtn.title = `Resuscita ${p.name}`;
-                        reviveBtn.setAttribute("aria-label", `Resuscita ${p.name}`);
+                        reviveBtn.title = `Resuscita ${name}`;
+                        reviveBtn.setAttribute("aria-label", `Resuscita ${name}`);
                         reviveBtn.textContent = "💚";
-                        reviveBtn.addEventListener("click", () => revivePlayer(p.name));
+                        reviveBtn.addEventListener("click", () => revivePlayer(name));
                         tdActions.appendChild(reviveBtn);
                     } else {
                         const delBtn = document.createElement("button");
                         delBtn.className = "btn-icon";
-                        delBtn.title = `Elimina ${p.name}`;
-                        delBtn.setAttribute("aria-label", `Elimina ${p.name}`);
+                        delBtn.title = `Elimina ${name}`;
+                        delBtn.setAttribute("aria-label", `Elimina ${name}`);
                         delBtn.textContent = "✖";
-                        delBtn.addEventListener("click", () => eliminatePlayer(p.name));
+                        delBtn.addEventListener("click", () => eliminatePlayer(name));
                         tdActions.appendChild(delBtn);
                     }
 
@@ -1714,7 +1871,10 @@
                     let displayName = p.eliminated ? `☠️ ${p.name}` : p.name;
                     if (p.role === "mayor") displayName += " 🎖️";
                     const baseText = (!p.eliminated && p.votes > 0) ? `${displayName} (${p.votes})` : displayName;
-                    card.textContent = baseText;
+                    const title = document.createElement("div");
+                    title.className = "playerTitle";
+                    title.textContent = baseText;
+                    card.appendChild(title);
 
                     const isMyPick = (myVote === p.name);
                     card.style.backgroundColor = p.eliminated ? "#9ca3af" : (votingOpen ? (isMyPick ? "#f59e0b" : "#4A90E2") : "#6b7280");
@@ -1813,16 +1973,22 @@
             connection.on("ReceiveRole", role => { myRole = role; applyRoleUI(); });
 
             connection.on("VotingStarted", () => {
-                votingOpen = true; logGame("🗳️ Votazioni aperte!");
+                votingOpen = true;
+                logGame("🗳️ Votazioni aperte!");
                 renderPlayers(currentPlayers);
+                if (isHost) renderHostTable(currentPlayers);   // <— aggiunto
                 applyRoleUI();
             });
 
             connection.on("VotingEnded", () => {
-                votingOpen = false; myVote = null; logGame("🛑 Votazioni chiuse!");
+                votingOpen = false;
+                myVote = null;
+                logGame("🛑 Votazioni chiuse!");
                 renderPlayers(currentPlayers);
+                if (isHost) renderHostTable(currentPlayers);   // <— aggiunto
                 applyRoleUI();
             });
+
 
             connection.on("UpdateVotes", (players) => {
                 currentPlayers = players || [];
@@ -1884,15 +2050,21 @@
                 (document.getElementById("hostNameInGame") || {}).textContent = hostName || "Sconosciuto";
                 (document.getElementById("hostNamePlayer") || {}).textContent = hostName || "Sconosciuto";
                 (document.getElementById("currentRoomIdText") || {}).textContent = currentRoomId || "";
-
                 (document.getElementById("playersGrid") || {}).innerHTML = "";
                 (document.getElementById("gameLog") || {}).innerHTML = "";
                 (document.getElementById("gameLogPlayer") || {}).innerHTML = "";
                 (document.getElementById("playersTable") || {}).innerHTML = "";
+                (document.getElementById("rolesSummaryHost") || {}).innerHTML = "";
+                (document.getElementById("rolesGuidePlayer") || {}).innerHTML = "";
+
 
                 updateLobbyCounters(players || []);
                 showScreen("screenLobby");
                 applyRoleUI();
+
+                selectedRoleCounts = null;
+                try { localStorage.removeItem("lupus_selectedRoles_" + (currentRoomId || "")); } catch { }
+
 
                 logLobby("🔄 La partita è stata riavviata, siete tornati in lobby.");
                 renderRolesGuide("rolesGuideHost");
@@ -1900,8 +2072,44 @@
                 refreshInviteUI(currentRoomId);
             });
 
-            connection.on("GameStarted", (players, hostName, hostOnlineArg) => {
-                gameStarted = true; myVote = null; currentPlayers = players || [];
+            connection.on("GameStarted", (players, hostName, hostOnlineArg, roleCounts) => {
+                gameStarted = true;
+                myVote = null;
+                currentPlayers = players || [];
+
+                // 1) Se il server manda i conteggi, usali e salvali
+                if (roleCounts && typeof roleCounts === "object") {
+                    selectedRoleCounts = roleCounts;
+                    try { localStorage.setItem("lupus_selectedRoles_" + (currentRoomId || ""), JSON.stringify(selectedRoleCounts)); } catch { }
+                } else {
+                    // 2) Prova a ripescare da localStorage
+                    if (!selectedRoleCounts) {
+                        try {
+                            const saved = localStorage.getItem("lupus_selectedRoles_" + (currentRoomId || ""));
+                            if (saved) selectedRoleCounts = JSON.parse(saved);
+                        } catch { }
+                    }
+                    // 3) Ultimo fallback: derivare (host: dai controlli; player: dai players, spesso vuoto)
+                    if (!selectedRoleCounts || Object.values(selectedRoleCounts).every(v => !v)) {
+                        selectedRoleCounts = isHost ? countsFromControls() : countsFromPlayers(currentPlayers);
+                    }
+                }
+
+                // --- RENDER riepilogo/guida ---
+                const empty = !selectedRoleCounts || Object.values(selectedRoleCounts).every(v => !v);
+
+                if (isHost) {
+                    // l’host ha sempre i controlli: assicuriamoci che non sia mai vuoto
+                    if (empty) selectedRoleCounts = countsFromControls();
+                    renderSelectedRolesSummary("rolesSummaryHost", selectedRoleCounts);
+                } else {
+                    // se per il player è ancora vuoto, mostra la guida completa invece di nulla
+                    if (empty) {
+                        renderRolesGuide("rolesGuidePlayer");
+                    } else {
+                        renderSelectedRolesSummary("rolesGuidePlayer", selectedRoleCounts);
+                    }
+                }
 
                 const hostOnline = (typeof hostOnlineArg === "boolean")
                     ? hostOnlineArg
@@ -1916,7 +2124,7 @@
                 }
 
                 if (isHost) { showScreen("screenGame"); renderHostTable(currentPlayers); }
-                else { showScreen("screenGamePlayer"); renderPlayers(currentPlayers); renderRolesGuide("rolesGuidePlayer"); }
+                else { showScreen("screenGamePlayer"); renderPlayers(currentPlayers); }
 
                 const ridHostEl = document.getElementById("roomIdInGame");
                 if (ridHostEl) ridHostEl.textContent = currentRoomId || "";
@@ -2024,17 +2232,37 @@
                         return false;
                     }
 
+                    // === Stato base dal server
                     isHost = !!result?.isHost;
                     myRole = result?.role || null;
                     currentPlayers = result?.players || [];
                     votingOpen = !!result?.votingOpen;
                     gameStarted = !!result?.gameStarted;
 
+                    // === 🔑 NUOVO: se entri a partita iniziata, usa i conteggi che il server già invia
+                    if (result?.roleCounts && typeof result.roleCounts === "object") {
+                        selectedRoleCounts = result.roleCounts;
+                        try {
+                            localStorage.setItem(
+                                "lupus_selectedRoles_" + (currentRoomId || ""),
+                                JSON.stringify(selectedRoleCounts)
+                            );
+                        } catch { /* ignore */ }
+                    } else if (gameStarted && !selectedRoleCounts) {
+                        // fallback soft: riprova da localStorage
+                        try {
+                            const saved = localStorage.getItem("lupus_selectedRoles_" + (currentRoomId || ""));
+                            if (saved) selectedRoleCounts = JSON.parse(saved);
+                        } catch { }
+                    }
+
+                    // === Persistenze leggere
                     localStorage.setItem("lupus_roomId", currentRoomId);
                     localStorage.setItem("lupus_name", name);
                     localStorage.setItem("lupus_autoJoin", "true");
                     if (isHost) localStorage.setItem("lupus_hostRoomId", roomId);
 
+                    // === Routing schermate + render base
                     if (isHost) {
                         if (gameStarted) { showScreen("screenGame"); renderHostTable(currentPlayers); }
                         else { showScreen("screenLobby"); }
@@ -2053,6 +2281,23 @@
                     updateConnectionUI();
                     applyRoleUI();
 
+                    // === 🧩 NUOVO: render immediato del riquadro "Ruoli in partita" anche per i player
+                    if (gameStarted) {
+                        if (isHost) {
+                            const counts = (selectedRoleCounts && !countsAreEmpty(selectedRoleCounts))
+                                ? selectedRoleCounts
+                                : countsFromControls();
+                            renderSelectedRolesSummary("rolesSummaryHost", counts);
+                        } else {
+                            if (selectedRoleCounts && !countsAreEmpty(selectedRoleCounts)) {
+                                renderSelectedRolesSummary("rolesGuidePlayer", selectedRoleCounts);
+                            } else {
+                                // fallback elegante: guida completa se non abbiamo conteggi
+                                renderRolesGuide("rolesGuidePlayer");
+                            }
+                        }
+                    }
+
                     return true;
                 } finally {
                     isJoining = false;
@@ -2070,8 +2315,13 @@
                     return;
                 }
 
+                // NEW: salviamo i conteggi selezionati per mostrarli in Host/Player
+                selectedRoleCounts = { ...r };
+                try { localStorage.setItem("lupus_selectedRoles_" + (currentRoomId || ""), JSON.stringify(selectedRoleCounts)); } catch { }
+
                 try {
-                    await connection.invoke("StartGame",
+                    await connection.invoke(
+                        "StartGame",
                         currentRoomId,
                         r.wolves, r.villagers, r.seers, r.guards, r.scemo, r.hunter, r.witch, r.lara, r.mayor, r.hitman,
                         (r.medium || 0), (r.couple || 0)
