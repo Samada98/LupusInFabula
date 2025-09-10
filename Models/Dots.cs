@@ -12,6 +12,7 @@ namespace LupusInTabula.Models
         bool GameStarted,
         bool VotingOpen,
         string? Role,
-        List<PlayerDto> Players
+        List<PlayerDto> Players,
+        IDictionary<string, int>? RoleCounts
     );
 }

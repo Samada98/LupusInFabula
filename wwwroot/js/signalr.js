@@ -274,7 +274,7 @@ export async function startGame() {
     const totalRoles = Object.values(r).reduce((a, b) => a + b, 0);
     if (totalRoles < state.currentPlayers.length) { alert("? Ruoli insufficienti!"); return; }
     try {
-        await state.connection.invoke("StartGame", state.currentRoomId, r.wolves, r.villagers, r.seers, r.guards, r.scemo, r.hunter, r.witch, r.lara, r.mayor, r.hitman);
+        await state.connection.invoke("StartGame", state.currentRoomId, r.wolves, r.villagers, r.seers, r.guards, r.scemo, r.hunter, r.witch, r.lara, r.mayor, r.hitman, r.medium, r.couple);
         logLobby("?? Partita avviata!");
     } catch (err) { console.error(err); logLobby("? Errore nell'avvio della partita"); }
 }
@@ -343,6 +343,8 @@ function getRoleCountsFromUI() {
         witch: counts.witch || 0,
         lara: counts.lara || 0,
         mayor: counts.mayor || 0,
-        hitman: counts.hitman || 0
+        hitman: counts.hitman || 0,
+        medium: || count.medium || 0,
+        couple: count.couple || 0
     };
 }

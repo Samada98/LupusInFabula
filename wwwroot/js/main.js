@@ -25,6 +25,29 @@ function ensureSignalR(callback) {
 
 /* ---------- Boot app ---------- */
 function initApp() {
+
+    // --- JukeBox modal ---
+    const jbBtn = document.getElementById("jukeboxBtn");
+    const jbOverlay = document.getElementById("jukeboxOverlay");
+    const closeJB = document.getElementById("closeJukebox");
+    const backJB = document.getElementById("backFromJukebox");
+
+    if (jbBtn && jbOverlay) {
+        jbBtn.addEventListener("click", () => {
+            jbOverlay.style.display = "block";
+        });
+    }
+    if (closeJB) {
+        closeJB.addEventListener("click", () => {
+            jbOverlay.style.display = "none";
+        });
+    }
+    if (backJB) {
+        backJB.addEventListener("click", () => {
+            jbOverlay.style.display = "none";
+        });
+    }
+
     // Modale ruolo
     initRoleModal();
 

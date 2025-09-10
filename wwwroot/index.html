@@ -885,6 +885,7 @@
         .status-dot--offline {
             background: #ef4444;
         }
+
         .playersGridItem {
             /* evita overflow orizzontale anche con nomi senza spazi */
             overflow-wrap: anywhere;
@@ -892,6 +893,7 @@
             hyphens: auto;
             max-width: 100%;
         }
+
         .playerTitle {
             white-space: normal;
             display: -webkit-box;
@@ -902,6 +904,55 @@
             word-break: break-word;
             hyphens: auto;
             text-align: center;
+        }
+        /* Overlay JukeBox */
+        #jukeboxOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.55);
+            backdrop-filter: blur(3px);
+            z-index: 100; /* sopra tutto */
+        }
+
+        /* Card centrale per JukeBox */
+        #jukeboxCard {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            background: #fff;
+            padding: 28px;
+            border-radius: 18px;
+            box-shadow: 0 24px 48px rgba(0,0,0,.3);
+            width: min(92vw, 680px);
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 110;
+            text-align: center;
+            animation: floatIn .35s ease both;
+        }
+
+            #jukeboxCard h2 {
+                font-size: 26px;
+                margin-bottom: 12px;
+            }
+
+        #jukeboxContent {
+            margin-top: 16px;
+            margin-bottom: 24px;
+            min-height: 200px; /* così sembra un contenitore vuoto pronto */
+        }
+
+        /* pulsante X in alto a destra */
+        #closeJukebox {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
         }
 
     </style>
@@ -1038,6 +1089,8 @@
 
                 <div class="btn-row" style="margin-top:10px;">
                     <button id="votingBtn" onclick="toggleVoting()">Votazione</button>
+                    <button id="jukeboxBtn" class="bigButton">🎵 JukeBox</button>
+
                     <button id="restartBtn" class="btn-secondary" onclick="restartGame()">🔄 Restart</button>
                     <button class="btn-secondary" onclick="exitToLogin()">⏏️ Esci</button>
                 </div>
@@ -1054,6 +1107,20 @@
             </div> <!-- /panel 3 -->
 
         </section>
+
+        <div id="jukeboxOverlay" class="overlay" style="display:none;">
+            <div id="jukeboxCard" class="modal">
+                <button id="closeJukebox" class="closeBtn">❌</button>
+                <h2>🎵 JukeBox</h2>
+                <div id="jukeboxContent">
+
+                    <!-- qui in futuro mettiamo la playlist, controlli ecc. -->
+
+                    <p>In costruzione...</p>
+                </div>
+                <button id="backFromJukebox" class="bigButton">⬅️ Torna indietro</button>
+            </div>
+        </div>
 
 
         <!-- ====================== SCHERMATA GIOCATORI ====================== -->
@@ -1223,7 +1290,7 @@
             const roleNames = {
                 wolf: "🐺 Lupo", villager: "👨‍🌾 Contadino", seer: "🔮 Veggente", guard: "💋 Puttana",
                 scemo: "🦧 Scemo", hunter: "🏹 Cacciatore", witch: "🧪 Strega", lara: "🌙 Lara",
-                mayor: "🎖️ Sindaco", hitman: "🔫 Sicario", medium: "🪄 Medium", romeo: "💘 Romeo", giulietta: "💘 Giulietta", couple: "💘 Romeo & Giulietta" 
+                mayor: "🎖️ Sindaco", hitman: "🔫 Sicario", medium: "🪄 Medium", romeo: "💘 Romeo", giulietta: "💘 Giulietta", couple: "💘 Romeo & Giulietta"
             };
             const roleDescriptions = {
                 wolf: `Di notte scegliete insieme una vittima.\nVincete se i lupi eliminano tutti gli altri.`,
@@ -1283,6 +1350,27 @@
 
             // Esporta alcune funzioni su window per onclick inline
             Object.assign(window, { copyInvite, shareInvite });
+            // === JukeBox overlay ===
+            const jbBtn = document.getElementById("jukeboxBtn");
+            const jbOverlay = document.getElementById("jukeboxOverlay");
+            const closeJB = document.getElementById("closeJukebox");
+            const backJB = document.getElementById("backFromJukebox");
+
+            if (jbBtn && jbOverlay) {
+                jbBtn.addEventListener("click", () => {
+                    jbOverlay.style.display = "block";
+                });
+            }
+            if (closeJB) {
+                closeJB.addEventListener("click", () => {
+                    jbOverlay.style.display = "none";
+                });
+            }
+            if (backJB) {
+                backJB.addEventListener("click", () => {
+                    jbOverlay.style.display = "none";
+                });
+            }
 
             /* ======================================================
                5) UI HELPERS
@@ -1563,7 +1651,7 @@
 
                 updateRolesLeft();
             }
- {
+            {
                 const box = document.querySelector(".rolesBox");
                 if (!box || box.dataset.wired === "1") return;
                 box.dataset.wired = "1";
@@ -2458,7 +2546,7 @@
                 } catch (err) { console.error(err); alert("Errore durante l'espulsione"); }
             }
 
-           
+
             function copyInvite() {
                 const input = document.getElementById('inviteLink'); if (!input) return;
                 if (navigator.clipboard && window.isSecureContext) {

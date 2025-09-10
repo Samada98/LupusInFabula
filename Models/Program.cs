@@ -24,11 +24,14 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
     options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
     {
         "application/octet-stream"
     });
 });
+builder.Services.Configure<BrotliCompressionProviderOptions>(o => o.Level = CompressionLevel.Fastest);
 builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = CompressionLevel.Fastest);
 
 // CORS (OPZIONALE) – abilitalo solo se servi l'HTML da un ORIGINE diversa.
@@ -44,12 +47,13 @@ if (!string.IsNullOrWhiteSpace(allowedOrigins))
 var app = builder.Build();
 
 // Proxy headers (es. Render/Caddy/Nginx) per wss/https corretti
-app.UseForwardedHeaders(new ForwardedHeadersOptions
+var fwd = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-    // Se necessario: KnownNetworks/CProxies clear
-    // KnownNetworks = { }, KnownProxies = { }
-});
+};
+fwd.KnownNetworks.Clear();
+fwd.KnownProxies.Clear();
+app.UseForwardedHeaders(fwd);
 
 // CORS se configurato sopra
 if (!string.IsNullOrWhiteSpace(allowedOrigins))

@@ -1,4 +1,4 @@
-// js/ui.js
+﻿// js/ui.js
 import { state, roleNames, roleDescriptions } from "./state.js";
 
 /* ---------- DOM refs (lookup on demand, sono statici quindi ok) ---------- */
@@ -301,7 +301,7 @@ export function applyRoleUI() {
     const vbtn = el("#votingBtn");
     if (vbtn) {
         if (state.isHost) {
-            if (state.votingOpen) { vbtn.style.backgroundColor = "#4A90E2"; vbtn.textContent = "Il dado � tratto"; }
+            if (state.votingOpen) { vbtn.style.backgroundColor = "#4A90E2"; vbtn.textContent = "Il dado è tratto"; }
             else { vbtn.style.backgroundColor = "var(--brand)"; vbtn.textContent = "Votazione"; }
         } else {
             vbtn.style.backgroundColor = "var(--brand)"; vbtn.textContent = "Votazione";
@@ -331,6 +331,23 @@ function fallbackCopy(input) {
     document.body.removeChild(tmp);
 }
 export function shareInvite() {
+    // Sostituisci la funzione fallbackCopy con una versione senza 'return' illegale
+    function fallbackCopy(input) {
+        const tmp = document.createElement('textarea');
+        tmp.value = input.value;
+        tmp.style.position = 'absolute';
+        tmp.style.left = '-9999px';
+        document.body.appendChild(tmp);
+        tmp.select();
+        let copied = false;
+        try {
+            copied = document.execCommand('copy');
+            alert(copied ? '✅ Link copiato!' : '❌ Copia manuale');
+        } catch {
+            alert('❌ Copia manuale');
+        }
+        document.body.removeChild(tmp);
+    }
     const input = el('#inviteLink'); if (!input) return;
     const link = input.value;
     if (navigator.share) navigator.share({ title: 'Invito Lupus in Tabula', text: 'Entra nella mia stanza!', url: link }).catch(() => { });

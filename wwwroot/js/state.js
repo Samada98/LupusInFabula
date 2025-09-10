@@ -29,7 +29,7 @@ export const applyNameMapping = s => NAME_MAP[normalizeName(s || "")] || (s || "
 export const roleNames = {
     wolf: "?? Lupo", villager: "????? Contadino", seer: "?? Veggente", guard: "?? Puttana",
     scemo: "?? Scemo", hunter: "?? Cacciatore", witch: "?? Strega", lara: "?? Lara",
-    mayor: "??? Sindaco", hitman: "?? Sicario"
+    mayor: "??? Sindaco", hitman: "?? Sicario", medium: "?? Medium", romeo: "?? Romeo", giulietta: "?? Giulietta", couple: "?? Romeo & Giulietta"
 };
 
 export const roleDescriptions = {
@@ -42,7 +42,11 @@ export const roleDescriptions = {
     witch: `Hai due pozioni: una per salvare una vittima, una per uccidere.\nPuoi usarle solo una volta ciascuna.`,
     lara: `All'inizio sei una cittadina.\nSe vieni uccisa dai lupi, diventi un Lupo.\nVinci con i cittadini finché sei cittadina,\nma se diventi Lupo vinci con i lupi.`,
     mayor: `Durante le votazioni il tuo voto conta doppio.`,
-    hitman: `Hai una pistola con un solo colpo.\nPuoi usarla una volta in tutta la partita per eliminare un giocatore.`
+    hitman: `Hai una pistola con un solo colpo.\nPuoi usarla una volta in tutta la partita per eliminare un giocatore.`,
+    medium: `Ogni morte ti rivela in segreto il ruolo del defunto.`,
+    romeo: `In coppia con Giulietta. Se i lupi colpiscono te, morite entrambi. Potete scegliere dove dormire.`,
+    giulietta: `In coppia con Romeo. Se i lupi colpiscono te mentre dormite da Romeo, vi salvate entrambi.`,
+    couple: `Romeo & Giulietta: si svegliano insieme, conoscono i ruoli e scelgono dove dormire. Se i lupi colpiscono Giulietta mentre dormite da Romeo vi salvate entrambi; se colpiscono Romeo morite entrambi.`
 };
 
 // LocalStorage helpers

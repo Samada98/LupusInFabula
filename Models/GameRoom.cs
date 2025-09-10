@@ -18,7 +18,6 @@ namespace LupusInTabula.Models
         public string? CoupleJulietName { get; set; }
         public string CoupleSleepAt { get; set; } = "romeo"; // "romeo" | "giulietta"
 
-        // AGGIUNTA: proprietà mancante per i conteggi dei ruoli
         public IDictionary<string, int>? SavedRoleCounts { get; set; }
     }
 }
