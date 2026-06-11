@@ -1746,13 +1746,32 @@
             padding: max(18px, env(safe-area-inset-top, 0px)) 16px max(18px, env(safe-area-inset-bottom, 0px));
             color: #f8fafc;
             background:
-                radial-gradient(circle at 50% 14%, rgba(226,232,240,.22) 0 42px, transparent 43px),
                 radial-gradient(circle at 14% 20%, rgba(34,197,94,.12), transparent 24%),
                 radial-gradient(circle at 82% 18%, rgba(59,130,246,.16), transparent 26%),
                 linear-gradient(180deg, #020617 0%, #101827 52%, #04070f 100%);
         }
 
         .maintenance-gate.active { display: grid; }
+
+        .maintenance-gate::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 18% 16%, rgba(255,255,255,.86) 0 1px, transparent 2px),
+                radial-gradient(circle at 31% 28%, rgba(255,255,255,.55) 0 1px, transparent 2px),
+                radial-gradient(circle at 68% 15%, rgba(255,255,255,.78) 0 1px, transparent 2px),
+                radial-gradient(circle at 84% 32%, rgba(255,255,255,.48) 0 1px, transparent 2px),
+                radial-gradient(circle at 46% 12%, rgba(187,247,208,.64) 0 1px, transparent 2px);
+            opacity: .9;
+        }
+
+        #maintenanceWolfSwitch {
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+        }
 
         .maintenance-hills,
         .maintenance-fog {
@@ -1914,7 +1933,7 @@
 </head>
 
 <body>
-    <div id="maintenanceGate" class="maintenance-gate active" role="dialog" aria-modal="true" aria-labelledby="maintenanceTitle">
+    <div id="maintenanceGate" class="maintenance-gate" role="dialog" aria-modal="true" aria-labelledby="maintenanceTitle">
         <div class="maintenance-hills"></div>
         <div class="maintenance-village" aria-hidden="true">
             <div class="maintenance-house"></div>
@@ -2330,7 +2349,7 @@
             let myName = null;
             let isJoining = false; // evita UI sporca durante transizioni
             let audioUnlocked = localStorage.getItem("lupus_audioUnlocked") === "true";
-            let maintenanceMode = true;
+            let maintenanceMode = false;
             let audioContext = null;
             const nightDirector = {
                 active: false,
@@ -2475,13 +2494,27 @@
                 if (e.key === "Enter") maintenanceUnlockBtn?.click();
             });
 
-            maintenanceWolfSwitch?.addEventListener("click", () => {
+            function canUseWolfMaintenanceSwitch() {
+                const login = document.getElementById("screenLogin");
+                const loginVisible = !!login && login.classList.contains("active") && !login.hidden;
+                return !maintenanceMode && (loginVisible || (!currentRoomId && !gameStarted));
+            }
+
+            function handleWolfMaintenanceTap() {
                 if (maintenanceMode) return;
-                if (!document.getElementById("screenLogin")?.classList.contains("active")) return;
+                if (!canUseWolfMaintenanceSwitch()) return;
                 maintenanceWolfTaps++;
                 if (maintenanceWolfTaps >= 20) {
                     maintenanceWolfTaps = 0;
                     setMaintenanceMode(true, "251");
+                }
+            }
+
+            maintenanceWolfSwitch?.addEventListener("pointerup", handleWolfMaintenanceTap);
+            maintenanceWolfSwitch?.addEventListener("keydown", e => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleWolfMaintenanceTap();
                 }
             });
 
