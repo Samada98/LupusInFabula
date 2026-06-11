@@ -17,6 +17,7 @@ namespace LupusInTabula.Hubs
         private static readonly ConcurrentDictionary<string, (string roomId, string? playerName, bool isHost)> ConnIndex = new();
         // RoomId -> connessioni che hanno sbloccato l'audio nel browser
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> AudioReady = new();
+        private const int JukeboxScheduleDelayMs = 850;
 
         // =========================================================
         // =============== LIFECYCLE & CONNESSIONI =================
@@ -692,6 +693,11 @@ namespace LupusInTabula.Hubs
             await Clients.Caller.SendAsync("ReceiveHostRoomInfo", roomInfo);
         }
 
+        public Task<long> GetServerTime()
+        {
+            return Task.FromResult(ServerNowMs());
+        }
+
         public async Task JukeboxPlay(string roomId, string preset, double volume)
         {
             if (!Rooms.TryGetValue(roomId, out var room)) return;
@@ -705,8 +711,9 @@ namespace LupusInTabula.Hubs
             if (!allowed.Contains(preset)) return;
 
             volume = Math.Clamp(volume, 0, 1);
+            var startAt = ScheduledJukeboxStartMs();
             await Clients.Group(room.Id).SendAsync("JukeboxPlay", preset, volume);
-            await Clients.Group(room.Id).SendAsync("JukeboxPlayLocal", preset, volume, false);
+            await Clients.Group(room.Id).SendAsync("JukeboxPlayLocal", preset, volume, false, startAt);
         }
 
         public async Task JukeboxStop(string roomId)
@@ -751,7 +758,7 @@ namespace LupusInTabula.Hubs
                 return;
             }
 
-            await Clients.Client(targetConn).SendAsync("JukeboxPlayLocal", "notte/ambiente", 0.75, true);
+            await Clients.Client(targetConn).SendAsync("JukeboxPlayLocal", "notte/ambiente", 0.75, true, ScheduledJukeboxStartMs());
             await Clients.Group(room.Id).SendAsync("JukeboxNightStarted");
         }
 
@@ -774,7 +781,7 @@ namespace LupusInTabula.Hubs
                 return;
             }
 
-            await Clients.Client(targetConn).SendAsync("JukeboxPlayLocal", $"notte/{sound}", 0.95, false);
+            await Clients.Client(targetConn).SendAsync("JukeboxPlayLocal", $"notte/{sound}", 0.95, false, ScheduledJukeboxStartMs());
             await Clients.Group(room.Id).SendAsync("JukeboxNightIntervention", sound);
         }
 
@@ -789,6 +796,12 @@ namespace LupusInTabula.Hubs
 
         private static bool SameConn(string? a, string b) =>
             !string.IsNullOrEmpty(a) && a == b;
+
+        private static long ServerNowMs() =>
+            DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        private static long ScheduledJukeboxStartMs() =>
+            ServerNowMs() + JukeboxScheduleDelayMs;
 
         private static string NewRoomId(int len = 2)
         {

@@ -2247,6 +2247,9 @@
             const preloadedJukeboxAudio = new Map();
             let jukeboxPlaybackToken = 0;
             let jukeboxIgnorePlayUntil = 0;
+            let jukeboxServerOffsetMs = 0;
+            let jukeboxClockSyncedAt = 0;
+            const jukeboxScheduleDelayMs = 850;
             const jukeboxTracksToPreload = [
                 "bastaldo",
                 "fikaculo",
@@ -2282,6 +2285,40 @@
 
             function hostJukeboxAudioBlocked() {
                 return isHost && !hostRandomAudioEnabled;
+            }
+
+            async function syncJukeboxClock(force = false) {
+                if (!connection || connection.state !== signalR.HubConnectionState.Connected) return false;
+                if (!force && Date.now() - jukeboxClockSyncedAt < 30000) return true;
+
+                try {
+                    const localStart = Date.now();
+                    const serverNow = await connection.invoke("GetServerTime");
+                    const localEnd = Date.now();
+                    const estimatedLocalAtServerReply = localStart + ((localEnd - localStart) / 2);
+                    jukeboxServerOffsetMs = Number(serverNow) - estimatedLocalAtServerReply;
+                    jukeboxClockSyncedAt = localEnd;
+                    return true;
+                } catch (err) {
+                    console.warn("Sync orologio JukeBox fallita:", err);
+                    return false;
+                }
+            }
+
+            function scheduleLocalJukeboxAudio(track, volume = 1, loop = false, startAtServerMs = null) {
+                const startAt = Number(startAtServerMs || 0);
+                if (!startAt) {
+                    playLocalJukeboxAudio(track, volume, loop);
+                    return;
+                }
+
+                const localServerNow = Date.now() + jukeboxServerOffsetMs;
+                const delay = Math.max(0, startAt - localServerNow);
+                const playToken = jukeboxPlaybackToken;
+                setTimeout(() => {
+                    if (playToken !== jukeboxPlaybackToken) return;
+                    playLocalJukeboxAudio(track, volume, loop);
+                }, delay);
             }
 
             function playLocalJukeboxAudio(track, volume = 1, loop = false) {
@@ -2393,8 +2430,9 @@
             async function playJukeboxTrack(track) {
                 if (!currentRoomId) return;
                 try {
+                    await syncJukeboxClock();
                     await connection.invoke("JukeboxPlay", currentRoomId, track, 1);
-                    if (jukeboxStatus) jukeboxStatus.textContent = `In riproduzione: ${track}`;
+                    if (jukeboxStatus) jukeboxStatus.textContent = `In partenza tra ${jukeboxScheduleDelayMs} ms: ${track}`;
                 } catch (err) {
                     console.error("JukeBox play fallito:", err);
                     if (jukeboxStatus) jukeboxStatus.textContent = "Non riesco ad avviare la traccia.";
@@ -2405,8 +2443,9 @@
                 if (!currentRoomId) return;
                 renderJukeboxView("night");
                 try {
+                    await syncJukeboxClock();
                     await connection.invoke("JukeboxStartNight", currentRoomId);
-                    if (jukeboxStatus) jukeboxStatus.textContent = "Notte avviata: ambiente su un dispositivo casuale.";
+                    if (jukeboxStatus) jukeboxStatus.textContent = "Notte avviata: ambiente sincronizzato su un dispositivo casuale.";
                 } catch (err) {
                     console.error("JukeBox notte fallito:", err);
                     if (jukeboxStatus) jukeboxStatus.textContent = "Non riesco ad avviare la notte.";
@@ -2416,8 +2455,9 @@
             async function playNightIntervention(sound) {
                 if (!currentRoomId) return;
                 try {
+                    await syncJukeboxClock();
                     await connection.invoke("JukeboxNightIntervention", currentRoomId, sound);
-                    if (jukeboxStatus) jukeboxStatus.textContent = `Intervento inviato: ${sound}`;
+                    if (jukeboxStatus) jukeboxStatus.textContent = `Intervento sincronizzato: ${sound}`;
                 } catch (err) {
                     console.error("Intervento notte fallito:", err);
                     if (jukeboxStatus) jukeboxStatus.textContent = "Non riesco a inviare l'intervento.";
@@ -2490,8 +2530,9 @@
             });
             renderHostRandomAudioToggle();
 
-            connection.on("JukeboxPlayLocal", (track, volume, loop) => {
-                playLocalJukeboxAudio(track, volume, loop);
+            connection.on("JukeboxPlayLocal", async (track, volume, loop, startAtServerMs) => {
+                await syncJukeboxClock();
+                scheduleLocalJukeboxAudio(track, volume, loop, startAtServerMs);
             });
             connection.on("JukeboxStop", () => {
                 stopLocalJukeboxAudio();
@@ -3033,6 +3074,7 @@
                 if (!audioUnlocked || !currentRoomId || !connection) return;
                 try {
                     if (connection.state === signalR.HubConnectionState.Connected) {
+                        await syncJukeboxClock(true);
                         await connection.invoke("JukeboxAudioReady", currentRoomId);
                     }
                 } catch (err) {
