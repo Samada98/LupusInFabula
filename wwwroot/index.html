@@ -1736,10 +1736,205 @@
                 min-height: 34px;
             }
         }
+        .maintenance-gate {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: none;
+            place-items: center;
+            overflow: hidden;
+            padding: max(18px, env(safe-area-inset-top, 0px)) 16px max(18px, env(safe-area-inset-bottom, 0px));
+            color: #f8fafc;
+            background:
+                radial-gradient(circle at 50% 14%, rgba(226,232,240,.22) 0 42px, transparent 43px),
+                radial-gradient(circle at 14% 20%, rgba(34,197,94,.12), transparent 24%),
+                radial-gradient(circle at 82% 18%, rgba(59,130,246,.16), transparent 26%),
+                linear-gradient(180deg, #020617 0%, #101827 52%, #04070f 100%);
+        }
+
+        .maintenance-gate.active { display: grid; }
+
+        .maintenance-hills,
+        .maintenance-fog {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .maintenance-hills {
+            left: -8%;
+            right: -8%;
+            bottom: 0;
+            height: 28svh;
+            background:
+                radial-gradient(120% 80% at 24% 100%, #0f172a 0 45%, transparent 46%),
+                radial-gradient(120% 88% at 74% 100%, #111827 0 48%, transparent 49%);
+            opacity: .96;
+        }
+
+        .maintenance-fog {
+            inset: auto -20% 0;
+            height: 36svh;
+            background:
+                radial-gradient(closest-side at 12% 72%, rgba(255,255,255,.18), transparent),
+                radial-gradient(closest-side at 40% 78%, rgba(255,255,255,.14), transparent),
+                radial-gradient(closest-side at 72% 70%, rgba(255,255,255,.13), transparent);
+            filter: blur(18px);
+            opacity: .7;
+        }
+
+        .maintenance-village {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 10svh;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            opacity: .82;
+            pointer-events: none;
+        }
+
+        .maintenance-house {
+            width: 48px;
+            height: 38px;
+            position: relative;
+            border-radius: 5px 5px 2px 2px;
+            background: #1f2937;
+            box-shadow: 0 14px 30px rgba(0,0,0,.42);
+        }
+
+        .maintenance-house::before {
+            content: "";
+            position: absolute;
+            left: 5px;
+            top: -20px;
+            width: 38px;
+            height: 38px;
+            transform: rotate(45deg);
+            border-radius: 3px;
+            background: #7f1d1d;
+        }
+
+        .maintenance-house::after {
+            content: "";
+            position: absolute;
+            left: 19px;
+            bottom: 7px;
+            width: 10px;
+            height: 14px;
+            border-radius: 2px 2px 0 0;
+            background: #020617;
+        }
+
+        .maintenance-card {
+            position: relative;
+            z-index: 2;
+            width: min(92vw, 430px);
+            padding: 28px 22px 22px;
+            border: 1px solid rgba(148,163,184,.28);
+            border-radius: 24px;
+            text-align: center;
+            background: linear-gradient(160deg, rgba(15,23,42,.86), rgba(2,6,23,.92));
+            box-shadow: 0 26px 80px rgba(0,0,0,.48);
+            backdrop-filter: blur(14px);
+        }
+
+        .maintenance-moon {
+            width: 72px;
+            height: 72px;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 16px;
+            border-radius: 24px;
+            font-size: 34px;
+            background: rgba(34,197,94,.12);
+            border: 1px solid rgba(34,197,94,.3);
+            box-shadow: inset 0 0 24px rgba(34,197,94,.13);
+        }
+
+        .maintenance-card h1 {
+            margin: 0;
+            font-size: clamp(32px, 9vw, 48px);
+            line-height: .98;
+            letter-spacing: -.02em;
+        }
+
+        .maintenance-card p {
+            margin: 14px auto 0;
+            max-width: 310px;
+            color: #cbd5e1;
+            font-size: 16px;
+            line-height: 1.45;
+        }
+
+        .maintenance-status {
+            margin-top: 18px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            color: #dcfce7;
+            background: rgba(22,163,74,.12);
+            border: 1px solid rgba(34,197,94,.24);
+            font-weight: 800;
+        }
+
+        .maintenance-status.error {
+            color: #fee2e2;
+            background: rgba(127,29,29,.25);
+            border-color: rgba(248,113,113,.35);
+        }
+
+        .maintenance-code {
+            display: none;
+            margin-top: 16px;
+            gap: 8px;
+            grid-template-columns: 1fr auto;
+        }
+
+        .maintenance-gate.unlocked .maintenance-code { display: grid; }
+
+        .maintenance-code input {
+            min-width: 0;
+            color: #e5e7eb;
+            background: rgba(15,23,42,.92);
+            border: 1px solid rgba(148,163,184,.28);
+        }
+
+        .maintenance-code button {
+            color: #052e16;
+            background: linear-gradient(180deg, #22c55e, #15803d);
+            font-weight: 900;
+        }
+
+        .maintenance-note {
+            margin-top: 14px;
+            color: rgba(203,213,225,.62);
+            font-size: 12px;
+        }
     </style>
 </head>
 
 <body>
+    <div id="maintenanceGate" class="maintenance-gate active" role="dialog" aria-modal="true" aria-labelledby="maintenanceTitle">
+        <div class="maintenance-hills"></div>
+        <div class="maintenance-village" aria-hidden="true">
+            <div class="maintenance-house"></div>
+            <div class="maintenance-house" style="transform:scale(.82); margin-top:12px"></div>
+            <div class="maintenance-house" style="transform:scale(1.08); margin-top:-6px"></div>
+        </div>
+        <main class="maintenance-card">
+            <button id="maintenanceMoon" class="maintenance-moon" type="button" aria-label="Sblocco nascosto">🌙</button>
+            <h1 id="maintenanceTitle">Il villaggio dorme</h1>
+            <p>Il server è spento. Per giocare chiedi a Mark.</p>
+            <div id="maintenanceStatus" class="maintenance-status">Accesso al gioco momentaneamente chiuso</div>
+            <div class="maintenance-code" aria-label="Sblocco nascosto">
+                <input id="maintenanceCode" inputmode="numeric" autocomplete="off" placeholder="codice segreto">
+                <button id="maintenanceUnlockBtn" type="button">Accendi</button>
+            </div>
+            <div class="maintenance-note">Tocca 20 volte la luna per inserire il codice.</div>
+        </main>
+        <div class="maintenance-fog"></div>
+    </div>
+
     <div id="audioPermission" class="audio-permission" role="status" aria-live="polite">
         <div class="audio-copy">
             <strong>Accetta sti biscotti! 🍪</strong>
@@ -1768,7 +1963,7 @@
     ========================================================== -->
     <div class="app-shell">
         <header class="brandbar" aria-label="Intestazione">
-            <div class="brand-mark" aria-hidden="true">🐺</div>
+            <div id="maintenanceWolfSwitch" class="brand-mark" role="button" tabindex="0" aria-label="Interruttore nascosto">🐺</div>
             <div>
                 <div class="brand-title">Lupus in Fabula</div>
                 <div class="brand-sub">Tieniti stretti gli amici,<br>ma ancora di più i tuoi nemici.</div>
@@ -2135,6 +2330,7 @@
             let myName = null;
             let isJoining = false; // evita UI sporca durante transizioni
             let audioUnlocked = localStorage.getItem("lupus_audioUnlocked") === "true";
+            let maintenanceMode = true;
             let audioContext = null;
             const nightDirector = {
                 active: false,
@@ -2202,6 +2398,92 @@
             nicoEE = document.getElementById("nicoEasterEgg");
             // reset ruolo visibile esternamente
             myRole = null;
+
+            const maintenanceGate = document.getElementById("maintenanceGate");
+            const maintenanceMoon = document.getElementById("maintenanceMoon");
+            const maintenanceCode = document.getElementById("maintenanceCode");
+            const maintenanceUnlockBtn = document.getElementById("maintenanceUnlockBtn");
+            const maintenanceStatus = document.getElementById("maintenanceStatus");
+            const maintenanceWolfSwitch = document.getElementById("maintenanceWolfSwitch");
+            let maintenanceMoonTaps = 0;
+            let maintenanceWolfTaps = 0;
+
+            function applyMaintenanceMode(enabled) {
+                maintenanceMode = !!enabled;
+                maintenanceGate?.classList.toggle("active", maintenanceMode);
+                if (maintenanceMode) {
+                    maintenanceGate?.classList.remove("unlocked");
+                    maintenanceMoonTaps = 0;
+                    if (maintenanceCode) maintenanceCode.value = "";
+                    if (maintenanceStatus) {
+                        maintenanceStatus.textContent = "Accesso al gioco momentaneamente chiuso";
+                        maintenanceStatus.classList.remove("error");
+                    }
+                }
+            }
+
+            async function setMaintenanceMode(enabled, code) {
+                const ok = await ensureConnection();
+                if (!ok) return false;
+
+                try {
+                    const result = await connection.invoke("SetMaintenanceMode", code, enabled);
+                    if (result?.ok || result?.Ok) {
+                        applyMaintenanceMode(!!(result.enabled ?? result.Enabled));
+                        return true;
+                    }
+
+                    if (maintenanceStatus) {
+                        maintenanceStatus.textContent = result?.error || result?.Error || "Codice errato. Il villaggio resta spento.";
+                        maintenanceStatus.classList.add("error");
+                    }
+                    return false;
+                } catch (err) {
+                    console.error("Cambio stato villaggio fallito:", err);
+                    if (maintenanceStatus) {
+                        maintenanceStatus.textContent = "Non riesco a parlare col server. Riprova.";
+                        maintenanceStatus.classList.add("error");
+                    }
+                    return false;
+                }
+            }
+
+            async function refreshMaintenanceState() {
+                const ok = await ensureConnection();
+                if (!ok) return;
+                try {
+                    const enabled = await connection.invoke("GetMaintenanceState");
+                    applyMaintenanceMode(!!enabled);
+                } catch (err) {
+                    console.warn("Stato villaggio non disponibile:", err);
+                }
+            }
+
+            maintenanceMoon?.addEventListener("click", () => {
+                maintenanceMoonTaps++;
+                if (maintenanceMoonTaps >= 20) {
+                    maintenanceGate?.classList.add("unlocked");
+                    maintenanceCode?.focus();
+                }
+            });
+
+            maintenanceUnlockBtn?.addEventListener("click", () => {
+                setMaintenanceMode(false, (maintenanceCode?.value || "").trim());
+            });
+
+            maintenanceCode?.addEventListener("keydown", e => {
+                if (e.key === "Enter") maintenanceUnlockBtn?.click();
+            });
+
+            maintenanceWolfSwitch?.addEventListener("click", () => {
+                if (maintenanceMode) return;
+                if (!document.getElementById("screenLogin")?.classList.contains("active")) return;
+                maintenanceWolfTaps++;
+                if (maintenanceWolfTaps >= 20) {
+                    maintenanceWolfTaps = 0;
+                    setMaintenanceMode(true, "251");
+                }
+            });
 
             // Collega chiusura modale SOLO ora (evita ReferenceError)
             if (closeRoleBtn) closeRoleBtn.onclick = closeRoleCardFn;
@@ -2551,6 +2833,20 @@
                 hostRandomAudioEnabled = !!enabled;
                 localStorage.setItem("lupus_hostRandomAudioEnabled", String(hostRandomAudioEnabled));
                 renderHostRandomAudioToggle();
+            });
+
+            connection.on("MaintenanceChanged", enabled => {
+                applyMaintenanceMode(!!enabled);
+                if (enabled) {
+                    stopLocalJukeboxAudio(false);
+                    currentRoomId = null;
+                    isHost = false;
+                    gameStarted = false;
+                    votingOpen = false;
+                    myVote = null;
+                    localStorage.removeItem("lupus_roomId");
+                    localStorage.setItem("lupus_autoJoin", "false");
+                }
             });
 
             /* ======================================================
@@ -3613,15 +3909,16 @@
                 const ok = await connectPromise;
                 return ok;
             }
-            (async () => { await ensureConnection(); })();
+            (async () => { await refreshMaintenanceState(); })();
 
             connection.onreconnecting(updateConnectionUI);
             connection.onreconnected(() => {
                 updateConnectionUI();
+                refreshMaintenanceState();
                 const rid = localStorage.getItem("lupus_roomId");
                 const nm = localStorage.getItem("lupus_name");
                 const auto = localStorage.getItem("lupus_autoJoin") === "true";
-                if (auto && rid && nm) joinRoom().catch(() => { });
+                if (!maintenanceMode && auto && rid && nm) joinRoom().catch(() => { });
             });
             connection.onclose(updateConnectionUI);
 
@@ -4045,6 +4342,10 @@
 
             /* ========================== 9) AZIONI BASE ========================== */
             async function createRoom() {
+                if (maintenanceMode) {
+                    applyMaintenanceMode(true);
+                    return;
+                }
                 if (creatingRoom) return;
                 creatingRoom = true;
                 const rawName = document.getElementById("name").value || "Host";
@@ -4081,6 +4382,10 @@
             }
 
             async function joinRoom({ showAlerts = false } = {}) {
+                if (maintenanceMode) {
+                    applyMaintenanceMode(true);
+                    return false;
+                }
                 if (isJoining) return false;
                 isJoining = true;
 
@@ -4379,6 +4684,8 @@
                     const tryJoin = async () => {
                         const ok = await ensureConnection();
                         if (!ok) { setTimeout(tryJoin, 1200); return; }
+                        await refreshMaintenanceState();
+                        if (maintenanceMode) return;
                         try { await joinRoom(); } catch { setTimeout(tryJoin, 1500); }
                     };
                     tryJoin();
@@ -4389,11 +4696,13 @@
 
             document.addEventListener("visibilitychange", () => {
                 if (!document.hidden) {
-                    ensureConnection();
-                    const rid = localStorage.getItem("lupus_roomId");
-                    const nm = localStorage.getItem("lupus_name");
-                    const auto = localStorage.getItem("lupus_autoJoin") === "true";
-                    if (auto && rid && nm) joinRoom().catch(() => { });
+                    (async () => {
+                        await refreshMaintenanceState();
+                        const rid = localStorage.getItem("lupus_roomId");
+                        const nm = localStorage.getItem("lupus_name");
+                        const auto = localStorage.getItem("lupus_autoJoin") === "true";
+                        if (!maintenanceMode && auto && rid && nm) joinRoom().catch(() => { });
+                    })();
                 }
             });
 

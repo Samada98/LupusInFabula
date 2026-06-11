@@ -18,6 +18,8 @@ namespace LupusInTabula.Hubs
         // RoomId -> connessioni che hanno sbloccato l'audio nel browser
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> AudioReady = new();
         private const int JukeboxScheduleDelayMs = 850;
+        private const string MaintenanceCode = "251";
+        private static volatile bool MaintenanceMode = true;
 
         // =========================================================
         // =============== LIFECYCLE & CONNESSIONI =================
@@ -50,8 +52,34 @@ namespace LupusInTabula.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
+        public Task<bool> GetMaintenanceState()
+        {
+            return Task.FromResult(MaintenanceMode);
+        }
+
+        public async Task<object> SetMaintenanceMode(string code, bool enabled)
+        {
+            if (!Same(code, MaintenanceCode))
+            {
+                return new { ok = false, enabled = MaintenanceMode, error = "Codice segreto errato." };
+            }
+
+            MaintenanceMode = enabled;
+            if (enabled)
+            {
+                Rooms.Clear();
+                AudioReady.Clear();
+                ConnIndex.Clear();
+            }
+
+            await Clients.All.SendAsync("MaintenanceChanged", MaintenanceMode);
+            return new { ok = true, enabled = MaintenanceMode };
+        }
+
         public async Task<string> CreateRoom(string hostName)
         {
+            if (MaintenanceMode) throw new HubException("Il villaggio è spento.");
+
             string id;
             do { id = NewRoomId(); } while (Rooms.ContainsKey(id));
 
@@ -84,6 +112,24 @@ namespace LupusInTabula.Hubs
         /// </summary>
         public async Task<object> JoinRoom(string roomId, string name, string? hostKey = null)
         {
+            if (MaintenanceMode)
+            {
+                await Clients.Caller.SendAsync("MaintenanceChanged", true);
+                return new
+                {
+                    ok = false,
+                    error = "Il villaggio è spento. Chiedi a Mark per giocare.",
+                    roomId,
+                    hostName = "",
+                    isHost = false,
+                    gameStarted = false,
+                    votingOpen = false,
+                    role = (string?)null,
+                    players = new List<PlayerDto>(),
+                    roleCounts = (IDictionary<string, int>?)null
+                };
+            }
+
             if (!Rooms.TryGetValue(roomId, out var room))
             {
                 await Clients.Caller.SendAsync("JoinError", "Stanza non trovata");
@@ -294,6 +340,7 @@ namespace LupusInTabula.Hubs
 
         public async Task RestartGame(string roomId)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
@@ -325,6 +372,7 @@ namespace LupusInTabula.Hubs
             int wolves, int villagers, int seers, int guards, int scemo, int hunter, int witch, int lara, int mayor, int hitman,
             int medium, int couple)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
@@ -392,6 +440,7 @@ namespace LupusInTabula.Hubs
 
         public async Task OpenVoting(string roomId)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
@@ -404,6 +453,7 @@ namespace LupusInTabula.Hubs
 
         public async Task CloseVoting(string roomId)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
@@ -415,6 +465,7 @@ namespace LupusInTabula.Hubs
         // targetName: null/"" -> togli voto
         public async Task VotePlayer(string roomId, string? targetName)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!room.VotingOpen) return;
 
@@ -427,6 +478,7 @@ namespace LupusInTabula.Hubs
 
         public async Task UnvotePlayer(string roomId)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!room.VotingOpen) return;
 
@@ -440,6 +492,7 @@ namespace LupusInTabula.Hubs
         // Dove dorme la coppia (può chiamarlo uno dei due)
         public async Task CoupleSleepAt(string roomId, string where)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             where = (where ?? "").Trim().ToLowerInvariant();
             if (where != "romeo" && where != "giulietta") return;
@@ -454,6 +507,7 @@ namespace LupusInTabula.Hubs
 
         public async Task EliminatePlayer(string roomId, string playerName)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
@@ -465,6 +519,7 @@ namespace LupusInTabula.Hubs
 
         public async Task RevivePlayer(string roomId, string playerName)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
@@ -483,6 +538,7 @@ namespace LupusInTabula.Hubs
 
         public async Task BeginNight(string roomId)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
             if (!room.GameStarted) return;
@@ -503,6 +559,7 @@ namespace LupusInTabula.Hubs
 
         public async Task<object?> SetNightChoice(string roomId, string choiceType, string targetName)
         {
+            if (MaintenanceMode) return null;
             if (!Rooms.TryGetValue(roomId, out var room)) return null;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return null;
             if (!room.NightInProgress) return null;
@@ -584,6 +641,7 @@ namespace LupusInTabula.Hubs
 
         public async Task EndNight(string roomId)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
             if (!room.NightInProgress) return;
@@ -656,6 +714,7 @@ namespace LupusInTabula.Hubs
 
         public async Task KickPlayer(string roomId, string playerName)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
             if (room.GameStarted) return;
@@ -681,6 +740,7 @@ namespace LupusInTabula.Hubs
 
         public async Task SendHostRoomInfo(string roomId)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
@@ -700,6 +760,7 @@ namespace LupusInTabula.Hubs
 
         public async Task JukeboxPlay(string roomId, string preset, double volume)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
@@ -718,6 +779,7 @@ namespace LupusInTabula.Hubs
 
         public async Task JukeboxStop(string roomId)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
@@ -726,6 +788,7 @@ namespace LupusInTabula.Hubs
 
         public Task JukeboxAudioReady(string roomId)
         {
+            if (MaintenanceMode) return Task.CompletedTask;
             if (!Rooms.TryGetValue(roomId, out var room)) return Task.CompletedTask;
 
             var connId = Context.ConnectionId;
@@ -739,6 +802,7 @@ namespace LupusInTabula.Hubs
 
         public async Task JukeboxSetHostRandomAudio(string roomId, bool enabled)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
@@ -748,6 +812,7 @@ namespace LupusInTabula.Hubs
 
         public async Task JukeboxStartNight(string roomId)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
@@ -764,6 +829,7 @@ namespace LupusInTabula.Hubs
 
         public async Task JukeboxNightIntervention(string roomId, string sound)
         {
+            if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
