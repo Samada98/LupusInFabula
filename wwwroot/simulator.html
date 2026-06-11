@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lupus Simulator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <style>
+        :root {
+            --brand: #8b0000;
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --panel: #ffffff;
+            --soft: #fff7ed;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            color: var(--ink);
+            background: linear-gradient(135deg, #fff7f3, #fff6e6);
+        }
+
+        main {
+            width: min(1180px, calc(100vw - 24px));
+            margin: 24px auto;
+            display: grid;
+            gap: 16px;
+        }
+
+        h1, h2, h3 { margin: 0; }
+        p { margin: 6px 0 0; color: var(--muted); }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 10px 24px rgba(0,0,0,.06);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font: inherit;
+        }
+
+        button {
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font: inherit;
+            font-weight: 800;
+            color: #fff;
+            background: var(--brand);
+            cursor: pointer;
+        }
+
+        button.secondary { background: #111827; }
+        button.ghost { background: #4b5563; }
+        button:disabled { opacity: .55; cursor: not-allowed; }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .room {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            color: var(--brand);
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 10px;
+        }
+
+        .client {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px;
+            background: #fff;
+        }
+
+        .client strong { display: block; }
+        .client small { color: var(--muted); }
+        .role { margin-top: 8px; font-weight: 800; color: var(--brand); }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        th, td {
+            border-bottom: 1px solid var(--line);
+            padding: 8px;
+            text-align: left;
+        }
+
+        th { background: var(--soft); }
+
+        .log {
+            height: 260px;
+            overflow: auto;
+            background: #111827;
+            color: #f9fafb;
+            border-radius: 12px;
+            padding: 12px;
+            font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <section class="panel">
+        <h1>Simulatore Lupus in Fabula</h1>
+        <p>Crea una stanza locale con host e giocatori finti per provare flusso, ruoli, voti ed eliminazioni.</p>
+    </section>
+
+    <section class="panel grid">
+        <label>
+            Nome host
+            <input id="hostName" value="Host">
+        </label>
+        <label>
+            Giocatori
+            <input id="playerNames" value="Alice,Bob,Carlo,Diana">
+        </label>
+        <label>
+            Lupi
+            <input id="wolves" type="number" min="0" value="1">
+        </label>
+        <label>
+            Contadini
+            <input id="villagers" type="number" min="0" value="3">
+        </label>
+        <label>
+            Veggenti
+            <input id="seers" type="number" min="0" value="0">
+        </label>
+        <label>
+            Guardie
+            <input id="guards" type="number" min="0" value="0">
+        </label>
+        <label>
+            Sindaci
+            <input id="mayor" type="number" min="0" value="0">
+        </label>
+        <label>
+            Medium
+            <input id="medium" type="number" min="0" value="0">
+        </label>
+        <label>
+            Coppie
+            <input id="couple" type="number" min="0" max="2" value="0">
+        </label>
+    </section>
+
+    <section class="panel">
+        <div class="actions">
+            <button id="create">1. Crea stanza e join bot</button>
+            <button id="start" class="secondary" disabled>2. Avvia partita</button>
+            <button id="openVote" class="secondary" disabled>3. Apri votazione</button>
+            <button id="randomVote" class="ghost" disabled>Voti casuali</button>
+            <button id="closeVote" class="secondary" disabled>Chiudi votazione</button>
+            <button id="eliminateTop" class="ghost" disabled>Elimina piu votato</button>
+            <button id="restart" class="ghost" disabled>Restart</button>
+        </div>
+        <p class="room">Stanza: <span id="roomId">-</span></p>
+    </section>
+
+    <section class="panel">
+        <h2>Client connessi</h2>
+        <div id="clients" class="cards"></div>
+    </section>
+
+    <section class="panel">
+        <h2>Stato giocatori</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Online</th>
+                <th>Ruolo</th>
+                <th>Voti</th>
+                <th>Eliminato</th>
+                <th>Votato da</th>
+            </tr>
+            </thead>
+            <tbody id="players"></tbody>
+        </table>
+    </section>
+
+    <section class="panel">
+        <h2>Log eventi</h2>
+        <div id="log" class="log"></div>
+    </section>
+</main>
+
+<script>
+    const hubUrl = "/gamehub";
+    const clients = [];
+    let host = null;
+    let roomId = null;
+    let latestPlayers = [];
+
+    const roleLabels = {
+        wolf: "Lupo",
+        villager: "Contadino",
+        seer: "Veggente",
+        guard: "Puttana",
+        scemo: "Scemo",
+        hunter: "Cacciatore",
+        witch: "Strega",
+        lara: "Lara",
+        mayor: "Sindaco",
+        hitman: "Sicario",
+        medium: "Medium",
+        romeo: "Romeo",
+        giulietta: "Giulietta"
+    };
+
+    const $ = id => document.getElementById(id);
+    const val = id => $(id).value.trim();
+    const num = id => Number($(id).value || 0);
+
+    function log(message, data) {
+        const time = new Date().toLocaleTimeString();
+        $("log").textContent += `[${time}] ${message}${data ? " " + JSON.stringify(data) : ""}\n`;
+        $("log").scrollTop = $("log").scrollHeight;
+    }
+
+    function setEnabled(id, enabled) {
+        $(id).disabled = !enabled;
+    }
+
+    function buildClient(name, kind) {
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(hubUrl)
+            .withAutomaticReconnect()
+            .build();
+        const client = { name, kind, connection, role: "", hostKey: "" };
+
+        connection.on("ReceiveHostKey", hostKey => {
+            client.hostKey = hostKey;
+            log(`${name} riceve hostKey`);
+            renderClients();
+        });
+        connection.on("UpdateLobby", (players, hostName, hostOnline) => {
+            log(`${name} vede lobby`, { players: players.length, hostName, hostOnline });
+        });
+        connection.on("ReceiveRole", role => {
+            client.role = role;
+            log(`${name} riceve ruolo`, roleLabels[role] || role);
+            renderClients();
+        });
+        connection.on("GameStarted", (players, hostName, hostOnline, roleCounts) => {
+            latestPlayers = players;
+            log(`${name} riceve GameStarted`, roleCounts);
+            renderPlayers();
+        });
+        connection.on("UpdateVotes", players => {
+            latestPlayers = players;
+            renderPlayers();
+        });
+        connection.on("VotingStarted", () => log(`${name}: votazione aperta`));
+        connection.on("VotingEnded", () => log(`${name}: votazione chiusa`));
+        connection.on("PlayerEliminated", playerName => log(`${name}: eliminato ${playerName}`));
+        connection.on("PlayerRevived", playerName => log(`${name}: resuscitato ${playerName}`));
+        connection.on("PlayerKicked", playerName => log(`${name}: espulso ${playerName}`));
+        connection.on("GameRestarted", players => {
+            latestPlayers = players;
+            client.role = "";
+            log(`${name}: partita riavviata`);
+            renderClients();
+            renderPlayers();
+        });
+        connection.on("JoinError", message => log(`${name}: errore join`, message));
+        connection.on("CouplePaired", (partnerName, partnerRole) => {
+            log(`${name}: coppia con ${partnerName}`, partnerRole);
+        });
+        connection.on("CoupleSaved", (juliet, romeo) => log(`${name}: coppia salvata`, { juliet, romeo }));
+        connection.on("CoupleDied", (romeo, juliet) => log(`${name}: coppia morta`, { romeo, juliet }));
+        connection.on("MediumReveal", (deadName, deadRole) => log(`${name}: medium reveal`, { deadName, deadRole }));
+
+        return client;
+    }
+
+    async function connectClient(client) {
+        await client.connection.start();
+        clients.push(client);
+        renderClients();
+        log(`${client.name} connesso`);
+    }
+
+    function renderClients() {
+        $("clients").innerHTML = clients.map(c => `
+            <div class="client">
+                <strong>${c.name}</strong>
+                <small>${c.kind} - ${c.connection.state}</small>
+                <div class="role">${c.role ? (roleLabels[c.role] || c.role) : "Ruolo non assegnato"}</div>
+            </div>
+        `).join("");
+    }
+
+    function renderPlayers() {
+        $("players").innerHTML = latestPlayers.map(p => `
+            <tr>
+                <td>${p.name ?? p.Name}</td>
+                <td>${p.isOnline ?? p.IsOnline ? "si" : "no"}</td>
+                <td>${roleLabels[p.role ?? p.Role] || p.role || p.Role || ""}</td>
+                <td>${p.votes ?? p.Votes ?? 0}</td>
+                <td>${p.eliminated ?? p.Eliminated ? "si" : "no"}</td>
+                <td>${(p.votedBy ?? p.VotedBy ?? []).join(", ")}</td>
+            </tr>
+        `).join("");
+    }
+
+    function livePlayers() {
+        return latestPlayers
+            .filter(p => !(p.eliminated ?? p.Eliminated))
+            .map(p => p.name ?? p.Name);
+    }
+
+    async function createRoomAndJoinBots() {
+        $("log").textContent = "";
+        latestPlayers = [];
+        clients.splice(0, clients.length);
+        renderClients();
+        renderPlayers();
+
+        host = buildClient(val("hostName") || "Host", "host");
+        await connectClient(host);
+        roomId = await host.connection.invoke("CreateRoom", host.name);
+        $("roomId").textContent = roomId;
+        log("Stanza creata", roomId);
+
+        const names = val("playerNames").split(",").map(x => x.trim()).filter(Boolean);
+        for (const name of names) {
+            const player = buildClient(name, "player");
+            await connectClient(player);
+            const result = await player.connection.invoke("JoinRoom", roomId, name, null);
+            log(`${name} join`, result);
+        }
+
+        setEnabled("start", true);
+        setEnabled("restart", true);
+    }
+
+    async function startGame() {
+        await host.connection.invoke(
+            "StartGame",
+            roomId,
+            num("wolves"), num("villagers"), num("seers"), num("guards"), 0, 0, 0, 0, num("mayor"), 0,
+            num("medium"), num("couple")
+        );
+        setEnabled("openVote", true);
+        setEnabled("eliminateTop", true);
+        log("StartGame inviato");
+    }
+
+    async function openVoting() {
+        await host.connection.invoke("OpenVoting", roomId);
+        setEnabled("randomVote", true);
+        setEnabled("closeVote", true);
+        log("OpenVoting inviato");
+    }
+
+    async function randomVote() {
+        const names = livePlayers();
+        const playerClients = clients.filter(c => c.kind === "player" && names.includes(c.name));
+        for (const client of playerClients) {
+            const targets = names.filter(n => n !== client.name);
+            const target = targets[Math.floor(Math.random() * targets.length)];
+            await client.connection.invoke("VotePlayer", roomId, target);
+            log(`${client.name} vota ${target}`);
+        }
+    }
+
+    async function closeVoting() {
+        await host.connection.invoke("CloseVoting", roomId);
+        log("CloseVoting inviato");
+    }
+
+    async function eliminateTop() {
+        const sorted = [...latestPlayers]
+            .filter(p => !(p.eliminated ?? p.Eliminated))
+            .sort((a, b) => (b.votes ?? b.Votes ?? 0) - (a.votes ?? a.Votes ?? 0));
+        const top = sorted[0];
+        if (!top || (top.votes ?? top.Votes ?? 0) <= 0) {
+            log("Nessun giocatore con voti da eliminare");
+            return;
+        }
+        const name = top.name ?? top.Name;
+        await host.connection.invoke("EliminatePlayer", roomId, name);
+        log(`EliminatePlayer inviato`, name);
+    }
+
+    async function restartGame() {
+        await host.connection.invoke("RestartGame", roomId);
+        for (const client of clients) client.role = "";
+        setEnabled("openVote", false);
+        setEnabled("randomVote", false);
+        setEnabled("closeVote", false);
+        setEnabled("eliminateTop", false);
+        log("RestartGame inviato");
+        renderClients();
+    }
+
+    $("create").addEventListener("click", createRoomAndJoinBots);
+    $("start").addEventListener("click", startGame);
+    $("openVote").addEventListener("click", openVoting);
+    $("randomVote").addEventListener("click", randomVote);
+    $("closeVote").addEventListener("click", closeVoting);
+    $("eliminateTop").addEventListener("click", eliminateTop);
+    $("restart").addEventListener("click", restartGame);
+</script>
+</body>
+</html>

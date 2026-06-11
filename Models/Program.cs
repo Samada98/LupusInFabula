@@ -1,9 +1,17 @@
 ﻿using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using LupusInTabula.Hubs;
 using System.IO.Compression;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(
+        Path.Combine(builder.Environment.ContentRootPath, ".aspnet-data-protection-keys")));
 
 // Porta dinamica (Render) o 5000 in locale
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
@@ -79,3 +87,4 @@ app.MapGet("/health", () => Results.Ok("ok"));
 app.MapHub<GameHub>("/gamehub");
 
 app.Run();
+

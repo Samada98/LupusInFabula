@@ -224,14 +224,22 @@
         }
 
         .kickBtn {
-            margin-left: 8px;
-            padding: 4px 8px;
+            margin: 6px 0 0;
+            padding: 5px 12px;
+            width: auto;
+            height: 30px;
+            min-height: 30px;
             border: none;
-            border-radius: 8px;
+            border-radius: 999px;
             background: #ef4444;
             color: #fff;
             font-weight: 700;
-            cursor: pointer
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-grid;
+            place-items: center;
+            line-height: 1;
+            box-shadow: 0 6px 12px rgba(239,68,68,.22)
         }
 
             .kickBtn:hover {
@@ -436,7 +444,10 @@
             padding: 6px 10px;
             border-radius: 999px;
             font-weight: 600;
-            box-shadow: 0 2px 6px rgba(0,0,0,.06)
+            box-shadow: 0 2px 6px rgba(0,0,0,.06);
+            display: inline-grid;
+            justify-items: center;
+            gap: 2px;
         }
 
         .online {
@@ -714,6 +725,19 @@
             gap: 6px
         }
 
+            .roleCardMini.clickable {
+                cursor: pointer;
+            }
+
+            .roleCardMini.clickable:active {
+                transform: translateY(1px);
+            }
+
+            .roleCardMini.clickable:focus-visible {
+                outline: 3px solid rgba(22,163,74,.45);
+                outline-offset: 2px;
+            }
+
             .roleCardMini .title {
                 font-weight: 800;
                 display: flex;
@@ -858,6 +882,12 @@
             text-align: center;
         }
 
+        .panel > h2,
+        .panel > h3,
+        .login-hero h2 {
+            text-align: center;
+        }
+
         .btn-row .btn-full {
             grid-column: 1 / -1;
             width: 100%;
@@ -905,6 +935,48 @@
             hyphens: auto;
             text-align: center;
         }
+
+        #screenGamePlayer.eliminated-view .playersGrid,
+        #screenGamePlayer.eliminated-view .rolesGuideGrid,
+        #screenGamePlayer.eliminated-view #gameLogPlayer {
+            opacity: .28;
+            filter: grayscale(.55);
+            pointer-events: none;
+        }
+
+        #eliminatedCurtain {
+            display: none;
+            margin: 12px auto;
+            width: min(420px, 94%);
+            padding: 18px 16px;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #111827, #374151);
+            color: #f9fafb;
+            text-align: center;
+            box-shadow: 0 18px 36px rgba(0,0,0,.22);
+            border: 1px solid rgba(255,255,255,.12);
+        }
+
+        #screenGamePlayer.eliminated-view #eliminatedCurtain {
+            display: block;
+        }
+
+        .eliminated-decor {
+            font-size: 42px;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .eliminated-title {
+            font-weight: 900;
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .eliminated-copy {
+            color: #d1d5db;
+            margin: 0;
+        }
         /* Overlay JukeBox */
         #jukeboxOverlay {
             display: none;
@@ -913,20 +985,21 @@
             background: rgba(0,0,0,.55);
             backdrop-filter: blur(3px);
             z-index: 100; /* sopra tutto */
+            align-items: center;
+            justify-content: center;
+            padding: max(14px, env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px));
         }
 
         /* Card centrale per JukeBox */
         #jukeboxCard {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%,-50%);
-            background: #fff;
-            padding: 28px;
+            position: relative;
+            background: linear-gradient(145deg,#111827,#030712);
+            color: #fff;
+            padding: 22px;
             border-radius: 18px;
             box-shadow: 0 24px 48px rgba(0,0,0,.3);
-            width: min(92vw, 680px);
-            max-height: 90vh;
+            width: min(92vw, 520px);
+            max-height: calc(100svh - 28px);
             overflow-y: auto;
             z-index: 110;
             text-align: center;
@@ -944,6 +1017,256 @@
             min-height: 200px; /* così sembra un contenitore vuoto pronto */
         }
 
+        .jukebox-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .jukebox-track-btn {
+            min-height: 58px;
+            border-radius: 14px;
+            background: #16a34a;
+            color: #fff;
+            box-shadow: 0 10px 18px rgba(22,163,74,.2);
+        }
+
+        .jukebox-track-btn:active {
+            transform: translateY(1px) scale(.99);
+        }
+
+        .jukebox-stop-btn {
+            width: 100%;
+            margin-top: 14px;
+            background: #dc2626;
+        }
+
+        .jukebox-status {
+            min-height: 22px;
+            margin-top: 12px;
+            color: #d1d5db;
+            font-size: 13px;
+        }
+
+        .jukebox-view {
+            display: none;
+        }
+
+        .jukebox-view.active {
+            display: block;
+        }
+
+        .jukebox-subtitle {
+            color: #d1d5db;
+            font-size: 13px;
+            margin: -4px 0 14px;
+        }
+
+        .jukebox-host-audio-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 38px;
+            margin: 0 auto 12px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(134,239,172,.42);
+            background: rgba(22,163,74,.18);
+            color: #dcfce7;
+            box-shadow: none;
+            font-size: 13px;
+        }
+
+        .jukebox-host-audio-toggle.off {
+            border-color: rgba(156,163,175,.38);
+            background: rgba(31,41,55,.75);
+            color: #d1d5db;
+        }
+
+        .jukebox-back-btn {
+            width: 100%;
+            margin-top: 12px;
+            background: #374151;
+        }
+
+        #nightHostOverlay,
+        #nightPlayerCurtain {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 120;
+            padding: max(14px, env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px));
+        }
+
+        #nightHostOverlay {
+            background: rgba(3,7,18,.66);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        #nightPlayerCurtain {
+            background:
+                radial-gradient(circle at 50% 18%, rgba(34,197,94,.16), transparent 30%),
+                linear-gradient(160deg, rgba(3,7,18,.96), rgba(17,24,39,.94));
+            color: #f9fafb;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .night-card {
+            width: min(94vw, 620px);
+            max-height: calc(100svh - 28px);
+            overflow-y: auto;
+            color: #f9fafb;
+            background: linear-gradient(155deg, #111827, #020617);
+            border: 1px solid rgba(148,163,184,.24);
+            border-radius: 18px;
+            box-shadow: 0 26px 70px rgba(0,0,0,.42);
+            padding: 18px;
+        }
+
+        .night-kicker {
+            margin: 0 0 4px;
+            color: #86efac;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .night-card h2 {
+            margin: 0 0 10px;
+            font-size: 26px;
+        }
+
+        .night-instruction {
+            margin: 10px 0 14px;
+            color: #d1d5db;
+            line-height: 1.45;
+        }
+
+        .night-steps {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 2px 0 10px;
+        }
+
+        .night-step-pill {
+            flex: 0 0 auto;
+            border: 1px solid rgba(148,163,184,.25);
+            border-radius: 999px;
+            padding: 7px 10px;
+            color: #cbd5e1;
+            background: rgba(15,23,42,.85);
+            font-size: 12px;
+        }
+
+        .night-step-pill.active {
+            color: #052e16;
+            background: #86efac;
+            border-color: #86efac;
+            font-weight: 800;
+        }
+
+        .night-picks {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .night-pick-btn {
+            min-height: 50px;
+            border-radius: 12px;
+            background: #1f2937;
+            color: #fff;
+            border: 1px solid rgba(148,163,184,.26);
+            box-shadow: none;
+        }
+
+        .night-pick-btn.selected {
+            background: #16a34a;
+            border-color: #86efac;
+        }
+
+        .night-pick-btn:disabled {
+            opacity: .48;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .night-result {
+            min-height: 24px;
+            margin-top: 12px;
+            color: #bbf7d0;
+            font-weight: 700;
+        }
+
+        .night-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .night-actions button {
+            min-height: 48px;
+            border-radius: 12px;
+        }
+
+        #nightGoodMorningBtn {
+            grid-column: 1 / -1;
+            background: #16a34a;
+        }
+
+        .night-sleep-icon {
+            font-size: 54px;
+            margin-bottom: 10px;
+        }
+
+        .night-player-box {
+            width: min(88vw, 420px);
+            padding: 26px 20px;
+            border-radius: 20px;
+            background: rgba(15,23,42,.62);
+            border: 1px solid rgba(148,163,184,.22);
+            box-shadow: 0 24px 60px rgba(0,0,0,.32);
+        }
+
+        .night-player-box h2 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .night-player-box p {
+            margin: 0;
+            color: #d1d5db;
+        }
+
+        @media (max-width: 480px) {
+            #jukeboxCard {
+                width: 100%;
+                padding: 18px;
+            }
+
+            .jukebox-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .night-card {
+                width: 100%;
+                padding: 16px;
+            }
+
+            .night-picks {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* pulsante X in alto a destra */
         #closeJukebox {
             position: absolute;
@@ -955,10 +1278,483 @@
             cursor: pointer;
         }
 
+        .audio-permission {
+            position: fixed;
+            left: max(12px, env(safe-area-inset-left, 0px));
+            right: max(12px, env(safe-area-inset-right, 0px));
+            bottom: max(12px, env(safe-area-inset-bottom, 0px));
+            z-index: 120;
+            display: none;
+            align-items: stretch;
+            justify-content: center;
+            gap: 12px;
+            width: min(760px, calc(100vw - 24px));
+            margin: 0 auto;
+            padding: 12px;
+            border: 1px solid rgba(34,197,94,.35);
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(17,24,39,.96), rgba(3,7,18,.96));
+            box-shadow: 0 18px 42px rgba(0,0,0,.35);
+            backdrop-filter: blur(10px);
+        }
+
+        .audio-permission.is-visible {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-areas:
+                "copy button"
+                "progress progress";
+        }
+
+        .audio-copy {
+            display: grid;
+            gap: 2px;
+            min-width: 0;
+            grid-area: copy;
+        }
+
+        .audio-copy strong {
+            color: #f9fafb;
+            font-size: 14px;
+        }
+
+        .audio-copy span {
+            color: #d1d5db;
+            font-size: 12px;
+        }
+
+        .audio-confirm-btn {
+            flex: 0 0 auto;
+            padding: 10px 14px;
+            border-radius: 12px;
+            white-space: nowrap;
+            background: #16a34a;
+            color: #fff;
+            box-shadow: 0 8px 16px rgba(22,163,74,.22);
+            grid-area: button;
+        }
+
+        .audio-progress {
+            position: relative;
+            display: flex;
+            grid-area: progress;
+            flex: 1 1 auto;
+            min-width: 180px;
+            height: 38px;
+            align-items: center;
+            gap: 8px;
+            padding: 0 18px 0 14px;
+        }
+
+        .audio-permission.is-loading .audio-progress {
+            display: flex;
+        }
+
+        .audio-permission.is-loading .audio-confirm-btn {
+            display: none;
+        }
+
+        .audio-track {
+            position: relative;
+            flex: 1 1 auto;
+            height: 9px;
+            border-radius: 999px;
+            background: #374151;
+            overflow: visible;
+        }
+
+        .audio-track-fill {
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 0;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #14532d, #22c55e);
+            will-change: width;
+        }
+
+        .audio-wolf {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translate(-50%, -58%);
+            font-size: 25px;
+            line-height: 1;
+            will-change: left;
+            filter: drop-shadow(0 4px 5px rgba(0,0,0,.2));
+        }
+
+        .audio-farmer {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translate(50%, -58%);
+            font-size: 24px;
+            line-height: 1;
+            filter: drop-shadow(0 4px 5px rgba(0,0,0,.22));
+        }
+
+        .audio-permission.is-loading .audio-track-fill {
+            width: 0;
+        }
+
+        .audio-permission.is-loading .audio-wolf {
+            left: 0;
+        }
+
+        @media (max-width: 560px) {
+            .audio-permission {
+                padding: 12px;
+                gap: 10px;
+            }
+
+            .audio-permission.is-visible {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "copy"
+                    "progress"
+                    "button";
+            }
+
+            .audio-confirm-btn {
+                width: 100%;
+            }
+
+            .audio-copy {
+                text-align: center;
+            }
+
+            .audio-progress {
+                min-width: 0;
+                padding: 0 22px 0 18px;
+            }
+        }
+        /* Mobile polish */
+        :root {
+            --surface: rgba(255,255,255,.88);
+            --surface-strong: #fffaf7;
+            --ink-soft: #374151;
+            --green: #16a34a;
+            --shadow-soft: 0 14px 34px rgba(82,24,18,.10);
+            --shadow-press: 0 8px 18px rgba(82,24,18,.13);
+        }
+
+        body {
+            background:
+                radial-gradient(820px 520px at 50% -12%, rgba(178,34,34,.22), transparent 62%),
+                radial-gradient(780px 500px at 6% 104%, rgba(245,158,11,.18), transparent 58%),
+                linear-gradient(180deg, #fff7f2 0%, #fffdf8 46%, #fff7ed 100%);
+        }
+
+        .app-shell {
+            gap: 4px;
+        }
+
+        .brandbar {
+            justify-content: flex-start;
+            width: min(1000px, 100%);
+            margin: 0 auto;
+            padding: max(14px, env(safe-area-inset-top, 0px)) 14px 6px;
+        }
+
+        .brand-mark {
+            border-radius: 14px;
+            box-shadow: 0 12px 26px rgba(139,0,0,.20);
+        }
+
+        .brand-title {
+            line-height: 1.05;
+            letter-spacing: 0;
+        }
+
+        .brand-sub {
+            text-align: left;
+            color: #7c2d12;
+            font-weight: 600;
+        }
+
+        .brandbar {
+            justify-content: center;
+            text-align: center;
+        }
+
+        .brandbar > div:last-child {
+            display: grid;
+            justify-items: center;
+        }
+
+        .brand-sub {
+            text-align: center;
+            max-width: 320px;
+            line-height: 1.25;
+            font-style: italic;
+            margin-top: 6px;
+        }
+
+        .app-shell {
+            min-height: 100svh;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        .app-shell > footer {
+            align-self: end;
+            margin-top: auto;
+            width: 100%;
+            padding: 18px 12px max(14px, env(safe-area-inset-bottom, 0px));
+            color: #7c2d12;
+            font-weight: 600;
+            text-align: center;
+            font-size: 12.5px;
+        }
+
+        .screen {
+            width: min(1000px, 100%);
+            margin: 0 auto;
+        }
+
+        .panel, .login-card {
+            background: var(--surface);
+            border-color: rgba(255,255,255,.78);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(10px);
+        }
+
+        .panel {
+            border-radius: 18px;
+            padding: 16px;
+        }
+
+        .panel h3.centered-heading,
+        .panel h2.centered-heading {
+            margin-bottom: 12px;
+        }
+
+        input, button {
+            border-radius: 14px;
+        }
+
+        button {
+            min-height: 46px;
+            box-shadow: var(--shadow-press);
+        }
+
+        .btn-secondary {
+            background: #263244;
+        }
+
+        .btn-row {
+            gap: 9px;
+        }
+
+        #inviteBox, .countWrap {
+            background: rgba(255,247,237,.86);
+            border-color: rgba(245,158,11,.32);
+        }
+
+        .rolesBox {
+            gap: 10px;
+        }
+
+        .number-control {
+            background: var(--surface-strong);
+            border: 1px solid rgba(229,231,235,.9);
+            border-radius: 14px;
+            padding: 9px;
+            box-shadow: 0 8px 18px rgba(31,41,55,.05);
+        }
+
+        .number-control label {
+            color: var(--ink-soft);
+            overflow-wrap: anywhere;
+        }
+
+        .count {
+            background: #fff;
+            border-color: rgba(139,0,0,.16);
+            color: var(--brand);
+        }
+
+        .inc-btn, .dec-btn {
+            background: #fff7ed;
+            color: #7f1d1d;
+            border-color: rgba(139,0,0,.12);
+        }
+
+        .inc-btn {
+            background: #ecfdf5;
+            color: #047857;
+            border-color: rgba(16,185,129,.20);
+        }
+
+        .playersGrid {
+            grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+            gap: 10px;
+        }
+
+        .playersGridItem {
+            min-height: 70px;
+            border-radius: 16px;
+            box-shadow: 0 12px 24px rgba(15,23,42,.16);
+        }
+
+        .roleCardMini {
+            border-radius: 16px;
+            background: rgba(255,255,255,.92);
+            box-shadow: 0 10px 22px rgba(31,41,55,.08);
+        }
+
+        .roleCardMini .badge {
+            width: 34px;
+            height: 34px;
+            display: inline-grid;
+            place-items: center;
+            border-radius: 12px;
+            background: #fff7ed;
+        }
+
+        #log, #gameLog, #gameLogPlayer {
+            background: rgba(255,253,247,.78);
+            border-color: rgba(139,0,0,.12);
+            max-height: 150px;
+        }
+
+        #playersTable {
+            background: rgba(255,255,255,.72);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        #playersTable th {
+            background: #fff7ed;
+            color: #7f1d1d;
+        }
+
+        #roleCard, .night-card, #jukeboxCard {
+            border-radius: 20px;
+        }
+
+        @media (max-width: 560px) {
+            .app-shell {
+                display: grid;
+                grid-template-rows: auto 1fr auto;
+                padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+            }
+
+            .brandbar {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .brand-mark {
+                width: 38px;
+                height: 38px;
+                font-size: 20px;
+            }
+
+            .brand-title {
+                font-size: 22px;
+            }
+
+            #screenLobby, #screenGame, #screenGamePlayer {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            .panel {
+                margin: 10px auto;
+                padding: 14px;
+                border-radius: 16px;
+            }
+
+            .login-card {
+                width: min(94vw, 460px);
+                border-radius: 18px;
+            }
+
+            .btn-row {
+                grid-template-columns: 1fr;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .number-control {
+                grid-template-columns: 1fr 42px 44px 42px;
+                gap: 7px;
+            }
+
+            .number-control label {
+                font-size: 14px;
+            }
+
+            .count, .inc-btn, .dec-btn {
+                width: 42px;
+                height: 42px;
+            }
+
+            .rolesGuideGrid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .roleCardMini {
+                min-height: auto;
+                padding: 12px;
+            }
+
+            .playersGrid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            #screenGamePlayer #showRoleBtn {
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            #playersTable th, #playersTable td {
+                padding: 7px 5px;
+                font-size: 13px;
+            }
+
+            #playersTable th.col-role,
+            #playersTable td.col-role {
+                width: 104px;
+            }
+
+            #playersTable th.col-actions,
+            #playersTable td.col-actions {
+                width: 38px;
+            }
+
+            .btn-icon, #closeJukebox {
+                width: 26px;
+                min-height: 26px;
+            }
+
+            #closeJukebox {
+                width: 34px;
+                min-height: 34px;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div id="audioPermission" class="audio-permission" role="status" aria-live="polite">
+        <div class="audio-copy">
+            <strong>Accetta sti biscotti! 🍪</strong>
+            <span>Non fare lo sciacqua cozze.</span>
+        </div>
+        <div class="audio-progress" aria-hidden="true">
+            <span class="audio-track">
+                <span class="audio-track-fill"></span>
+                <span class="audio-wolf">🐺</span>
+                <span class="audio-farmer">👨‍🌾</span>
+            </span>
+        </div>
+        <button id="audioPermissionBtn" class="audio-confirm-btn" type="button">Abilita audio</button>
+    </div>
+
     <!-- =========================================================
          PULL TO REFRESH INDICATOR
     ========================================================== -->
@@ -975,7 +1771,7 @@
             <div class="brand-mark" aria-hidden="true">🐺</div>
             <div>
                 <div class="brand-title">Lupus in Fabula</div>
-                <div class="brand-sub">Gioca con gli amici, ovunque.</div>
+                <div class="brand-sub">Tieniti stretti gli amici,<br>ma ancora di più i tuoi nemici.</div>
             </div>
         </header>
 
@@ -1089,6 +1885,7 @@
 
                 <div class="btn-row" style="margin-top:10px;">
                     <button id="votingBtn" onclick="toggleVoting()">Votazione</button>
+                    <button id="nightBtn" class="bigButton" type="button">🌙 Buonanotte</button>
                     <button id="jukeboxBtn" class="bigButton">🎵 JukeBox</button>
 
                     <button id="restartBtn" class="btn-secondary" onclick="restartGame()">🔄 Restart</button>
@@ -1110,15 +1907,61 @@
 
         <div id="jukeboxOverlay" class="overlay" style="display:none;">
             <div id="jukeboxCard" class="modal">
-                <button id="closeJukebox" class="closeBtn">❌</button>
-                <h2>🎵 JukeBox</h2>
+                <button id="closeJukebox" class="closeBtn" aria-label="Chiudi">×</button>
+                <h2 id="jukeboxTitle">🎵 JukeBox</h2>
                 <div id="jukeboxContent">
-
-                    <!-- qui in futuro mettiamo la playlist, controlli ecc. -->
-
-                    <p>In costruzione...</p>
+                    <button id="jukeboxHostAudioToggle" class="jukebox-host-audio-toggle" type="button" title="Include o esclude l'host dai suoni random della notte">
+                        🔊 Host nei random
+                    </button>
+                    <div id="jukeboxMainView" class="jukebox-view active">
+                        <p class="jukebox-subtitle">Scegli una traccia o avvia la scena Notte.</p>
+                        <div class="jukebox-grid">
+                            <button class="jukebox-track-btn" type="button" id="jukeboxNightBtn">Notte</button>
+                            <button class="jukebox-track-btn" type="button" data-jukebox-track="bastaldo">bastaldo</button>
+                            <button class="jukebox-track-btn" type="button" data-jukebox-track="fikaculo">fikaculo</button>
+                            <button class="jukebox-track-btn" type="button" data-jukebox-track="gallo">gallo</button>
+                            <button class="jukebox-track-btn" type="button" data-jukebox-track="muniz">muniz</button>
+                            <button class="jukebox-track-btn" type="button" data-jukebox-track="profondoRosso">profondoRosso</button>
+                        </div>
+                    </div>
+                    <div id="jukeboxNightView" class="jukebox-view">
+                        <p class="jukebox-subtitle">Notte attiva: forza un intervento su un dispositivo casuale.</p>
+                        <div class="jukebox-grid">
+                            <button class="jukebox-track-btn" type="button" data-night-sound="ambiente2">ambiente2</button>
+                            <button class="jukebox-track-btn" type="button" data-night-sound="gufo">gufo</button>
+                            <button class="jukebox-track-btn" type="button" data-night-sound="passi">passi</button>
+                            <button class="jukebox-track-btn" type="button" data-night-sound="Ullulo">Ullulo</button>
+                        </div>
+                        <button id="jukeboxBackToMain" class="jukebox-back-btn" type="button">Torna al JukeBox</button>
+                    </div>
+                    <button id="jukeboxStopBtn" class="jukebox-stop-btn" type="button">Stop</button>
+                    <div id="jukeboxStatus" class="jukebox-status">Scegli una traccia da riprodurre.</div>
                 </div>
-                <button id="backFromJukebox" class="bigButton">⬅️ Torna indietro</button>
+                <button id="backFromJukebox" class="bigButton">⬅️ Torna al gioco</button>
+            </div>
+        </div>
+
+        <div id="nightHostOverlay">
+            <div class="night-card">
+                <p class="night-kicker" id="nightHostKicker">Regia della notte</p>
+                <h2 id="nightHostTitle">Buonanotte</h2>
+                <div id="nightSteps" class="night-steps"></div>
+                <p id="nightInstruction" class="night-instruction"></p>
+                <div id="nightPickList" class="night-picks"></div>
+                <div id="nightResult" class="night-result"></div>
+                <div class="night-actions">
+                    <button id="nightPrevBtn" type="button" class="btn-secondary">Indietro</button>
+                    <button id="nightNextBtn" type="button">Avanti</button>
+                    <button id="nightGoodMorningBtn" type="button">Buongiorno</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="nightPlayerCurtain">
+            <div class="night-player-box">
+                <div class="night-sleep-icon">🌙</div>
+                <h2>È notte...</h2>
+                <p>Chiudi gli occhi e aspetta la voce dell'host.</p>
             </div>
         </div>
 
@@ -1129,9 +1972,14 @@
             <!-- Panel 1: griglia giocatori + pulsanti -->
             <div class="panel">
                 <h2 id="giocoPlayerTitolo" class="centered-heading">🎲 Partita in corso</h2>
-                <p>👑 Host: <span id="hostNamePlayer"></span> &nbsp;•&nbsp; 🏷️ ID: <code id="roomIdPlayer"></code></p>
+                <p>👑 Host: <span id="hostNamePlayer"></span> &nbsp;•&nbsp; 🏷️ ID: <code id="roomIdPlayer"></code> &nbsp;•&nbsp; 🙋 Tu: <strong id="myNamePlayer">-</strong></p>
 
                 <h3 class="centered-heading">👥 Giocatori</h3>
+                <div id="eliminatedCurtain" aria-live="polite">
+                    <div class="eliminated-decor">⚰️💐</div>
+                    <div class="eliminated-title">Sei fuori dal villaggio</div>
+                    <p class="eliminated-copy">Puoi ancora mostrare il ruolo e uscire dal gioco, ma niente voti: ormai sei leggenda.</p>
+                </div>
                 <div id="playersGrid" class="playersGrid"></div>
 
                 <button id="showRoleBtn" style="display:none;">Mostra ruolo</button>
@@ -1163,8 +2011,8 @@
             <button id="closeRoleCard">Chiudi</button>
         </div>
 
-        <footer style="text-align:center; padding: 12px; color: var(--muted); font-size: 12.5px;">
-            © Villaggio di Lupus — divertiti responsabilmente 🐺
+        <footer>
+            © Villaggio di Lupus — Mark Lavacchielli
         </footer>
     </div>
 
@@ -1286,6 +2134,21 @@
             let gameStarted = false;
             let myName = null;
             let isJoining = false; // evita UI sporca durante transizioni
+            let audioUnlocked = localStorage.getItem("lupus_audioUnlocked") === "true";
+            let audioContext = null;
+            const nightDirector = {
+                active: false,
+                nightNumber: 0,
+                stepIndex: 0,
+                wolfTarget: null,
+                protectedTarget: null,
+                coupleHouse: "romeo",
+                witchSave: false,
+                witchKillTarget: null,
+                witchSavePotionUsed: false,
+                witchKillPotionUsed: false,
+                seerResult: null
+            };
 
             const roleNames = {
                 wolf: "🐺 Lupo", villager: "👨‍🌾 Contadino", seer: "🔮 Veggente", guard: "💋 Puttana",
@@ -1304,10 +2167,28 @@
                 mayor: `Durante le votazioni il tuo voto conta doppio.`,
                 hitman: `Hai una pistola con un solo colpo.\nPuoi usarla una volta in tutta la partita per eliminare un giocatore.`,
                 medium: `Ogni morte ti rivela in segreto il ruolo del defunto.`,
-                romeo: `In coppia con Giulietta. Se i lupi colpiscono te, morite entrambi. Potete scegliere dove dormire.`,
-                giulietta: `In coppia con Romeo. Se i lupi colpiscono te mentre dormite da Romeo, vi salvate entrambi.`,
-                couple: `Romeo & Giulietta: si svegliano insieme, conoscono i ruoli e scelgono dove dormire. Se i lupi colpiscono Giulietta mentre dormite da Romeo vi salvate entrambi; se colpiscono Romeo morite entrambi.`
+                romeo: `In coppia con Giulietta. Ogni notte scegliete se dormire a casa di Romeo o di Giulietta. Se i lupi attaccano la casa vuota non muore nessuno; se attaccano la casa dove dormite, morite entrambi.`,
+                giulietta: `In coppia con Romeo. Ogni notte scegliete dove dormire. La casa vuota inganna i lupi, ma se trovano la coppia nella casa scelta morite entrambi.`,
+                couple: `Romeo & Giulietta: si svegliano insieme, conoscono i ruoli e scelgono ogni notte in quale casa dormire. Casa vuota: nessuna vittima. Casa con la coppia: muoiono entrambi.`
             };
+
+            function roleEmoji(roleKey) {
+                const label = roleNames[roleKey] || "";
+                const first = label.split(" ")[0] || "";
+                return /\p{Extended_Pictographic}/u.test(first) ? first : "🃏";
+            }
+
+            function roleNameOnly(roleKey) {
+                const label = roleNames[roleKey] || roleKey;
+                return label.replace(/^\S+\s+/, "");
+            }
+
+            function showRoleInfo(roleKey) {
+                closeRoleCardEEFn();
+                if (roleText) roleText.textContent = roleNames[roleKey] || roleKey;
+                if (roleDescEl) roleDescEl.textContent = roleDescriptions[roleKey] || "Nessuna descrizione.";
+                openRoleCard();
+            }
 
             /* ======================================================
                3) RIFERIMENTI DOM & LISTENER BASE
@@ -1338,7 +2219,7 @@
             const showRoleBtn = document.getElementById("showRoleBtn");
             if (showRoleBtn) {
                 showRoleBtn.onclick = () => {
-                    if (!myRole) { alert("❌ Nessun ruolo assegnato ancora."); return; }
+                    if (!myRole) { alert("× Nessun ruolo assegnato ancora."); return; }
                     closeRoleCardEEFn();
                     if (roleText) roleText.textContent = roleNames[myRole] || myRole;
                     if (roleDescEl) roleDescEl.textContent = roleDescriptions[myRole] || "Nessuna descrizione.";
@@ -1355,22 +2236,650 @@
             const jbOverlay = document.getElementById("jukeboxOverlay");
             const closeJB = document.getElementById("closeJukebox");
             const backJB = document.getElementById("backFromJukebox");
+            const jukeboxStatus = document.getElementById("jukeboxStatus");
+            const jukeboxTitle = document.getElementById("jukeboxTitle");
+            const jukeboxMainView = document.getElementById("jukeboxMainView");
+            const jukeboxNightView = document.getElementById("jukeboxNightView");
+            const jukeboxHostAudioToggle = document.getElementById("jukeboxHostAudioToggle");
+            let jukeboxView = "main";
+            let hostRandomAudioEnabled = localStorage.getItem("lupus_hostRandomAudioEnabled") !== "false";
+            const jukeboxAudios = new Map();
+            const preloadedJukeboxAudio = new Map();
+            let jukeboxPlaybackToken = 0;
+            let jukeboxIgnorePlayUntil = 0;
+            const jukeboxTracksToPreload = [
+                "bastaldo",
+                "fikaculo",
+                "gallo",
+                "muniz",
+                "profondoRosso",
+                "notte/ambiente",
+                "notte/ambiente2",
+                "notte/gufo",
+                "notte/passi",
+                "notte/Ullulo"
+            ];
+
+            function fileForTrack(track) {
+                return `/audio/${track}.mp3`;
+            }
+
+            function stopLocalJukeboxAudio(ignoreIncomingPlay = true) {
+                jukeboxPlaybackToken++;
+                if (ignoreIncomingPlay) {
+                    jukeboxIgnorePlayUntil = Date.now() + 900;
+                }
+
+                jukeboxAudios.forEach(audio => {
+                    try {
+                        audio.pause();
+                        audio.currentTime = 0;
+                        audio.loop = false;
+                    } catch { }
+                });
+                jukeboxAudios.clear();
+            }
+
+            function hostJukeboxAudioBlocked() {
+                return isHost && !hostRandomAudioEnabled;
+            }
+
+            function playLocalJukeboxAudio(track, volume = 1, loop = false) {
+                if (Date.now() < jukeboxIgnorePlayUntil) return;
+                if (hostJukeboxAudioBlocked()) {
+                    stopLocalJukeboxAudio(false);
+                    return;
+                }
+
+                if (!audioUnlocked) {
+                    showAudioPermissionIfNeeded();
+                    return;
+                }
+
+                const key = `${track}:${loop ? "loop" : "once"}`;
+                if (loop && jukeboxAudios.has(key)) return;
+                const playToken = jukeboxPlaybackToken;
+
+                const cached = preloadedJukeboxAudio.get(track);
+                const audio = cached || new Audio(fileForTrack(track));
+                audio.volume = Math.max(0, Math.min(1, volume || 1));
+                audio.loop = !!loop;
+                audio.preload = "auto";
+                audio.onended = () => jukeboxAudios.delete(key);
+                jukeboxAudios.set(key, audio);
+                try {
+                    audio.pause();
+                    audio.currentTime = 0;
+                } catch { }
+                const playPromise = audio.play();
+                if (playPromise && typeof playPromise.then === "function") {
+                    playPromise
+                        .then(() => {
+                            if (playToken !== jukeboxPlaybackToken) {
+                                try {
+                                    audio.pause();
+                                    audio.currentTime = 0;
+                                } catch { }
+                                jukeboxAudios.delete(key);
+                            }
+                        })
+                        .catch(err => {
+                            console.error("Audio JukeBox bloccato:", err);
+                            jukeboxAudios.delete(key);
+                            audioUnlocked = false;
+                            localStorage.removeItem("lupus_audioUnlocked");
+                            showAudioPermissionIfNeeded();
+                        });
+                }
+            }
+
+            function renderJukeboxView(view = jukeboxView) {
+                jukeboxView = view;
+                jukeboxMainView?.classList.toggle("active", view === "main");
+                jukeboxNightView?.classList.toggle("active", view === "night");
+                if (jukeboxTitle) jukeboxTitle.textContent = view === "night" ? "🌙 Notte" : "🎵 JukeBox";
+            }
+
+            function renderHostRandomAudioToggle() {
+                if (!jukeboxHostAudioToggle) return;
+                jukeboxHostAudioToggle.classList.toggle("off", !hostRandomAudioEnabled);
+                jukeboxHostAudioToggle.textContent = hostRandomAudioEnabled
+                    ? "🔊 Host nei random"
+                    : "🔇 Host escluso";
+                jukeboxHostAudioToggle.title = hostRandomAudioEnabled
+                    ? "Il dispositivo host può essere scelto per ambiente e rumori random."
+                    : "Il dispositivo host viene escluso da ambiente e rumori random.";
+            }
+
+            async function setHostRandomAudioEnabled(enabled) {
+                hostRandomAudioEnabled = !!enabled;
+                localStorage.setItem("lupus_hostRandomAudioEnabled", String(hostRandomAudioEnabled));
+                renderHostRandomAudioToggle();
+                if (!hostRandomAudioEnabled) stopLocalJukeboxAudio();
+
+                if (!currentRoomId || !connection || connection.state !== signalR.HubConnectionState.Connected) return;
+                try {
+                    await connection.invoke("JukeboxSetHostRandomAudio", currentRoomId, hostRandomAudioEnabled);
+                    if (jukeboxStatus) {
+                        jukeboxStatus.textContent = hostRandomAudioEnabled
+                            ? "Host disponibile per i suoni random."
+                            : "Host escluso dai suoni random della notte.";
+                    }
+                } catch (err) {
+                    console.error("Toggle audio host fallito:", err);
+                    if (jukeboxStatus) jukeboxStatus.textContent = "Non riesco a salvare questa preferenza.";
+                }
+            }
+
+            async function syncHostRandomAudioPreference() {
+                if (!isHost || !currentRoomId || !connection || connection.state !== signalR.HubConnectionState.Connected) return;
+                try {
+                    await connection.invoke("JukeboxSetHostRandomAudio", currentRoomId, hostRandomAudioEnabled);
+                } catch (err) {
+                    console.warn("Sync preferenza audio host fallita:", err);
+                }
+            }
+
+            function openJukebox() {
+                renderJukeboxView();
+                renderHostRandomAudioToggle();
+                if (jbOverlay) jbOverlay.style.display = "flex";
+            }
+
+            function closeJukebox() {
+                if (jbOverlay) jbOverlay.style.display = "none";
+            }
+
+            async function playJukeboxTrack(track) {
+                if (!currentRoomId) return;
+                try {
+                    await connection.invoke("JukeboxPlay", currentRoomId, track, 1);
+                    if (jukeboxStatus) jukeboxStatus.textContent = `In riproduzione: ${track}`;
+                } catch (err) {
+                    console.error("JukeBox play fallito:", err);
+                    if (jukeboxStatus) jukeboxStatus.textContent = "Non riesco ad avviare la traccia.";
+                }
+            }
+
+            async function startJukeboxNight() {
+                if (!currentRoomId) return;
+                renderJukeboxView("night");
+                try {
+                    await connection.invoke("JukeboxStartNight", currentRoomId);
+                    if (jukeboxStatus) jukeboxStatus.textContent = "Notte avviata: ambiente su un dispositivo casuale.";
+                } catch (err) {
+                    console.error("JukeBox notte fallito:", err);
+                    if (jukeboxStatus) jukeboxStatus.textContent = "Non riesco ad avviare la notte.";
+                }
+            }
+
+            async function playNightIntervention(sound) {
+                if (!currentRoomId) return;
+                try {
+                    await connection.invoke("JukeboxNightIntervention", currentRoomId, sound);
+                    if (jukeboxStatus) jukeboxStatus.textContent = `Intervento inviato: ${sound}`;
+                } catch (err) {
+                    console.error("Intervento notte fallito:", err);
+                    if (jukeboxStatus) jukeboxStatus.textContent = "Non riesco a inviare l'intervento.";
+                }
+            }
+
+            async function stopJukeboxTrack() {
+                stopLocalJukeboxAudio();
+                if (jukeboxStatus) jukeboxStatus.textContent = "Riproduzione interrotta.";
+
+                if (!currentRoomId) return;
+                try {
+                    await connection.invoke("JukeboxStop", currentRoomId);
+                } catch (err) {
+                    console.error("JukeBox stop fallito:", err);
+                    if (jukeboxStatus) jukeboxStatus.textContent = "Audio locale fermato. Non riesco ad avvisare gli altri dispositivi.";
+                }
+            }
 
             if (jbBtn && jbOverlay) {
-                jbBtn.addEventListener("click", () => {
-                    jbOverlay.style.display = "block";
-                });
+                jbBtn.addEventListener("click", openJukebox);
             }
             if (closeJB) {
-                closeJB.addEventListener("click", () => {
-                    jbOverlay.style.display = "none";
-                });
+                closeJB.addEventListener("click", closeJukebox);
             }
             if (backJB) {
-                backJB.addEventListener("click", () => {
-                    jbOverlay.style.display = "none";
+                backJB.addEventListener("click", closeJukebox);
+            }
+            if (jbOverlay) {
+                jbOverlay.addEventListener("click", e => {
+                    if (e.target === jbOverlay) closeJukebox();
                 });
             }
+            document.getElementById("jukeboxCard")?.addEventListener("click", e => {
+                e.stopPropagation();
+            });
+            document.getElementById("jukeboxNightBtn")?.addEventListener("click", e => {
+                e.preventDefault();
+                e.stopPropagation();
+                startJukeboxNight();
+            });
+            document.getElementById("jukeboxBackToMain")?.addEventListener("click", e => {
+                e.preventDefault();
+                e.stopPropagation();
+                renderJukeboxView("main");
+            });
+            document.querySelectorAll("[data-jukebox-track]").forEach(btn => {
+                btn.addEventListener("click", e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    playJukeboxTrack(btn.dataset.jukeboxTrack);
+                });
+            });
+            document.querySelectorAll("[data-night-sound]").forEach(btn => {
+                btn.addEventListener("click", e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    playNightIntervention(btn.dataset.nightSound);
+                });
+            });
+            document.getElementById("jukeboxStopBtn")?.addEventListener("click", e => {
+                e.preventDefault();
+                e.stopPropagation();
+                stopJukeboxTrack();
+            });
+            jukeboxHostAudioToggle?.addEventListener("click", e => {
+                e.preventDefault();
+                e.stopPropagation();
+                setHostRandomAudioEnabled(!hostRandomAudioEnabled);
+            });
+            renderHostRandomAudioToggle();
+
+            connection.on("JukeboxPlayLocal", (track, volume, loop) => {
+                playLocalJukeboxAudio(track, volume, loop);
+            });
+            connection.on("JukeboxStop", () => {
+                stopLocalJukeboxAudio();
+                if (jukeboxStatus) jukeboxStatus.textContent = "Riproduzione interrotta.";
+            });
+            connection.on("JukeboxNightStarted", () => {
+                if (jukeboxStatus) jukeboxStatus.textContent = "Notte attiva.";
+            });
+            connection.on("JukeboxNightIntervention", (sound) => {
+                if (jukeboxStatus) jukeboxStatus.textContent = `Intervento notte: ${sound}`;
+            });
+            connection.on("JukeboxNoAudioTargets", () => {
+                if (jukeboxStatus) jukeboxStatus.textContent = "Nessun dispositivo ha ancora abilitato l'audio.";
+            });
+            connection.on("JukeboxHostRandomAudioChanged", enabled => {
+                hostRandomAudioEnabled = !!enabled;
+                localStorage.setItem("lupus_hostRandomAudioEnabled", String(hostRandomAudioEnabled));
+                renderHostRandomAudioToggle();
+            });
+
+            /* ======================================================
+               REGIA NOTTURNA
+            ====================================================== */
+            let nightBtn = document.getElementById("nightBtn");
+            const hostJukeboxBtn = document.getElementById("jukeboxBtn");
+            if (!nightBtn && hostJukeboxBtn?.parentElement) {
+                nightBtn = document.createElement("button");
+                nightBtn.id = "nightBtn";
+                nightBtn.className = "bigButton";
+                nightBtn.type = "button";
+                nightBtn.textContent = "🌙 Buonanotte";
+                hostJukeboxBtn.parentElement.insertBefore(nightBtn, hostJukeboxBtn);
+            } else if (nightBtn && hostJukeboxBtn?.parentElement && nightBtn.nextElementSibling !== hostJukeboxBtn) {
+                nightBtn.textContent = "🌙 Buonanotte";
+                hostJukeboxBtn.parentElement.insertBefore(nightBtn, hostJukeboxBtn);
+            }
+            const nightHostOverlay = document.getElementById("nightHostOverlay");
+            const nightPlayerCurtain = document.getElementById("nightPlayerCurtain");
+            const nightHostKicker = document.getElementById("nightHostKicker");
+            const nightHostTitle = document.getElementById("nightHostTitle");
+            const nightStepsEl = document.getElementById("nightSteps");
+            const nightInstruction = document.getElementById("nightInstruction");
+            const nightPickList = document.getElementById("nightPickList");
+            const nightResult = document.getElementById("nightResult");
+            const nightPrevBtn = document.getElementById("nightPrevBtn");
+            const nightNextBtn = document.getElementById("nightNextBtn");
+            const nightGoodMorningBtn = document.getElementById("nightGoodMorningBtn");
+
+            function playerNameOf(p) { return p?.name ?? p?.Name ?? ""; }
+            function playerRoleOf(p) { return p?.role ?? p?.Role ?? ""; }
+            function playerEliminatedOf(p) { return p?.eliminated ?? p?.Eliminated ?? false; }
+
+            function alivePlayers() {
+                return (currentPlayers || []).filter(p => !playerEliminatedOf(p));
+            }
+
+            function isCurrentPlayerEliminated() {
+                if (!myName) return false;
+                const me = (currentPlayers || []).find(p => playerNameOf(p).toLowerCase() === myName.toLowerCase());
+                return !!me && playerEliminatedOf(me);
+            }
+
+            function updateEliminatedPlayerView() {
+                const screen = document.getElementById("screenGamePlayer");
+                if (!screen) return;
+                screen.classList.toggle("eliminated-view", !isHost && isCurrentPlayerEliminated());
+            }
+
+            function hasNightRole(countKey, roleKey) {
+                const fromCounts = selectedRoleCounts && Number(selectedRoleCounts[countKey] || 0) > 0;
+                const fromPlayers = (currentPlayers || []).some(p => playerRoleOf(p) === roleKey && !playerEliminatedOf(p));
+                return fromCounts || fromPlayers;
+            }
+
+            function buildNightSteps() {
+                const steps = [];
+
+                if (hasNightRole("couple", "romeo")) {
+                    steps.push({
+                        id: "couple",
+                        title: "Romeo & Giulietta",
+                        instruction: "Aprono gli occhi Romeo e Giulietta. Decidono dove dormire: casa di Romeo o casa di Giulietta. Se i lupi attaccano la casa vuota non muore nessuno; se attaccano la casa dove dormono, muoiono entrambi.",
+                        type: "couplehouse"
+                    });
+                }
+
+                if (hasNightRole("wolves", "wolf")) {
+                    steps.push({
+                        id: "wolf",
+                        title: "Lupi",
+                        instruction: "Aprono gli occhi i Lupi. Scelgono in silenzio una vittima. Quando hanno deciso, tocca qui sotto il giocatore scelto.",
+                        type: "wolf"
+                    });
+                }
+
+                if (hasNightRole("guards", "guard")) {
+                    steps.push({
+                        id: "protect",
+                        title: "Puttana",
+                        instruction: "Apre gli occhi la Puttana. Sceglie chi proteggere questa notte. Se protegge la vittima dei lupi, l'attacco viene annullato.",
+                        type: "protect"
+                    });
+                }
+
+                if (hasNightRole("witch", "witch")) {
+                    steps.push({
+                        id: "witch",
+                        title: "Strega",
+                        instruction: "Chiama la Strega. Può usare una volta la pozione di salvataggio sulla vittima dei lupi e una volta la pozione veleno su un giocatore.",
+                        type: "witch"
+                    });
+                }
+
+                if (hasNightRole("seers", "seer")) {
+                    steps.push({
+                        id: "seer",
+                        title: "Veggente",
+                        instruction: "Apre gli occhi il Veggente. Indica un giocatore da controllare. Tocca il nome: l'app ti dirà se è Lupo o non Lupo.",
+                        type: "seer"
+                    });
+                }
+
+                if (hasNightRole("lara", "lara")) {
+                    steps.push({
+                        id: "lara",
+                        title: "Lara",
+                        instruction: "Promemoria host: Lara non va chiamata. Se i lupi colpiscono Lara, al Buongiorno diventa Lupo invece di morire.",
+                        type: "info"
+                    });
+                }
+
+                steps.push({
+                    id: "summary",
+                    title: "Fine notte",
+                    instruction: "Controlla le scelte. Quando sei pronto, premi Buongiorno: solo allora l'app comunica e applica il risultato.",
+                    type: "summary"
+                });
+
+                return steps;
+            }
+
+            function applyNightState(state) {
+                if (!state) return;
+                nightDirector.active = !!(state.active ?? state.Active);
+                nightDirector.nightNumber = state.nightNumber ?? state.NightNumber ?? nightDirector.nightNumber;
+                nightDirector.wolfTarget = state.wolfTarget ?? state.WolfTarget ?? null;
+                nightDirector.protectedTarget = state.protectedTarget ?? state.ProtectedTarget ?? null;
+                nightDirector.coupleHouse = state.coupleHouse ?? state.CoupleHouse ?? "romeo";
+                nightDirector.witchSave = !!(state.witchSave ?? state.WitchSave ?? false);
+                nightDirector.witchKillTarget = state.witchKillTarget ?? state.WitchKillTarget ?? null;
+                nightDirector.witchSavePotionUsed = !!(state.witchSavePotionUsed ?? state.WitchSavePotionUsed ?? false);
+                nightDirector.witchKillPotionUsed = !!(state.witchKillPotionUsed ?? state.WitchKillPotionUsed ?? false);
+            }
+
+            function selectedForStep(step, name) {
+                if (step.type === "wolf") return nightDirector.wolfTarget === name;
+                if (step.type === "protect") return nightDirector.protectedTarget === name;
+                if (step.type === "seer") return nightDirector.seerResult?.target === name;
+                if (step.type === "witch") return nightDirector.witchKillTarget === name;
+                return false;
+            }
+
+            function nightChoiceLabel(step) {
+                if (step.type === "couplehouse") {
+                    return `Dormono a casa di ${nightDirector.coupleHouse === "giulietta" ? "Giulietta" : "Romeo"}.`;
+                }
+                if (step.type === "wolf") return nightDirector.wolfTarget ? `Vittima segnata: ${nightDirector.wolfTarget}` : "Nessuna vittima segnata.";
+                if (step.type === "protect") return nightDirector.protectedTarget ? `Protetto: ${nightDirector.protectedTarget}` : "Nessun protetto segnato.";
+                if (step.type === "witch") {
+                    const save = nightDirector.witchSavePotionUsed
+                        ? "salvataggio già usato"
+                        : nightDirector.witchSave
+                            ? "salva la vittima dei lupi"
+                            : "non salva";
+                    const kill = nightDirector.witchKillPotionUsed
+                        ? "veleno già usato"
+                        : nightDirector.witchKillTarget
+                            ? `veleno su ${nightDirector.witchKillTarget}`
+                            : "veleno non usato";
+                    return `Strega: ${save}. ${kill}.`;
+                }
+                if (step.type === "seer" && nightDirector.seerResult) {
+                    return `${nightDirector.seerResult.target}: ${nightDirector.seerResult.isWolf ? "È Lupo" : "Non è Lupo"}`;
+                }
+                if (step.type === "summary") {
+                    const attack = nightDirector.wolfTarget || "nessuno";
+                    const protect = nightDirector.protectedTarget || "nessuno";
+                    const house = nightDirector.coupleHouse === "giulietta" ? "Giulietta" : "Romeo";
+                    const witchSave = nightDirector.witchSave ? "salva" : "non salva";
+                    const witchKill = nightDirector.witchKillTarget || "nessuno";
+                    return `Lupi: ${attack}. Protezione: ${protect}. Coppia: casa di ${house}. Strega: ${witchSave}, veleno su ${witchKill}.`;
+                }
+                return "";
+            }
+
+            function renderNightDirector() {
+                const steps = buildNightSteps();
+                if (!steps.length) return;
+                if (nightDirector.stepIndex >= steps.length) nightDirector.stepIndex = steps.length - 1;
+                if (nightDirector.stepIndex < 0) nightDirector.stepIndex = 0;
+                const step = steps[nightDirector.stepIndex];
+
+                if (nightHostKicker) nightHostKicker.textContent = `Notte ${nightDirector.nightNumber || 1}`;
+                if (nightHostTitle) nightHostTitle.textContent = step.title;
+                if (nightInstruction) nightInstruction.textContent = step.instruction;
+
+                if (nightStepsEl) {
+                    nightStepsEl.innerHTML = "";
+                    steps.forEach((s, i) => {
+                        const pill = document.createElement("button");
+                        pill.type = "button";
+                        pill.className = "night-step-pill" + (i === nightDirector.stepIndex ? " active" : "");
+                        pill.textContent = s.title;
+                        pill.addEventListener("click", () => {
+                            nightDirector.stepIndex = i;
+                            nightDirector.seerResult = null;
+                            renderNightDirector();
+                        });
+                        nightStepsEl.appendChild(pill);
+                    });
+                }
+
+                if (nightPickList) {
+                    nightPickList.innerHTML = "";
+                    if (step.type === "couplehouse") {
+                        [
+                            ["romeo", "Casa di Romeo"],
+                            ["giulietta", "Casa di Giulietta"]
+                        ].forEach(([house, label]) => {
+                            const btn = document.createElement("button");
+                            btn.type = "button";
+                            btn.className = "night-pick-btn" + (nightDirector.coupleHouse === house ? " selected" : "");
+                            btn.textContent = label;
+                            btn.addEventListener("click", () => chooseNightTarget("couplehouse", house));
+                            nightPickList.appendChild(btn);
+                        });
+                    } else if (step.type === "witch") {
+                        const saveBtn = document.createElement("button");
+                        saveBtn.type = "button";
+                        saveBtn.className = "night-pick-btn" + (nightDirector.witchSave ? " selected" : "");
+                        saveBtn.textContent = nightDirector.witchSavePotionUsed
+                            ? "Salvataggio già usato"
+                            : nightDirector.wolfTarget
+                                ? "Salva la vittima"
+                                : "Prima scegli la vittima";
+                        saveBtn.disabled = nightDirector.witchSavePotionUsed || !nightDirector.wolfTarget;
+                        saveBtn.addEventListener("click", () => chooseNightTarget("witchsave", "save"));
+                        nightPickList.appendChild(saveBtn);
+
+                        const noSaveBtn = document.createElement("button");
+                        noSaveBtn.type = "button";
+                        noSaveBtn.className = "night-pick-btn" + (!nightDirector.witchSave ? " selected" : "");
+                        noSaveBtn.textContent = "Non salvare";
+                        noSaveBtn.disabled = nightDirector.witchSavePotionUsed;
+                        noSaveBtn.addEventListener("click", () => chooseNightTarget("witchsave", "skip"));
+                        nightPickList.appendChild(noSaveBtn);
+
+                        const skipPoisonBtn = document.createElement("button");
+                        skipPoisonBtn.type = "button";
+                        skipPoisonBtn.className = "night-pick-btn" + (!nightDirector.witchKillTarget ? " selected" : "");
+                        skipPoisonBtn.textContent = nightDirector.witchKillPotionUsed ? "Veleno già usato" : "Non usare veleno";
+                        skipPoisonBtn.disabled = nightDirector.witchKillPotionUsed;
+                        skipPoisonBtn.addEventListener("click", () => chooseNightTarget("witchkill", "skip"));
+                        nightPickList.appendChild(skipPoisonBtn);
+
+                        alivePlayers().forEach(p => {
+                            const name = playerNameOf(p);
+                            const btn = document.createElement("button");
+                            btn.type = "button";
+                            btn.className = "night-pick-btn" + (nightDirector.witchKillTarget === name ? " selected" : "");
+                            btn.textContent = `Veleno: ${name}`;
+                            btn.disabled = nightDirector.witchKillPotionUsed;
+                            btn.addEventListener("click", () => chooseNightTarget("witchkill", name));
+                            nightPickList.appendChild(btn);
+                        });
+                    } else if (["wolf", "protect", "seer"].includes(step.type)) {
+                        alivePlayers().forEach(p => {
+                            const name = playerNameOf(p);
+                            const btn = document.createElement("button");
+                            btn.type = "button";
+                            btn.className = "night-pick-btn" + (selectedForStep(step, name) ? " selected" : "");
+                            btn.textContent = name;
+                            btn.addEventListener("click", () => chooseNightTarget(step.type, name));
+                            nightPickList.appendChild(btn);
+                        });
+                    }
+                }
+
+                if (nightResult) nightResult.textContent = nightChoiceLabel(step);
+                if (nightPrevBtn) nightPrevBtn.disabled = nightDirector.stepIndex === 0;
+                if (nightNextBtn) nightNextBtn.disabled = nightDirector.stepIndex >= steps.length - 1;
+            }
+
+            async function startNightDirector() {
+                if (!isHost || !currentRoomId || !gameStarted) return;
+                try {
+                    await connection.invoke("BeginNight", currentRoomId);
+                } catch (err) {
+                    console.error("Errore avvio notte:", err);
+                    alert("Non riesco ad avviare la notte.");
+                }
+            }
+
+            async function chooseNightTarget(type, name) {
+                if (!isHost || !currentRoomId) return;
+                try {
+                    const result = await connection.invoke("SetNightChoice", currentRoomId, type, name);
+                    if (type === "seer" && result) {
+                        nightDirector.seerResult = {
+                            target: result.target ?? result.Target ?? name,
+                            isWolf: !!(result.isWolf ?? result.IsWolf)
+                        };
+                    } else {
+                        applyNightState(result);
+                    }
+                    renderNightDirector();
+                } catch (err) {
+                    console.error("Scelta notte fallita:", err);
+                    if (nightResult) nightResult.textContent = "Non riesco a salvare questa scelta.";
+                }
+            }
+
+            async function endNightDirector() {
+                if (!isHost || !currentRoomId) return;
+                try {
+                    await connection.invoke("EndNight", currentRoomId);
+                } catch (err) {
+                    console.error("Errore fine notte:", err);
+                    alert("Non riesco a chiudere la notte.");
+                }
+            }
+
+            nightBtn?.addEventListener("click", startNightDirector);
+            nightPrevBtn?.addEventListener("click", () => {
+                nightDirector.stepIndex--;
+                nightDirector.seerResult = null;
+                renderNightDirector();
+            });
+            nightNextBtn?.addEventListener("click", () => {
+                nightDirector.stepIndex++;
+                nightDirector.seerResult = null;
+                renderNightDirector();
+            });
+            nightGoodMorningBtn?.addEventListener("click", endNightDirector);
+
+            connection.on("NightStarted", state => {
+                applyNightState(state);
+                nightDirector.stepIndex = 0;
+                nightDirector.seerResult = null;
+                if (isHost) {
+                    if (nightHostOverlay) nightHostOverlay.style.display = "flex";
+                    renderNightDirector();
+                } else if (nightPlayerCurtain) {
+                    nightPlayerCurtain.style.display = "flex";
+                }
+                logGame("🌙 È notte.");
+            });
+
+            connection.on("NightChoiceUpdated", state => {
+                applyNightState(state);
+                if (isHost) renderNightDirector();
+            });
+
+            connection.on("NightSeerResult", result => {
+                nightDirector.seerResult = {
+                    target: result?.target ?? result?.Target ?? "",
+                    isWolf: !!(result?.isWolf ?? result?.IsWolf)
+                };
+                if (isHost) renderNightDirector();
+            });
+
+            connection.on("NightEnded", (message, players) => {
+                nightDirector.active = false;
+                nightDirector.wolfTarget = null;
+                nightDirector.protectedTarget = null;
+                nightDirector.coupleHouse = "romeo";
+                nightDirector.witchSave = false;
+                nightDirector.witchKillTarget = null;
+                nightDirector.seerResult = null;
+                if (nightHostOverlay) nightHostOverlay.style.display = "none";
+                if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
+                if (Array.isArray(players)) {
+                    currentPlayers = players;
+                    renderPlayers(currentPlayers);
+                    if (isHost) renderHostTable(currentPlayers);
+                }
+                logGame(`☀️ ${message || "Il villaggio si risveglia."}`);
+            });
 
             /* ======================================================
                5) UI HELPERS
@@ -1393,6 +2902,187 @@
                 wrap.appendChild(nameNode);
                 el.appendChild(wrap);
             }
+
+            function showAudioPermissionIfNeeded() {
+                const box = document.getElementById("audioPermission");
+                if (!box || audioUnlocked) return;
+                const subtitle = document.querySelector("#audioPermission .audio-copy span");
+                if (subtitle) subtitle.textContent = "Non fare lo sciacqua cozze.";
+                resetAudioPermissionProgress();
+                box.classList.add("is-visible");
+                box.classList.remove("is-loading");
+            }
+
+            function hideAudioPermission() {
+                const box = document.getElementById("audioPermission");
+                if (!box) return;
+                box.classList.remove("is-visible", "is-loading");
+            }
+
+            function resetAudioPermissionProgress() {
+                const fill = document.querySelector(".audio-track-fill");
+                const wolf = document.querySelector(".audio-wolf");
+                if (fill) fill.style.width = "0%";
+                if (wolf) wolf.style.left = "0%";
+            }
+
+            function animateAudioPermissionProgress(duration = 3200, target = 93) {
+                const fill = document.querySelector(".audio-track-fill");
+                const wolf = document.querySelector(".audio-wolf");
+                if (!fill || !wolf) {
+                    return new Promise(resolve => setTimeout(resolve, duration));
+                }
+
+                resetAudioPermissionProgress();
+
+                return new Promise(resolve => {
+                    const start = performance.now();
+                    const ease = t => t * t * (3 - 2 * t);
+
+                    function frame(now) {
+                        const raw = Math.min(1, (now - start) / duration);
+                        const pct = ease(raw) * target;
+                        fill.style.width = pct.toFixed(2) + "%";
+                        wolf.style.left = pct.toFixed(2) + "%";
+
+                        if (raw < 1) requestAnimationFrame(frame);
+                        else resolve();
+                    }
+
+                    requestAnimationFrame(frame);
+                });
+            }
+
+            function playConfirmSound() {
+                const sources = [
+                    "/audio/confirm.mp3",
+                    "/audio/confirm.wav",
+                    "/audio/confirm.ogg",
+                    "/audio/confirm"
+                ];
+                let index = 0;
+                const tryNext = () => {
+                    if (index >= sources.length) return;
+                    const audio = new Audio(sources[index++]);
+                    audio.volume = 0.75;
+                    audio.preload = "auto";
+                    audio.onerror = tryNext;
+                    audio.play().catch(tryNext);
+                };
+                tryNext();
+            }
+
+            function preloadOneJukeboxTrack(track) {
+                return new Promise(resolve => {
+                    if (preloadedJukeboxAudio.has(track)) {
+                        resolve(true);
+                        return;
+                    }
+
+                    const audio = new Audio(fileForTrack(track));
+                    audio.preload = "auto";
+                    audio.playsInline = true;
+                    audio.volume = 1;
+                    let settled = false;
+
+                    const finish = ok => {
+                        if (settled) return;
+                        settled = true;
+                        try {
+                            audio.pause();
+                            audio.currentTime = 0;
+                        } catch { }
+                        if (ok) preloadedJukeboxAudio.set(track, audio);
+                        resolve(ok);
+                    };
+
+                    audio.onerror = () => {
+                        console.warn("Preload audio fallito:", track);
+                        finish(false);
+                    };
+
+                    audio.load();
+
+                    if (audio.readyState >= 2) finish(true);
+                    else {
+                        audio.onloadeddata = () => finish(true);
+                        audio.oncanplaythrough = () => finish(true);
+                    }
+
+                    setTimeout(() => {
+                        if (!preloadedJukeboxAudio.has(track)) finish(audio.readyState >= 2);
+                    }, 5000);
+                });
+            }
+
+            async function preloadJukeboxTracks() {
+                const subtitle = document.querySelector("#audioPermission .audio-copy span");
+                let done = 0;
+                const total = jukeboxTracksToPreload.length;
+
+                for (const track of jukeboxTracksToPreload) {
+                    if (subtitle) subtitle.textContent = `Preparo le tracce... ${done + 1}/${total}`;
+                    await preloadOneJukeboxTrack(track);
+                    done++;
+                }
+
+                if (subtitle) subtitle.textContent = "Audio pronto. Buona partita!";
+            }
+
+            async function notifyJukeboxAudioReady() {
+                if (!audioUnlocked || !currentRoomId || !connection) return;
+                try {
+                    if (connection.state === signalR.HubConnectionState.Connected) {
+                        await connection.invoke("JukeboxAudioReady", currentRoomId);
+                    }
+                } catch (err) {
+                    console.warn("Registrazione audio JukeBox fallita:", err);
+                }
+            }
+
+            async function enableGameAudio() {
+                const box = document.getElementById("audioPermission");
+                const btn = document.getElementById("audioPermissionBtn");
+                if (!box || audioUnlocked) return;
+
+                box.classList.add("is-loading");
+                if (btn) btn.disabled = true;
+
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) {
+                        audioContext = audioContext || new AudioCtx();
+                        if (audioContext.state === "suspended") await audioContext.resume();
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        gain.gain.value = 0.0001;
+                        osc.connect(gain).connect(audioContext.destination);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.04);
+                    }
+
+                    await Promise.all([
+                        animateAudioPermissionProgress(3200, 93),
+                        preloadJukeboxTracks()
+                    ]);
+                    audioUnlocked = true;
+                    localStorage.setItem("lupus_audioUnlocked", "true");
+                    await notifyJukeboxAudioReady();
+                    await syncHostRandomAudioPreference();
+                    playConfirmSound();
+                    setTimeout(hideAudioPermission, 500);
+                } catch (err) {
+                    console.error("Audio non abilitato:", err);
+                    audioUnlocked = false;
+                    localStorage.removeItem("lupus_audioUnlocked");
+                    box.classList.remove("is-loading");
+                    if (btn) btn.disabled = false;
+                    alert("Non riesco ad abilitare l'audio su questo dispositivo. Riprova con un tap sul pulsante.");
+                }
+            }
+
+            document.getElementById("audioPermissionBtn")?.addEventListener("click", enableGameAudio);
+            showAudioPermissionIfNeeded();
 
             function updateConnectionUI() {
                 const c = document.getElementById("createBtn");
@@ -1439,6 +3129,7 @@
 
                 if (id === "screenAccess") stopHeartbeat(); else startHeartbeat();
                 setRoomLabels();
+                ensureHostLobbyControls();
             }
             function logLobby(msg) {
                 const logEl = document.getElementById("log"); if (!logEl) return;
@@ -1456,9 +3147,11 @@
                 const ridHost = document.getElementById("roomIdInGame");
                 const ridLobby = document.getElementById("currentRoomIdText");
                 const ridPlayer = document.getElementById("roomIdPlayer");
+                const myNamePlayer = document.getElementById("myNamePlayer");
                 if (ridLobby) ridLobby.textContent = rid;
                 if (ridHost) ridHost.textContent = rid;
                 if (ridPlayer) ridPlayer.textContent = rid;
+                if (myNamePlayer) myNamePlayer.textContent = myName || "-";
             }
 
             function renderRolesGuide(containerId) {
@@ -1466,13 +3159,21 @@
                 el.innerHTML = "";
                 const order = ["wolf", "villager", "seer", "guard", "scemo", "hunter", "witch", "lara", "mayor", "hitman", "medium", "couple"];
                 order.forEach(k => {
-                    const card = document.createElement("div"); card.className = "roleCardMini";
+                    const card = document.createElement("div"); card.className = "roleCardMini clickable";
+                    card.tabIndex = 0;
+                    card.setAttribute("role", "button");
+                    card.setAttribute("aria-label", `Apri regole ${roleNameOnly(k)}`);
+                    card.addEventListener("click", () => showRoleInfo(k));
+                    card.addEventListener("keydown", e => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            showRoleInfo(k);
+                        }
+                    });
                     const title = document.createElement("div"); title.className = "title";
                     const badge = document.createElement("span"); badge.className = "badge";
-                    const rn = roleNames[k] || k;
-                    const maybeEmoji = rn.split(" ")[0];
-                    badge.textContent = /\p{Extended_Pictographic}/u.test(maybeEmoji) ? maybeEmoji : "🃏";
-                    const text = document.createElement("span"); text.textContent = rn;
+                    badge.textContent = roleEmoji(k);
+                    const text = document.createElement("span"); text.textContent = roleNameOnly(k);
                     const desc = document.createElement("div"); desc.className = "desc"; desc.textContent = roleDescriptions[k] || "";
                     title.appendChild(badge); title.appendChild(text);
                     card.appendChild(title); card.appendChild(desc);
@@ -1483,6 +3184,9 @@
             function hardResetUI() {
                 if (overlay) overlay.style.display = "none";
                 if (roleCard) roleCard.style.display = "none";
+                if (nightHostOverlay) nightHostOverlay.style.display = "none";
+                if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
+                nightDirector.active = false;
 
                 const hostCtrls = document.getElementById("hostControls");
                 if (hostCtrls) hostCtrls.style.display = "none";
@@ -1503,6 +3207,8 @@
 
                 const vbtn = document.getElementById("votingBtn");
                 if (vbtn) { vbtn.style.backgroundColor = "var(--brand)"; vbtn.textContent = "Votazione"; vbtn.title = "Apri votazioni"; }
+                const nbtn = document.getElementById("nightBtn");
+                if (nbtn) nbtn.disabled = !(isHost && gameStarted);
                 const roleBtn = document.getElementById("showRoleBtn");
                 if (roleBtn) roleBtn.style.display = "none";
 
@@ -1510,6 +3216,7 @@
                     s.classList.remove("active"); s.setAttribute("aria-hidden", "true"); s.hidden = true;
                     if ("inert" in s) s.inert = true;
                 });
+                document.getElementById("screenGamePlayer")?.classList.remove("eliminated-view");
                 const access = document.getElementById("screenAccess");
                 if (access) { access.classList.add("active"); access.removeAttribute("aria-hidden"); access.hidden = false; if ("inert" in access) access.inert = false; }
             }
@@ -1535,6 +3242,20 @@
                         vbtn.style.backgroundColor = "var(--brand)";
                         vbtn.textContent = "Votazione";
                     }
+                }
+                const nbtn = document.getElementById("nightBtn");
+                if (nbtn) nbtn.disabled = !(isHost && gameStarted);
+            }
+
+            function ensureHostLobbyControls() {
+                const hostCtrls = document.getElementById("hostControls");
+                const lobby = document.getElementById("screenLobby");
+                if (!hostCtrls || !lobby) return;
+                const lobbyVisible = lobby.classList.contains("active") && !lobby.hidden;
+                if (isHost && !gameStarted && lobbyVisible) {
+                    hostCtrls.style.display = "block";
+                    hostCtrls.hidden = false;
+                    if ("inert" in hostCtrls) hostCtrls.inert = false;
                 }
             }
 
@@ -1757,7 +3478,17 @@
                     if (!raw) return;
 
                     const card = document.createElement("div");
-                    card.className = "roleCardMini";
+                    card.className = "roleCardMini clickable";
+                    card.tabIndex = 0;
+                    card.setAttribute("role", "button");
+                    card.setAttribute("aria-label", `Apri regole ${roleNameOnly(roleKey)}`);
+                    card.addEventListener("click", () => showRoleInfo(roleKey));
+                    card.addEventListener("keydown", e => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            showRoleInfo(roleKey);
+                        }
+                    });
 
                     const title = document.createElement("div");
                     title.className = "title";
@@ -1770,6 +3501,8 @@
 
                     const label = document.createElement("span");
                     label.textContent = rn;                    // emoji + nome ruolo
+                    badge.textContent = roleEmoji(roleKey);
+                    label.textContent = roleNameOnly(roleKey);
 
                     const cnt = document.createElement("span");
                     cnt.style.marginLeft = "auto";
@@ -1814,7 +3547,7 @@
                         .then(() => { logLobby("✅ Connesso al server"); })
                         .catch(e => {
                             console.error("Connessione fallita:", e);
-                            logLobby("❌ Server non raggiungibile (controlla /gamehub).");
+                            logLobby("× Server non raggiungibile (controlla /gamehub).");
                             throw e;
                         })
                         .finally(() => { connectPromise = null; updateConnectionUI(); });
@@ -1968,7 +3701,7 @@
                         delBtn.className = "btn-icon";
                         delBtn.title = `Elimina ${name}`;
                         delBtn.setAttribute("aria-label", `Elimina ${name}`);
-                        delBtn.textContent = "✖";
+                        delBtn.textContent = "×";
                         delBtn.addEventListener("click", () => eliminatePlayer(name));
                         tdActions.appendChild(delBtn);
                     }
@@ -1981,6 +3714,8 @@
             function renderPlayers(players) {
                 const container = document.getElementById("playersGrid"); if (!container) return;
                 container.innerHTML = "";
+                const meEliminated = isCurrentPlayerEliminated();
+                updateEliminatedPlayerView();
 
                 players.forEach(p => {
                     const card = document.createElement("div");
@@ -1996,10 +3731,10 @@
 
                     const isMyPick = (myVote === p.name);
                     card.style.backgroundColor = p.eliminated ? "#9ca3af" : (votingOpen ? (isMyPick ? "#f59e0b" : "#4A90E2") : "#6b7280");
-                    card.style.cursor = (votingOpen && !p.eliminated) ? "pointer" : "default";
+                    card.style.cursor = (votingOpen && !p.eliminated && !meEliminated) ? "pointer" : "default";
                     card.style.opacity = p.isOnline ? "1" : ".7";
 
-                    if (votingOpen && !p.eliminated) {
+                    if (votingOpen && !p.eliminated && !meEliminated) {
                         card.setAttribute('role', 'button');
                         card.tabIndex = 0;
                         card.title = isMyPick ? "Riclicca per togliere il voto" : "Clicca per votare";
@@ -2017,7 +3752,7 @@
                         card.appendChild(votersList);
                     }
 
-                    if (votingOpen && !p.eliminated) {
+                    if (votingOpen && !p.eliminated && !meEliminated) {
                         card.onclick = async () => {
                             const prev = myVote;
                             if (myVote === p.name) {
@@ -2070,7 +3805,7 @@
                             const btn = document.createElement("button");
                             btn.className = "kickBtn";
                             btn.title = `Espelli ${pname}`;
-                            btn.textContent = "✖";
+                            btn.textContent = "Espelli";
                             btn.addEventListener('click', () => kickPlayer(pname));
                             d.appendChild(btn);
                         }
@@ -2084,6 +3819,7 @@
 
                 if (!gameStarted) showScreen("screenLobby");
                 applyRoleUI();
+                ensureHostLobbyControls();
                 setRoomLabels();
                 refreshInviteUI(currentRoomId);
             });
@@ -2119,17 +3855,20 @@
                 }
                 renderPlayers(currentPlayers);
                 if (isHost) renderHostTable(currentPlayers);
+                updateEliminatedPlayerView();
             });
 
             connection.on("PlayerKicked", (playerName) => { logLobby(`🚫 ${playerName} è stato espulso dall'host.`); });
 
-            connection.on("PlayerEliminated", (playerName) => {
+            connection.on("PlayerEliminated", (playerName, reason) => {
                 const player = currentPlayers.find(p => p.name === playerName);
                 if (player) player.eliminated = true;
                 if (myVote === playerName) myVote = null;
                 renderHostTable(currentPlayers);
                 renderPlayers(currentPlayers);
-                logGame(`⚰️ ${playerName} è stato eliminato!`);
+                updateEliminatedPlayerView();
+                const source = reason === "lupi" ? "dai lupi" : "dal popolo";
+                logGame(`⚰️ ${playerName} è stato eliminato ${source}!`);
             });
 
             connection.on("PlayerRevived", (playerName) => {
@@ -2137,6 +3876,7 @@
                 if (player) player.eliminated = false;
                 renderHostTable(currentPlayers);
                 renderPlayers(currentPlayers);
+                updateEliminatedPlayerView();
                 // logGame(`💚 ${playerName} è tornato in vita!`);
             });
 
@@ -2162,6 +3902,9 @@
                 gameStarted = false; votingOpen = false; myVote = null; myRole = null; currentPlayers = players || [];
                 if (overlay) overlay.style.display = "none";
                 if (roleCard) roleCard.style.display = "none";
+                if (nightHostOverlay) nightHostOverlay.style.display = "none";
+                if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
+                nightDirector.active = false;
                 applyRoleUI();
 
                 (document.getElementById("hostNameText") || {}).textContent = hostName || "Sconosciuto";
@@ -2179,6 +3922,7 @@
                 updateLobbyCounters(players || []);
                 showScreen("screenLobby");
                 applyRoleUI();
+                ensureHostLobbyControls();
 
                 selectedRoleCounts = null;
                 try { localStorage.removeItem("lupus_selectedRoles_" + (currentRoomId || "")); } catch { }
@@ -2282,10 +4026,12 @@
                     showScreen("screenLobby");
                     renderRolesGuide("rolesGuideHost");
                     applyRoleUI();
+                    ensureHostLobbyControls();
                     refreshInviteUI(currentRoomId);
+                    await notifyJukeboxAudioReady();
                 } catch (err) {
                     console.error(err);
-                    logLobby("❌ Errore nella creazione della stanza");
+                    logLobby("× Errore nella creazione della stanza");
                     alert("Errore nella creazione della stanza");
                 } finally {
                     creatingRoom = false;
@@ -2308,7 +4054,7 @@
                     const roomId = (document.getElementById("roomIdInput").value || "").trim();
                     if (!roomId) {
                         if (showAlerts) alert("Inserisci l'ID stanza");
-                        else logLobby("❌ ID stanza mancante.");
+                        else logLobby("× ID stanza mancante.");
                         return false;
                     }
 
@@ -2322,7 +4068,7 @@
                             updateConnectionUI();
                         } catch (e) {
                             console.error("Connessione fallita:", e);
-                            const msg = "❌ Non connesso al server.";
+                            const msg = "× Non connesso al server.";
                             if (showAlerts) alert(msg); else logLobby(msg);
                             return false;
                         }
@@ -2339,14 +4085,14 @@
                     try { result = await connection.invoke("JoinRoom", roomId, name, hostKeyToSend); }
                     catch (err) {
                         console.error(err);
-                        if (showAlerts) alert("❌ Errore durante il join.");
-                        else logLobby("❌ Errore durante il join.");
+                        if (showAlerts) alert("× Errore durante il join.");
+                        else logLobby("× Errore durante il join.");
                         return false;
                     }
 
                     if (result && result.ok === false) {
                         const msg = result.error || "Impossibile entrare nella stanza.";
-                        if (showAlerts) alert(`❌ ${msg}`); else logLobby(`❌ ${msg}`);
+                        if (showAlerts) alert(`× ${msg}`); else logLobby(`× ${msg}`);
                         return false;
                     }
 
@@ -2383,7 +4129,7 @@
                     // === Routing schermate + render base
                     if (isHost) {
                         if (gameStarted) { showScreen("screenGame"); renderHostTable(currentPlayers); }
-                        else { showScreen("screenLobby"); }
+                        else { showScreen("screenLobby"); ensureHostLobbyControls(); }
                     } else {
                         if (gameStarted) { showScreen("screenGamePlayer"); renderPlayers(currentPlayers); }
                         else { showScreen("screenLobby"); }
@@ -2398,6 +4144,7 @@
                     refreshInviteUI(currentRoomId);
                     updateConnectionUI();
                     applyRoleUI();
+                    ensureHostLobbyControls();
 
                     // === 🧩 NUOVO: render immediato del riquadro "Ruoli in partita" anche per i player
                     if (gameStarted) {
@@ -2416,6 +4163,8 @@
                         }
                     }
 
+                    await notifyJukeboxAudioReady();
+                    await syncHostRandomAudioPreference();
                     return true;
                 } finally {
                     isJoining = false;
@@ -2424,12 +4173,12 @@
             }
 
             async function startGame() {
-                if (!isHost) { alert("❌ Solo l'host può avviare la partita!"); return; }
+                if (!isHost) { alert("× Solo l'host può avviare la partita!"); return; }
 
                 const r = readRoleCounts();                 // { wolves, villagers, ..., couple, medium }
                 const slots = calcRoleSlots(r);             // <-- coppia conta 2
                 if (slots < currentPlayers.length) {
-                    alert("❌ Ruoli insufficienti!");
+                    alert("× Ruoli insufficienti!");
                     return;
                 }
 
@@ -2447,7 +4196,7 @@
                     logLobby("🚀 Partita avviata!");
                 } catch (err) {
                     console.error(err);
-                    logLobby("❌ Errore nell'avvio della partita");
+                    logLobby("× Errore nell'avvio della partita");
                 }
             }
 
@@ -2714,3 +4463,4 @@
     </script>
 </body>
 </html>
+

@@ -15,6 +15,8 @@ namespace LupusInTabula.Hubs
         private static readonly ConcurrentDictionary<string, GameRoom> Rooms = new();
         // ConnId -> (roomId, playerName, isHost) | playerName null = host
         private static readonly ConcurrentDictionary<string, (string roomId, string? playerName, bool isHost)> ConnIndex = new();
+        // RoomId -> connessioni che hanno sbloccato l'audio nel browser
+        private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> AudioReady = new();
 
         // =========================================================
         // =============== LIFECYCLE & CONNESSIONI =================
@@ -25,6 +27,8 @@ namespace LupusInTabula.Hubs
             if (ConnIndex.TryRemove(Context.ConnectionId, out var info)
                 && Rooms.TryGetValue(info.roomId, out var room))
             {
+                RemoveAudioReady(info.roomId, Context.ConnectionId);
+
                 if (info.isHost)
                 {
                     room.HostConnectionId = null;
@@ -263,6 +267,7 @@ namespace LupusInTabula.Hubs
             {
                 room.HostConnectionId = null;
                 ConnIndex.TryRemove(Context.ConnectionId, out _);
+                RemoveAudioReady(roomId, Context.ConnectionId);
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
                 await BroadcastLobbyAndVotes(room);
                 return;
@@ -277,6 +282,7 @@ namespace LupusInTabula.Hubs
             }
 
             ConnIndex.TryRemove(Context.ConnectionId, out _);
+            RemoveAudioReady(roomId, Context.ConnectionId);
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
             await BroadcastLobbyAndVotes(room);
         }
@@ -293,6 +299,7 @@ namespace LupusInTabula.Hubs
             room.GameStarted = false;
             room.VotingOpen = false;
             room.SavedRoleCounts = null; // ← azzera i conteggi salvati
+            ResetNight(room, resetCounter: true);
 
             foreach (var p in room.Players)
             {
@@ -305,6 +312,8 @@ namespace LupusInTabula.Hubs
             room.CoupleRomeoName = null;
             room.CoupleJulietName = null;
             room.CoupleSleepAt = "romeo";
+            room.WitchSavePotionUsed = false;
+            room.WitchKillPotionUsed = false;
 
             await Clients.Group(room.Id).SendAsync("GameRestarted", ToLobbyPlayers(room), room.HostName);
             await BroadcastLobbyAndVotes(room);
@@ -321,6 +330,7 @@ namespace LupusInTabula.Hubs
             // 0) Reset pulito
             room.GameStarted = false;
             room.VotingOpen = false;
+            ResetNight(room, resetCounter: true);
             foreach (var p in room.Players)
             {
                 p.Role = "";
@@ -330,6 +340,8 @@ namespace LupusInTabula.Hubs
             room.CoupleRomeoName = null;
             room.CoupleJulietName = null;
             room.CoupleSleepAt = "romeo";
+            room.WitchSavePotionUsed = false;
+            room.WitchKillPotionUsed = false;
 
             // 1) Costruisci deck ruoli
             var roleCounts = BuildRoleCounts(wolves, villagers, seers, guards, scemo, hunter, witch, lara, mayor, hitman, medium, couple);
@@ -347,7 +359,7 @@ namespace LupusInTabula.Hubs
             }
 
             // 3) Assegna ruoli (eccedenze ignorate)
-            AssignRoles(roles, candidates);
+            AssignRoles(roles, candidates, room);
 
             // 4) Accoppia le coppie
             await PairCouples(room);
@@ -355,6 +367,7 @@ namespace LupusInTabula.Hubs
             // 5) Stato partita
             room.GameStarted = true;
             room.VotingOpen = false;
+            ResetNight(room, resetCounter: true);
 
             // 5.1) Persisti i conteggi ruoli scelti (servono ai player che si connettono dopo)
             room.SavedRoleCounts = roleCounts;
@@ -446,36 +459,7 @@ namespace LupusInTabula.Hubs
             var player = room.Players.FirstOrDefault(p => Same(p.Name, playerName));
             if (player == null || player.Eliminated) return;
 
-            var isJuliet = room.CoupleJulietName != null && Same(player.Name, room.CoupleJulietName);
-            var isRomeo = room.CoupleRomeoName != null && Same(player.Name, room.CoupleRomeoName);
-
-            // Giulietta protetta se dormono da Romeo
-            if (isJuliet && Same(room.CoupleSleepAt, "romeo"))
-            {
-                await Clients.Group(room.Id).SendAsync("CoupleSaved", player.Name, room.CoupleRomeoName);
-                await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
-                return;
-            }
-
-            // Elimina target
-            player.Eliminated = true;
-            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
-            await Clients.Group(room.Id).SendAsync("PlayerEliminated", player.Name);
-            await RevealToMediums(room, player);
-
-            // Se muore Romeo -> muore anche Giulietta (anche se dormivano da Romeo)
-            if (isRomeo && room.CoupleJulietName != null)
-            {
-                var juliet = room.Players.FirstOrDefault(p => Same(p.Name, room.CoupleJulietName));
-                if (juliet != null && !juliet.Eliminated)
-                {
-                    juliet.Eliminated = true;
-                    await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
-                    await Clients.Group(room.Id).SendAsync("PlayerEliminated", juliet.Name);
-                    await RevealToMediums(room, juliet);
-                    await Clients.Group(room.Id).SendAsync("CoupleDied", room.CoupleRomeoName, room.CoupleJulietName);
-                }
-            }
+            await EliminatePlayerCore(room, player, "popolo");
         }
 
         public async Task RevivePlayer(string roomId, string playerName)
@@ -495,6 +479,179 @@ namespace LupusInTabula.Hubs
 
         public Task ResurrectPlayer(string roomId, string playerName) => RevivePlayer(roomId, playerName);
         public Task UneliminatePlayer(string roomId, string playerName) => RevivePlayer(roomId, playerName);
+
+        public async Task BeginNight(string roomId)
+        {
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
+            if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
+            if (!room.GameStarted) return;
+
+            room.NightInProgress = true;
+            room.NightNumber++;
+            room.NightWolfTarget = null;
+            room.NightProtectedTarget = null;
+            room.NightWitchSave = false;
+            room.NightWitchKillTarget = null;
+            room.VotingOpen = false;
+            foreach (var p in room.Players) p.CurrentVote = null;
+
+            var state = BuildNightState(room);
+            await Clients.Group(room.Id).SendAsync("NightStarted", state);
+            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+        }
+
+        public async Task<object?> SetNightChoice(string roomId, string choiceType, string targetName)
+        {
+            if (!Rooms.TryGetValue(roomId, out var room)) return null;
+            if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return null;
+            if (!room.NightInProgress) return null;
+
+            choiceType = (choiceType ?? "").Trim().ToLowerInvariant();
+            targetName = (targetName ?? "").Trim();
+
+            if (choiceType == "couplehouse")
+            {
+                var house = targetName.ToLowerInvariant();
+                if (house != "romeo" && house != "giulietta") return null;
+
+                room.CoupleSleepAt = house;
+                var state = BuildNightState(room);
+                await Clients.Caller.SendAsync("NightChoiceUpdated", state);
+                return state;
+            }
+
+            if (choiceType == "witchsave")
+            {
+                room.NightWitchSave = !room.WitchSavePotionUsed && Same(targetName, "save");
+                var state = BuildNightState(room);
+                await Clients.Caller.SendAsync("NightChoiceUpdated", state);
+                return state;
+            }
+
+            if (choiceType == "witchkill")
+            {
+                if (room.WitchKillPotionUsed || string.IsNullOrWhiteSpace(targetName) || Same(targetName, "skip"))
+                {
+                    room.NightWitchKillTarget = null;
+                    var state = BuildNightState(room);
+                    await Clients.Caller.SendAsync("NightChoiceUpdated", state);
+                    return state;
+                }
+
+                var poisonTarget = room.Players.FirstOrDefault(p => Same(p.Name, targetName) && !p.Eliminated);
+                if (poisonTarget == null) return null;
+
+                room.NightWitchKillTarget = poisonTarget.Name;
+                var poisonState = BuildNightState(room);
+                await Clients.Caller.SendAsync("NightChoiceUpdated", poisonState);
+                return poisonState;
+            }
+
+            var target = room.Players.FirstOrDefault(p => Same(p.Name, targetName) && !p.Eliminated);
+            if (target == null) return null;
+
+            if (choiceType == "wolf")
+            {
+                room.NightWolfTarget = target.Name;
+                var state = BuildNightState(room);
+                await Clients.Caller.SendAsync("NightChoiceUpdated", state);
+                return state;
+            }
+
+            if (choiceType == "protect")
+            {
+                room.NightProtectedTarget = target.Name;
+                var state = BuildNightState(room);
+                await Clients.Caller.SendAsync("NightChoiceUpdated", state);
+                return state;
+            }
+
+            if (choiceType == "seer")
+            {
+                var result = new
+                {
+                    target = target.Name,
+                    role = target.Role,
+                    isWolf = Same(target.Role, "wolf")
+                };
+                await Clients.Caller.SendAsync("NightSeerResult", result);
+                return result;
+            }
+
+            return null;
+        }
+
+        public async Task EndNight(string roomId)
+        {
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
+            if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
+            if (!room.NightInProgress) return;
+
+            var wolfTarget = room.NightWolfTarget;
+            var protectedTarget = room.NightProtectedTarget;
+            var messages = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(wolfTarget))
+            {
+                messages.Add("I lupi non hanno scelto nessuna vittima.");
+            }
+            else if (!string.IsNullOrWhiteSpace(protectedTarget) && Same(wolfTarget, protectedTarget))
+            {
+                messages.Add($"{wolfTarget} è stato protetto: l'attacco dei lupi è stato annullato.");
+            }
+            else if (room.NightWitchSave)
+            {
+                room.WitchSavePotionUsed = true;
+                messages.Add($"La Strega ha salvato {wolfTarget}: l'attacco dei lupi è stato annullato.");
+            }
+            else
+            {
+                var target = room.Players.FirstOrDefault(p => Same(p.Name, wolfTarget));
+                if (target == null || target.Eliminated)
+                {
+                    messages.Add("I lupi hanno trovato una strada vuota: nessuna vittima.");
+                }
+                else
+                {
+                    var coupleResult = await ResolveCoupleHouseAttack(room, target);
+                    if (coupleResult.handled)
+                    {
+                        messages.Add(coupleResult.message);
+                    }
+                    else if (Same(target.Role, "lara"))
+                    {
+                        target.Role = "wolf";
+                        messages.Add($"{target.Name} è stata morsa dai lupi e ora gioca con loro.");
+                        if (!string.IsNullOrWhiteSpace(target.ConnectionId))
+                            await Clients.Client(target.ConnectionId!).SendAsync("ReceiveRole", target.Role);
+                    }
+                    else
+                    {
+                        await EliminatePlayerCore(room, target, "lupi");
+                        messages.Add($"{target.Name} non si è svegliato.");
+                    }
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(room.NightWitchKillTarget))
+            {
+                var poisonTarget = room.Players.FirstOrDefault(p => Same(p.Name, room.NightWitchKillTarget));
+                if (poisonTarget != null && !poisonTarget.Eliminated)
+                {
+                    room.WitchKillPotionUsed = true;
+                    await EliminatePlayerCore(room, poisonTarget, "strega");
+                    messages.Add($"La Strega ha usato il veleno su {poisonTarget.Name}.");
+                }
+            }
+
+            var message = messages.Count == 0
+                ? "La notte passa senza vittime."
+                : string.Join(" ", messages);
+
+            ResetNight(room, resetCounter: false);
+            await Clients.Group(room.Id).SendAsync("NightEnded", message, MapPlayers(room));
+            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+        }
 
         public async Task KickPlayer(string roomId, string playerName)
         {
@@ -535,6 +692,92 @@ namespace LupusInTabula.Hubs
             await Clients.Caller.SendAsync("ReceiveHostRoomInfo", roomInfo);
         }
 
+        public async Task JukeboxPlay(string roomId, string preset, double volume)
+        {
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
+            if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
+
+            preset = (preset ?? "").Trim();
+            var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "bastaldo", "fikaculo", "gallo", "muniz", "profondoRosso"
+            };
+            if (!allowed.Contains(preset)) return;
+
+            volume = Math.Clamp(volume, 0, 1);
+            await Clients.Group(room.Id).SendAsync("JukeboxPlay", preset, volume);
+            await Clients.Group(room.Id).SendAsync("JukeboxPlayLocal", preset, volume, false);
+        }
+
+        public async Task JukeboxStop(string roomId)
+        {
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
+            if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
+
+            await Clients.Group(room.Id).SendAsync("JukeboxStop");
+        }
+
+        public Task JukeboxAudioReady(string roomId)
+        {
+            if (!Rooms.TryGetValue(roomId, out var room)) return Task.CompletedTask;
+
+            var connId = Context.ConnectionId;
+            var isHost = SameConn(room.HostConnectionId, connId);
+            var isPlayer = room.Players.Any(p => SameConn(p.ConnectionId, connId));
+            if (!isHost && !isPlayer) return Task.CompletedTask;
+
+            AudioReady.GetOrAdd(room.Id, _ => new ConcurrentDictionary<string, byte>())[connId] = 1;
+            return Task.CompletedTask;
+        }
+
+        public async Task JukeboxSetHostRandomAudio(string roomId, bool enabled)
+        {
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
+            if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
+
+            room.HostAvailableForJukeboxRandom = enabled;
+            await Clients.Caller.SendAsync("JukeboxHostRandomAudioChanged", enabled);
+        }
+
+        public async Task JukeboxStartNight(string roomId)
+        {
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
+            if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
+
+            var targetConn = PickRandomAudioTarget(room);
+            if (string.IsNullOrEmpty(targetConn))
+            {
+                await Clients.Caller.SendAsync("JukeboxNoAudioTargets");
+                return;
+            }
+
+            await Clients.Client(targetConn).SendAsync("JukeboxPlayLocal", "notte/ambiente", 0.75, true);
+            await Clients.Group(room.Id).SendAsync("JukeboxNightStarted");
+        }
+
+        public async Task JukeboxNightIntervention(string roomId, string sound)
+        {
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
+            if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
+
+            sound = (sound ?? "").Trim();
+            var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "ambiente2", "gufo", "passi", "Ullulo"
+            };
+            if (!allowed.Contains(sound)) return;
+
+            var targetConn = PickRandomAudioTarget(room);
+            if (string.IsNullOrEmpty(targetConn))
+            {
+                await Clients.Caller.SendAsync("JukeboxNoAudioTargets");
+                return;
+            }
+
+            await Clients.Client(targetConn).SendAsync("JukeboxPlayLocal", $"notte/{sound}", 0.95, false);
+            await Clients.Group(room.Id).SendAsync("JukeboxNightIntervention", sound);
+        }
+
         public Task Heartbeat() => Task.CompletedTask;
 
         // =========================================================
@@ -558,6 +801,32 @@ namespace LupusInTabula.Hubs
 
         private static bool IsHostOnline(GameRoom room) =>
             !string.IsNullOrEmpty(room.HostConnectionId) && ConnIndex.ContainsKey(room.HostConnectionId);
+
+        private static void RemoveAudioReady(string roomId, string connId)
+        {
+            if (AudioReady.TryGetValue(roomId, out var ready))
+                ready.TryRemove(connId, out _);
+        }
+
+        private static string? PickRandomAudioTarget(GameRoom room)
+        {
+            if (!AudioReady.TryGetValue(room.Id, out var ready)) return null;
+
+            var validConnections = new HashSet<string>(StringComparer.Ordinal);
+            if (room.HostAvailableForJukeboxRandom
+                && !string.IsNullOrEmpty(room.HostConnectionId)
+                && ConnIndex.ContainsKey(room.HostConnectionId))
+                validConnections.Add(room.HostConnectionId);
+
+            foreach (var connId in room.Players
+                .Where(p => p.IsOnline && !string.IsNullOrEmpty(p.ConnectionId))
+                .Select(p => p.ConnectionId!))
+                validConnections.Add(connId);
+
+            var targets = ready.Keys.Where(validConnections.Contains).ToList();
+
+            return targets.Count == 0 ? null : targets[RandomNumberGenerator.GetInt32(targets.Count)];
+        }
 
         private static List<object> ToLobbyPlayers(GameRoom room) =>
             room.Players
@@ -620,15 +889,73 @@ namespace LupusInTabula.Hubs
             return roles;
         }
 
-        private static void AssignRoles(List<string> roles, List<Player> candidates)
+        private static void AssignRoles(List<string> roles, List<Player> candidates, GameRoom room)
         {
-            Shuffle(roles);
-            Shuffle(candidates);
-
             int n = Math.Min(candidates.Count, roles.Count);
+            if (n <= 0) return;
+
+            var bestRoles = roles.Take(n).ToList();
+            var bestCandidates = candidates.Take(n).ToList();
+            var bestScore = int.MaxValue;
+
+            // Random puro può ripetere spesso gli stessi ruoli. Proviamo più mazzi
+            // e scegliamo quello che ripete meno i ruoli della partita precedente.
+            var attempts = Math.Clamp(n * 18, 80, 260);
+            for (int attempt = 0; attempt < attempts; attempt++)
+            {
+                var trialRoles = roles.ToList();
+                var trialCandidates = candidates.ToList();
+                Shuffle(trialRoles);
+                Shuffle(trialCandidates);
+
+                var score = ScoreRoleAssignment(trialRoles, trialCandidates, room.PreviousRolesByPlayer, n);
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    bestRoles = trialRoles.Take(n).ToList();
+                    bestCandidates = trialCandidates.Take(n).ToList();
+                    if (bestScore == 0) break;
+                }
+            }
+
             for (int i = 0; i < n; i++)
-                candidates[i].Role = roles[i];
+                bestCandidates[i].Role = bestRoles[i];
+
+            room.PreviousRolesByPlayer = candidates
+                .Where(p => !string.IsNullOrWhiteSpace(p.Role))
+                .ToDictionary(p => p.Name, p => p.Role, StringComparer.OrdinalIgnoreCase);
         }
+
+        private static int ScoreRoleAssignment(
+            IReadOnlyList<string> roles,
+            IReadOnlyList<Player> candidates,
+            IReadOnlyDictionary<string, string> previousRoles,
+            int n)
+        {
+            var score = 0;
+            for (int i = 0; i < n; i++)
+            {
+                var player = candidates[i];
+                var role = roles[i];
+                if (!previousRoles.TryGetValue(player.Name, out var previous)) continue;
+
+                if (Same(previous, role))
+                    score += Same(role, "villager") ? 2 : 14;
+
+                if (IsWolfTeam(previous) && IsWolfTeam(role))
+                    score += 9;
+
+                if (IsPowerRole(previous) && IsPowerRole(role))
+                    score += 4;
+            }
+
+            return score;
+        }
+
+        private static bool IsWolfTeam(string role) => Same(role, "wolf");
+
+        private static bool IsPowerRole(string role) =>
+            !Same(role, "villager") && !Same(role, "wolf");
 
         private static List<PlayerDto> MapPlayers(GameRoom room)
         {
@@ -659,6 +986,97 @@ namespace LupusInTabula.Hubs
                     VotedBy: voteDetails.TryGetValue(p.Name, out var list) ? list : new List<string>()
                 ))
                 .ToList();
+        }
+
+        private static object BuildNightState(GameRoom room) => new
+        {
+            active = room.NightInProgress,
+            nightNumber = room.NightNumber,
+            wolfTarget = room.NightWolfTarget,
+            protectedTarget = room.NightProtectedTarget,
+            coupleHouse = room.CoupleSleepAt,
+            witchSave = room.NightWitchSave,
+            witchKillTarget = room.NightWitchKillTarget,
+            witchSavePotionUsed = room.WitchSavePotionUsed,
+            witchKillPotionUsed = room.WitchKillPotionUsed
+        };
+
+        private static void ResetNight(GameRoom room, bool resetCounter)
+        {
+            room.NightInProgress = false;
+            if (resetCounter) room.NightNumber = 0;
+            room.NightWolfTarget = null;
+            room.NightProtectedTarget = null;
+            room.NightWitchSave = false;
+            room.NightWitchKillTarget = null;
+        }
+
+        private async Task<(bool handled, string message)> ResolveCoupleHouseAttack(GameRoom room, Player target)
+        {
+            var targetIsRomeo = room.CoupleRomeoName != null && Same(target.Name, room.CoupleRomeoName);
+            var targetIsJuliet = room.CoupleJulietName != null && Same(target.Name, room.CoupleJulietName);
+            if (!targetIsRomeo && !targetIsJuliet) return (false, "");
+
+            var attackedHouse = targetIsRomeo ? "romeo" : "giulietta";
+            var houseName = targetIsRomeo ? "Romeo" : "Giulietta";
+            var sleepingAt = Same(room.CoupleSleepAt, "giulietta") ? "giulietta" : "romeo";
+
+            if (!Same(attackedHouse, sleepingAt))
+            {
+                return (true, $"I lupi hanno attaccato casa di {houseName}, ma era vuota: Romeo e Giulietta sono salvi.");
+            }
+
+            var romeo = room.Players.FirstOrDefault(p => room.CoupleRomeoName != null && Same(p.Name, room.CoupleRomeoName));
+            var juliet = room.Players.FirstOrDefault(p => room.CoupleJulietName != null && Same(p.Name, room.CoupleJulietName));
+
+            if (romeo != null && !romeo.Eliminated)
+                await EliminatePlayerDirect(room, romeo, "lupi");
+            if (juliet != null && !juliet.Eliminated)
+                await EliminatePlayerDirect(room, juliet, "lupi");
+
+            await Clients.Group(room.Id).SendAsync("CoupleDied", room.CoupleRomeoName, room.CoupleJulietName);
+            return (true, "I lupi hanno trovato Romeo e Giulietta nella stessa casa: muoiono entrambi.");
+        }
+
+        private async Task EliminatePlayerDirect(GameRoom room, Player player, string reason)
+        {
+            player.Eliminated = true;
+            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+            await Clients.Group(room.Id).SendAsync("PlayerEliminated", player.Name, reason);
+            await RevealToMediums(room, player);
+        }
+
+        private async Task EliminatePlayerCore(GameRoom room, Player player, string reason)
+        {
+            var isJuliet = room.CoupleJulietName != null && Same(player.Name, room.CoupleJulietName);
+            var isRomeo = room.CoupleRomeoName != null && Same(player.Name, room.CoupleRomeoName);
+
+            // Giulietta protetta se dorme da Romeo.
+            if (isJuliet && Same(room.CoupleSleepAt, "romeo"))
+            {
+                await Clients.Group(room.Id).SendAsync("CoupleSaved", player.Name, room.CoupleRomeoName);
+                await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+                return;
+            }
+
+            player.Eliminated = true;
+            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+            await Clients.Group(room.Id).SendAsync("PlayerEliminated", player.Name, reason);
+            await RevealToMediums(room, player);
+
+            // Se muore Romeo muore anche Giulietta.
+            if (isRomeo && room.CoupleJulietName != null)
+            {
+                var juliet = room.Players.FirstOrDefault(p => Same(p.Name, room.CoupleJulietName));
+                if (juliet != null && !juliet.Eliminated)
+                {
+                    juliet.Eliminated = true;
+                    await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+                    await Clients.Group(room.Id).SendAsync("PlayerEliminated", juliet.Name, reason);
+                    await RevealToMediums(room, juliet);
+                    await Clients.Group(room.Id).SendAsync("CoupleDied", room.CoupleRomeoName, room.CoupleJulietName);
+                }
+            }
         }
 
         private async Task PairCouples(GameRoom room)
