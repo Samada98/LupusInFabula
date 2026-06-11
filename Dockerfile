@@ -8,7 +8,7 @@ RUN dotnet restore
 
 # copia tutto e pubblica
 COPY . .
-RUN dotnet publish -c Release -o /app
+RUN dotnet publish LupusInTabula.csproj -c Release -o /app
 
 # STAGE 2: runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
