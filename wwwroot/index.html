@@ -260,12 +260,17 @@
             align-items: center;
             gap: 0 12px;
             width: min(94%, 392px);
-            margin: max(18px, env(safe-area-inset-top, 0px)) auto 18px;
+            margin: max(18px, env(safe-area-inset-top, 0px)) auto 10px;
             padding: 12px 15px 13px 12px;
             border-radius: 28px;
-            background: linear-gradient(145deg, rgba(255,255,255,.18), transparent 42%), linear-gradient(180deg, #a51616 0%, #780000 100%);
-            border: 1px solid rgba(255,247,237,.24);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.26), 0 18px 44px rgba(0,0,0,.3);
+            background:
+                linear-gradient(145deg, rgba(255,247,237,.16), transparent 40%),
+                linear-gradient(180deg, #9f1010 0%, #6f0000 100%);
+            border: 1.5px solid rgba(245,191,88,.78);
+            box-shadow:
+                inset 0 0 0 1px rgba(255,247,237,.12),
+                inset 0 1px 0 rgba(255,247,237,.22),
+                0 14px 32px rgba(35,0,0,.34);
             text-align: left;
             user-select: none;
         }
@@ -278,10 +283,12 @@
             border-radius: 22px;
             display: grid;
             place-items: center;
-            background: rgba(69,10,10,.28);
+            background: rgba(69,10,10,.22);
             color: #fff;
             font-size: 39px;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,.2), 0 12px 26px rgba(69,10,10,.26);
+            box-shadow:
+                inset 0 0 0 1px rgba(245,191,88,.44),
+                0 10px 22px rgba(69,10,10,.28);
             cursor: pointer;
             touch-action: manipulation;
             filter: drop-shadow(0 6px 8px rgba(0,0,0,.24));
@@ -292,7 +299,7 @@
             position: absolute;
             inset: 7px;
             border-radius: 17px;
-            border: 1px solid rgba(255,247,237,.28);
+            border: 1px solid rgba(255,229,153,.38);
         }
 
         .brand-title {
@@ -340,8 +347,8 @@
             }
 
         #screenAccess {
-            place-items: center;
-            padding: 0 16px 0
+            place-items: start center;
+            padding: 0 16px 8px
         }
 
             #screenAccess.active {
@@ -372,8 +379,8 @@
             border-radius: 24px;
             background: rgba(255,247,237,.93);
             backdrop-filter: blur(14px);
-            border: 1px solid rgba(255,255,255,.78);
-            box-shadow: 0 24px 60px rgba(0,0,0,.28);
+            border: 1px solid rgba(245,191,88,.28);
+            box-shadow: 0 20px 46px rgba(35,0,0,.28);
             padding: 18px;
             animation: floatIn .6s ease both
         }
@@ -1552,13 +1559,13 @@
 
         .brandbar {
             width: min(94%, 392px);
-            margin: max(18px, env(safe-area-inset-top, 0px)) auto 18px;
+            margin: max(18px, env(safe-area-inset-top, 0px)) auto 10px;
             padding: 12px 15px 13px 12px;
         }
 
         .brand-mark {
             border-radius: 22px;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,.2), 0 12px 26px rgba(69,10,10,.26);
+            box-shadow: inset 0 0 0 1px rgba(245,191,88,.44), 0 10px 22px rgba(69,10,10,.28);
         }
 
         .brand-title {
@@ -1598,10 +1605,11 @@
             margin-top: auto;
             width: 100%;
             padding: 18px 12px max(14px, env(safe-area-inset-bottom, 0px));
-            color: #7c2d12;
-            font-weight: 600;
+            color: #fff7ed;
+            font-weight: 800;
             text-align: center;
             font-size: 12.5px;
+            text-shadow: 0 2px 8px rgba(69,10,10,.45);
         }
 
         .screen {
@@ -1764,7 +1772,7 @@
 
             .login-card {
                 width: min(94vw, 460px);
-                border-radius: 18px;
+                border-radius: 22px;
             }
 
             .btn-row {
@@ -4814,52 +4822,99 @@
                 catch { alert('⚠️ Copia manuale'); }
                 document.body.removeChild(tmp);
             }
-            /* ========================== 10) PREFILL + AUTO-JOIN ========================== */
-            window.addEventListener("load", () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const roomIdFromLink = urlParams.get("roomId");
 
+            function rememberCurrentSessionForRefresh() {
                 const nameInput = document.getElementById("name");
                 const roomInput = document.getElementById("roomIdInput");
+                const rid = currentRoomId || localStorage.getItem("lupus_roomId") || roomInput?.value?.trim() || "";
+                const nm = myName || localStorage.getItem("lupus_name") || nameInput?.value?.trim() || "";
+                if (rid) {
+                    localStorage.setItem("lupus_roomId", rid);
+                    sessionStorage.setItem("lupus_refreshRoomId", rid);
+                }
+                if (nm) {
+                    localStorage.setItem("lupus_name", nm);
+                    sessionStorage.setItem("lupus_refreshName", nm);
+                }
+                if (rid && nm) {
+                    localStorage.setItem("lupus_autoJoin", "true");
+                    sessionStorage.setItem("lupus_refreshAutoLogin", "true");
+                }
+            }
 
-                const ridLS = localStorage.getItem("lupus_roomId");
-                const nmLS = localStorage.getItem("lupus_name");
-                const auto = localStorage.getItem("lupus_autoJoin") === "true";
+            function hydrateLoginFields(roomIdFromLink = null) {
+                const nameInput = document.getElementById("name");
+                const roomInput = document.getElementById("roomIdInput");
+                if (!nameInput || !roomInput) return { name: "", roomId: "" };
 
-                if (nmLS) nameInput.value = nmLS;
+                const forcedName = sessionStorage.getItem("lupus_refreshName") || "";
+                const forcedRoom = sessionStorage.getItem("lupus_refreshRoomId") || "";
+                const ridLS = localStorage.getItem("lupus_roomId") || "";
+                const nmLS = localStorage.getItem("lupus_name") || "";
+
+                if (forcedName || nmLS) nameInput.value = forcedName || nmLS;
                 if (roomIdFromLink) {
                     roomInput.value = roomIdFromLink;
                     logLobby(`🔗 Sei stato invitato alla stanza: ${roomIdFromLink}`);
-                } else if (ridLS) {
-                    roomInput.value = ridLS;
+                } else if (forcedRoom || ridLS) {
+                    roomInput.value = forcedRoom || ridLS;
                 }
+
+                return {
+                    name: nameInput.value.trim(),
+                    roomId: roomInput.value.trim()
+                };
+            }
+
+            async function attemptStoredAutoLogin({ force = false, roomIdFromLink = null } = {}) {
+                const hydrated = hydrateLoginFields(roomIdFromLink);
+                const forced = force || sessionStorage.getItem("lupus_refreshAutoLogin") === "true";
+                const auto = localStorage.getItem("lupus_autoJoin") === "true";
+                const wantAutoJoin = (forced || auto) && hydrated.name && hydrated.roomId;
 
                 updateRolesLeft();
                 renderRolesGuide("rolesGuideHost");
 
-                const wantAutoJoin = auto && nameInput.value.trim() && roomInput.value.trim();
-                if (wantAutoJoin) {
-                    const tryJoin = async () => {
-                        const ok = await ensureConnection();
-                        if (!ok) { setTimeout(tryJoin, 1200); return; }
-                        await refreshMaintenanceState();
-                        if (maintenanceMode) return;
-                        try { await joinRoom(); } catch { setTimeout(tryJoin, 1500); }
-                    };
-                    tryJoin();
-                } else {
+                if (!wantAutoJoin) {
                     updateConnectionUI();
+                    return false;
                 }
+
+                let attempts = 0;
+                const tryJoin = async () => {
+                    attempts++;
+                    const ok = await ensureConnection();
+                    if (!ok) { setTimeout(tryJoin, 1200); return; }
+                    await refreshMaintenanceState();
+                    if (maintenanceMode) { updateConnectionUI(); return; }
+                    try {
+                        const joined = await joinRoom();
+                        if (joined) {
+                            sessionStorage.removeItem("lupus_refreshAutoLogin");
+                            sessionStorage.removeItem("lupus_refreshRoomId");
+                            sessionStorage.removeItem("lupus_refreshName");
+                            return;
+                        }
+                    } catch { /* retry below */ }
+                    if (forced || attempts < 8) setTimeout(tryJoin, 1500);
+                    else updateConnectionUI();
+                };
+
+                tryJoin();
+                return true;
+            }
+
+            /* ========================== 10) PREFILL + AUTO-JOIN ========================== */
+            window.addEventListener("load", () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const roomIdFromLink = urlParams.get("roomId");
+                attemptStoredAutoLogin({ roomIdFromLink });
             });
 
             document.addEventListener("visibilitychange", () => {
                 if (!document.hidden) {
                     (async () => {
-                        await refreshMaintenanceState();
-                        const rid = localStorage.getItem("lupus_roomId");
-                        const nm = localStorage.getItem("lupus_name");
-                        const auto = localStorage.getItem("lupus_autoJoin") === "true";
-                        if (!maintenanceMode && auto && rid && nm) joinRoom().catch(() => { });
+                        await attemptStoredAutoLogin();
                     })();
                 }
             });
@@ -4885,7 +4940,7 @@
             Object.assign(window, {
                 createRoom, joinRoom, startGame, toggleVoting, restartGame,
                 exitToLogin, eliminatePlayer, revivePlayer, kickPlayer,
-                copyInvite, shareInvite
+                copyInvite, shareInvite, rememberCurrentSessionForRefresh, attemptStoredAutoLogin
             });
         }
     </script>
@@ -4951,6 +5006,13 @@
                     setState('refreshing');
                     ptr.style.height = THRESHOLD + 'px';
                     text.textContent = 'Aggiorno…';
+                    try {
+                        if (typeof window.rememberCurrentSessionForRefresh === "function") {
+                            window.rememberCurrentSessionForRefresh();
+                        } else {
+                            sessionStorage.setItem("lupus_refreshAutoLogin", "true");
+                        }
+                    } catch { }
                     const url = new URL(location.href);
                     url.searchParams.set('_r', Date.now());
                     location.replace(url.toString());
