@@ -113,6 +113,47 @@
             animation: ptrPulse .8s ease-in-out infinite;
         }
 
+        .rejoin-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            display: none;
+            place-items: center;
+            padding: 22px;
+            background: #8b0000;
+            color: #fff7ed;
+            text-align: center;
+        }
+
+        .is-auto-rejoining .rejoin-overlay {
+            display: grid;
+        }
+
+        .is-auto-rejoining #screenAccess {
+            visibility: hidden;
+        }
+
+        .rejoin-card {
+            width: min(90vw, 360px);
+            border-radius: 24px;
+            padding: 24px 20px;
+            background: linear-gradient(180deg, #9f1010 0%, #6f0000 100%);
+            border: 1.5px solid rgba(245,191,88,.78);
+            box-shadow: 0 18px 42px rgba(35,0,0,.38);
+        }
+
+        .rejoin-card strong {
+            display: block;
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .rejoin-card span {
+            color: #fed7aa;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
         @keyframes ptrPulse {
             0%,100% {
                 transform: translateY(0) scaleX(1);
@@ -2136,6 +2177,13 @@
         <span id="ptr-text">Trascina per aggiornare…</span>
     </div>
 
+    <div id="rejoinOverlay" class="rejoin-overlay" aria-live="polite" aria-hidden="true">
+        <div class="rejoin-card">
+            <strong>Rientro nel villaggio…</strong>
+            <span>Sto recuperando stanza e giocatori.</span>
+        </div>
+    </div>
+
     <!-- =========================================================
          APP SHELL
     ========================================================== -->
@@ -2519,8 +2567,8 @@
                 .withUrl(window.HUB_URL)
                 .withAutomaticReconnect([0, 1000, 5000, 10000, 20000, 30000])
                 .build();
-            connection.serverTimeoutInMilliseconds = 120000;
-            connection.keepAliveIntervalInMilliseconds = 15000;
+            connection.serverTimeoutInMilliseconds = 35000;
+            connection.keepAliveIntervalInMilliseconds = 10000;
 
             /* ======================================================
                2) STATO GLOBALE (di app)
@@ -2533,6 +2581,8 @@
             let gameStarted = false;
             let myName = null;
             let isJoining = false; // evita UI sporca durante transizioni
+            let autoLoginInProgress = false;
+            let roomRefreshInProgress = false;
             let hostRolesVisible = true;
             let audioUnlocked = localStorage.getItem("lupus_audioUnlocked") === "true";
             let maintenanceMode = false;
@@ -2681,7 +2731,7 @@
             });
 
             function canUseWolfMaintenanceSwitch() {
-                const login = document.getElementById("screenLogin");
+                const login = document.getElementById("screenAccess");
                 const loginVisible = !!login && login.classList.contains("active") && !login.hidden;
                 return !maintenanceMode && (loginVisible || (!currentRoomId && !gameStarted));
             }
@@ -3667,6 +3717,14 @@
                 if (j) j.disabled = false;
             }
 
+            const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+            function setRejoinOverlay(visible) {
+                document.body.classList.toggle("is-auto-rejoining", !!visible);
+                const rejoinOverlay = document.getElementById("rejoinOverlay");
+                if (rejoinOverlay) rejoinOverlay.setAttribute("aria-hidden", visible ? "false" : "true");
+            }
+
             function resetUiForMaintenance() {
                 stopLocalJukeboxAudio(false);
                 if (jbOverlay) jbOverlay.style.display = "none";
@@ -3691,7 +3749,7 @@
                 localStorage.setItem("lupus_autoJoin", "false");
 
                 hardResetUI();
-                showScreen("screenLogin");
+                showScreen("screenAccess");
                 applyRoleUI();
                 updateConnectionUI();
             }
@@ -4184,10 +4242,9 @@
             connection.onreconnected(() => {
                 updateConnectionUI();
                 refreshMaintenanceState();
-                const rid = localStorage.getItem("lupus_roomId");
-                const nm = localStorage.getItem("lupus_name");
-                const auto = localStorage.getItem("lupus_autoJoin") === "true";
-                if (!maintenanceMode && auto && rid && nm) joinRoom().catch(() => { });
+                refreshCurrentRoom({ fromReconnect: true }).catch(() => {
+                    attemptStoredAutoLogin({ force: true }).catch(() => { });
+                });
             });
             connection.onclose(updateConnectionUI);
 
@@ -4198,7 +4255,7 @@
                 hbTimer = setInterval(() => {
                     if (connection.state === signalR.HubConnectionState.Connected)
                         connection.invoke("Heartbeat").catch(() => { });
-                }, 20000);
+                }, 8000);
             }
             function stopHeartbeat() { if (hbTimer) { clearInterval(hbTimer); hbTimer = null; } }
 
@@ -4711,7 +4768,7 @@
                 }
             }
 
-            async function joinRoom({ showAlerts = false } = {}) {
+            async function joinRoom({ showAlerts = false, silent = false, preserveUi = false } = {}) {
                 if (maintenanceMode) {
                     applyMaintenanceMode(true);
                     return false;
@@ -4721,33 +4778,40 @@
 
                 const createBtnEl = document.getElementById("createBtn");
                 const joinBtnEl = document.getElementById("joinBtn");
-                try { if (createBtnEl) createBtnEl.disabled = true; if (joinBtnEl) joinBtnEl.disabled = true; } catch { }
+                if (!silent) {
+                    try { if (createBtnEl) createBtnEl.disabled = true; if (joinBtnEl) joinBtnEl.disabled = true; } catch { }
+                }
 
                 try {
-                    cleanNameInput();
-                    const rawName = document.getElementById("name").value || "Giocatore";
-                    const name = applyNameMapping(rawName);
+                    if (!silent) cleanNameInput();
+                    const storedName = localStorage.getItem("lupus_name") || "";
+                    const rawName = silent && storedName
+                        ? storedName
+                        : (document.getElementById("name").value || "Giocatore");
+                    const name = silent && storedName ? storedName : applyNameMapping(rawName);
                     myName = name;
 
                     const roomId = (document.getElementById("roomIdInput").value || "").trim();
                     if (!roomId) {
                         if (showAlerts) alert("Inserisci l'ID stanza");
-                        else logLobby("× ID stanza mancante.");
+                        else if (!silent) logLobby("× ID stanza mancante.");
                         return false;
                     }
 
-                    isHost = false;
-                    hardResetUI();
+                    if (!preserveUi) {
+                        isHost = false;
+                        hardResetUI();
+                    }
 
                     if (connection.state !== signalR.HubConnectionState.Connected) {
                         try {
                             await connection.start();
-                            logLobby("✅ Connesso al server");
+                            if (!silent) logLobby("✅ Connesso al server");
                             updateConnectionUI();
                         } catch (e) {
                             console.error("Connessione fallita:", e);
                             const msg = "× Non connesso al server.";
-                            if (showAlerts) alert(msg); else logLobby(msg);
+                            if (showAlerts) alert(msg); else if (!silent) logLobby(msg);
                             return false;
                         }
                     }
@@ -4764,13 +4828,13 @@
                     catch (err) {
                         console.error(err);
                         if (showAlerts) alert("× Errore durante il join.");
-                        else logLobby("× Errore durante il join.");
+                        else if (!silent) logLobby("× Errore durante il join.");
                         return false;
                     }
 
                     if (result && result.ok === false) {
                         const msg = result.error || "Impossibile entrare nella stanza.";
-                        if (showAlerts) alert(`× ${msg}`); else logLobby(`× ${msg}`);
+                        if (showAlerts) alert(`× ${msg}`); else if (!silent) logLobby(`× ${msg}`);
                         return false;
                     }
 
@@ -4846,7 +4910,9 @@
                     return true;
                 } finally {
                     isJoining = false;
-                    try { if (createBtnEl) createBtnEl.disabled = false; if (joinBtnEl) joinBtnEl.disabled = false; } catch { }
+                    if (!silent) {
+                        try { if (createBtnEl) createBtnEl.disabled = false; if (joinBtnEl) joinBtnEl.disabled = false; } catch { }
+                    }
                 }
             }
 
@@ -5033,6 +5099,7 @@
             }
 
             async function attemptStoredAutoLogin({ force = false, roomIdFromLink = null } = {}) {
+                if (autoLoginInProgress) return true;
                 const hydrated = hydrateLoginFields(roomIdFromLink);
                 const forced = force || sessionStorage.getItem("lupus_refreshAutoLogin") === "true";
                 const auto = localStorage.getItem("lupus_autoJoin") === "true";
@@ -5046,28 +5113,64 @@
                     return false;
                 }
 
-                let attempts = 0;
-                const tryJoin = async () => {
-                    attempts++;
+                autoLoginInProgress = true;
+                setRejoinOverlay(true);
+
+                const maxAttempts = forced ? 8 : 4;
+                for (let attempts = 1; attempts <= maxAttempts; attempts++) {
                     const ok = await ensureConnection();
-                    if (!ok) { setTimeout(tryJoin, 1200); return; }
+                    if (!ok) {
+                        await delay(900);
+                        continue;
+                    }
+
                     await refreshMaintenanceState();
-                    if (maintenanceMode) { updateConnectionUI(); return; }
+                    if (maintenanceMode) {
+                        updateConnectionUI();
+                        break;
+                    }
+
                     try {
-                        const joined = await joinRoom();
+                        const joined = await joinRoom({ silent: true, preserveUi: true });
                         if (joined) {
                             sessionStorage.removeItem("lupus_refreshAutoLogin");
                             sessionStorage.removeItem("lupus_refreshRoomId");
                             sessionStorage.removeItem("lupus_refreshName");
-                            return;
+                            setRejoinOverlay(false);
+                            autoLoginInProgress = false;
+                            return true;
                         }
                     } catch { /* retry below */ }
-                    if (forced || attempts < 8) setTimeout(tryJoin, 1500);
-                    else updateConnectionUI();
-                };
 
-                tryJoin();
-                return true;
+                    if (attempts < maxAttempts) await delay(forced ? 900 : 650);
+                }
+
+                autoLoginInProgress = false;
+                setRejoinOverlay(false);
+                updateConnectionUI();
+                return false;
+            }
+
+            async function refreshCurrentRoom() {
+                if (roomRefreshInProgress) return true;
+
+                rememberCurrentSessionForRefresh();
+                hydrateLoginFields();
+
+                const rid = currentRoomId || localStorage.getItem("lupus_roomId") || "";
+                const nm = myName || localStorage.getItem("lupus_name") || "";
+                if (!rid || !nm) return false;
+
+                roomRefreshInProgress = true;
+                try {
+                    const ok = await ensureConnection();
+                    if (!ok) return false;
+                    await refreshMaintenanceState();
+                    if (maintenanceMode) return false;
+                    return await joinRoom({ silent: true, preserveUi: true });
+                } finally {
+                    roomRefreshInProgress = false;
+                }
             }
 
             /* ========================== 10) PREFILL + AUTO-JOIN ========================== */
@@ -5080,7 +5183,8 @@
             document.addEventListener("visibilitychange", () => {
                 if (!document.hidden) {
                     (async () => {
-                        await attemptStoredAutoLogin();
+                        if (currentRoomId) await refreshCurrentRoom();
+                        else await attemptStoredAutoLogin();
                     })();
                 }
             });
@@ -5106,7 +5210,7 @@
             Object.assign(window, {
                 createRoom, joinRoom, startGame, toggleVoting, restartGame,
                 exitToLogin, eliminatePlayer, revivePlayer, kickPlayer,
-                copyInvite, shareInvite, rememberCurrentSessionForRefresh, attemptStoredAutoLogin
+                copyInvite, shareInvite, rememberCurrentSessionForRefresh, attemptStoredAutoLogin, refreshCurrentRoom
             });
         }
     </script>
@@ -5172,11 +5276,36 @@
                     setState('refreshing');
                     ptr.style.height = THRESHOLD + 'px';
                     text.textContent = 'Aggiorno…';
+                    const resetPull = () => {
+                        ptr.style.height = '0px';
+                        text.textContent = 'Trascina per aggiornare…';
+                        setState('');
+                    };
                     try {
                         if (typeof window.rememberCurrentSessionForRefresh === "function") {
                             window.rememberCurrentSessionForRefresh();
                         } else {
                             sessionStorage.setItem("lupus_refreshAutoLogin", "true");
+                        }
+
+                        if (typeof window.refreshCurrentRoom === "function") {
+                            Promise.resolve(window.refreshCurrentRoom({ fromPull: true }))
+                                .then(ok => {
+                                    if (ok) {
+                                        text.textContent = 'Aggiornato';
+                                        setTimeout(resetPull, 260);
+                                        return;
+                                    }
+                                    const url = new URL(location.href);
+                                    url.searchParams.set('_r', Date.now());
+                                    location.replace(url.toString());
+                                })
+                                .catch(() => {
+                                    const url = new URL(location.href);
+                                    url.searchParams.set('_r', Date.now());
+                                    location.replace(url.toString());
+                                });
+                            return;
                         }
                     } catch { }
                     const url = new URL(location.href);

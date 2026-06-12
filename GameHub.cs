@@ -866,7 +866,37 @@ namespace LupusInTabula.Hubs
             await Clients.Group(room.Id).SendAsync("JukeboxNightIntervention", sound);
         }
 
-        public Task Heartbeat() => Task.CompletedTask;
+        public async Task Heartbeat()
+        {
+            if (!ConnIndex.TryGetValue(Context.ConnectionId, out var info)) return;
+            if (!Rooms.TryGetValue(info.roomId, out var room)) return;
+
+            var changed = false;
+            if (info.isHost)
+            {
+                if (!SameConn(room.HostConnectionId, Context.ConnectionId))
+                {
+                    room.HostConnectionId = Context.ConnectionId;
+                    changed = true;
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(info.playerName))
+            {
+                var player = room.Players.FirstOrDefault(p => Same(p.Name, info.playerName));
+                if (player != null)
+                {
+                    if (!player.IsOnline || !SameConn(player.ConnectionId, Context.ConnectionId))
+                    {
+                        player.IsOnline = true;
+                        player.ConnectionId = Context.ConnectionId;
+                        changed = true;
+                    }
+                }
+            }
+
+            if (changed)
+                await BroadcastLobbyAndVotes(room);
+        }
 
         // =========================================================
         // ======================== HELPERS ========================
