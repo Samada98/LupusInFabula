@@ -1,17 +1,90 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.ResponseCompression;
 using LupusInTabula.Hubs;
-using Microsoft.AspNetCore.SignalR;
+using System.IO.Compression;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSignalR();
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(
+        Path.Combine(builder.Environment.ContentRootPath, ".aspnet-data-protection-keys")));
+
+// Porta dinamica (Render) o 5000 in locale
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
+// SignalR reattivo: online/offline veloce senza staccare per micro-lag.
+builder.Services.AddSignalR(o =>
+{
+    o.KeepAliveInterval = TimeSpan.FromSeconds(8);
+    o.ClientTimeoutInterval = TimeSpan.FromSeconds(28);
+    o.EnableDetailedErrors = true;
+});
+
+// Se non usi MVC puoi rimuoverlo, ma non dà fastidio
 builder.Services.AddControllersWithViews();
+
+// Compressione (incluso octet-stream per fallback SignalR)
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+    {
+        "application/octet-stream"
+    });
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(o => o.Level = CompressionLevel.Fastest);
+builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = CompressionLevel.Fastest);
+
+// CORS (OPZIONALE) – abilitalo solo se servi l'HTML da un ORIGINE diversa.
+// Imposta env var ALLOWED_ORIGINS con una o più origini separate da ';'
+var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS");
+if (!string.IsNullOrWhiteSpace(allowedOrigins))
+{
+    var origins = allowedOrigins.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    builder.Services.AddCors(o => o.AddPolicy("client", p =>
+        p.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
+}
 
 var app = builder.Build();
 
-app.UseDefaultFiles();
+// Proxy headers (es. Render/Caddy/Nginx) per wss/https corretti
+var fwd = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+};
+fwd.KnownNetworks.Clear();
+fwd.KnownProxies.Clear();
+app.UseForwardedHeaders(fwd);
+
+// CORS se configurato sopra
+if (!string.IsNullOrWhiteSpace(allowedOrigins))
+{
+    app.UseCors("client");
+}
+
+app.UseResponseCompression();
+
+// WebSockets keep-alive coerente con client
+app.UseWebSockets(new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(8)
+});
+
+app.UseDefaultFiles(); // index.html da wwwroot
 app.UseStaticFiles();
 
+// Healthcheck semplice
+app.MapGet("/health", () => Results.Ok("ok"));
+
+// IMPORTANTISSIMO: path in minuscolo, combacia col client ("/gamehub")
 app.MapHub<GameHub>("/gamehub");
 
 app.Run();
+
