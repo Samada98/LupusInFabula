@@ -233,7 +233,8 @@ namespace LupusInTabula.Hubs
                     votingOpen = room.VotingOpen,
                     role = (string?)null,
                     players = MapPlayers(room),
-                    roleCounts = room.GameStarted ? room.SavedRoleCounts : null
+                    roleCounts = room.GameStarted ? room.SavedRoleCounts : null,
+                    nightState = room.NightInProgress ? BuildNightState(room) : null
                 };
             }
 
@@ -316,7 +317,8 @@ namespace LupusInTabula.Hubs
                 votingOpen = room.VotingOpen,
                 role = player.Role,
                 players = MapPlayers(room),
-                roleCounts = room.GameStarted ? room.SavedRoleCounts : null
+                roleCounts = room.GameStarted ? room.SavedRoleCounts : null,
+                nightState = room.NightInProgress ? BuildNightState(room) : null
             };
         }
 

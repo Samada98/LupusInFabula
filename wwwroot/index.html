@@ -1358,6 +1358,16 @@
             font-weight: 800;
         }
 
+        #nightBtn.night-active {
+            background: linear-gradient(180deg, #166534, #14532d);
+            border-color: #86efac;
+            color: #ecfdf5;
+            box-shadow:
+                inset 0 3px 10px rgba(0,0,0,.22),
+                0 0 0 3px rgba(134,239,172,.24);
+            transform: translateY(1px);
+        }
+
         .night-picks {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1638,11 +1648,13 @@
             margin-top: auto;
             width: 100%;
             padding: 18px 12px max(14px, env(safe-area-inset-bottom, 0px));
-            color: #fff7ed;
+            color: #f7c948;
             font-weight: 800;
             text-align: center;
             font-size: 12.5px;
-            text-shadow: 0 2px 8px rgba(69,10,10,.45);
+            text-shadow:
+                0 2px 8px rgba(69,10,10,.55),
+                0 0 12px rgba(247,201,72,.24);
         }
 
         .screen {
@@ -2124,11 +2136,6 @@
             font-weight: 900;
         }
 
-        .maintenance-note {
-            margin-top: 14px;
-            color: rgba(203,213,225,.62);
-            font-size: 12px;
-        }
     </style>
 </head>
 
@@ -2149,8 +2156,7 @@
                 <input id="maintenanceCode" inputmode="numeric" autocomplete="off" placeholder="codice segreto">
                 <button id="maintenanceUnlockBtn" type="button">Accendi</button>
             </div>
-            <div class="maintenance-note">Tocca 20 volte la luna per inserire il codice.</div>
-        </main>
+            </main>
         <div class="maintenance-fog"></div>
     </div>
 
@@ -3164,6 +3170,7 @@
             const nightPrevBtn = document.getElementById("nightPrevBtn");
             const nightNextBtn = document.getElementById("nightNextBtn");
             const nightGoodMorningBtn = document.getElementById("nightGoodMorningBtn");
+            const nightCard = nightHostOverlay?.querySelector(".night-card");
 
             function playerNameOf(p) { return p?.name ?? p?.Name ?? ""; }
             function playerRoleOf(p) { return p?.role ?? p?.Role ?? ""; }
@@ -3258,6 +3265,25 @@
                 return steps;
             }
 
+            function updateNightButtonState() {
+                if (!nightBtn) return;
+                nightBtn.classList.toggle("night-active", !!nightDirector.active);
+                nightBtn.setAttribute("aria-pressed", nightDirector.active ? "true" : "false");
+                nightBtn.textContent = nightDirector.active ? "🌙 Buonanotte attiva" : "🌙 Buonanotte";
+            }
+
+            function openNightDirectorPanel() {
+                if (!isHost || !nightHostOverlay) return;
+                nightHostOverlay.style.display = "flex";
+                renderNightDirector();
+                updateNightButtonState();
+            }
+
+            function closeNightDirectorPanel() {
+                if (nightHostOverlay) nightHostOverlay.style.display = "none";
+                updateNightButtonState();
+            }
+
             function applyNightState(state) {
                 if (!state) return;
                 nightDirector.active = !!(state.active ?? state.Active);
@@ -3304,10 +3330,20 @@
                 if (step.type === "summary") {
                     const attack = nightDirector.wolfTarget || "nessuno";
                     const protect = nightDirector.protectedTarget || "nessuno";
-                    const house = nightDirector.coupleHouse === "giulietta" ? "Giulietta" : "Romeo";
                     const witchSave = nightDirector.witchSave ? "salva" : "non salva";
                     const witchKill = nightDirector.witchKillTarget || "nessuno";
-                    return `Lupi: ${attack}. Protezione: ${protect}. Coppia: casa di ${house}. Strega: ${witchSave}, veleno su ${witchKill}.`;
+                    const parts = [
+                        `Lupi: ${attack}.`,
+                        `Protezione: ${protect}.`
+                    ];
+                    if (buildNightSteps().some(s => s.type === "couplehouse")) {
+                        const house = nightDirector.coupleHouse === "giulietta" ? "Giulietta" : "Romeo";
+                        parts.push(`Coppia: casa di ${house}.`);
+                    }
+                    if (hasNightRole("witch", "witch")) {
+                        parts.push(`Strega: ${witchSave}, veleno su ${witchKill}.`);
+                    }
+                    return parts.join(" ");
                 }
                 return "";
             }
@@ -3412,6 +3448,10 @@
 
             async function startNightDirector() {
                 if (!isHost || !currentRoomId || !gameStarted) return;
+                if (nightDirector.active) {
+                    openNightDirectorPanel();
+                    return;
+                }
                 try {
                     await connection.invoke("BeginNight", currentRoomId);
                 } catch (err) {
@@ -3450,6 +3490,10 @@
             }
 
             nightBtn?.addEventListener("click", startNightDirector);
+            nightHostOverlay?.addEventListener("click", e => {
+                if (e.target === nightHostOverlay) closeNightDirectorPanel();
+            });
+            nightCard?.addEventListener("click", e => e.stopPropagation());
             nightPrevBtn?.addEventListener("click", () => {
                 nightDirector.stepIndex--;
                 nightDirector.seerResult = null;
@@ -3463,12 +3507,15 @@
             nightGoodMorningBtn?.addEventListener("click", endNightDirector);
 
             connection.on("NightStarted", state => {
+                const wasActive = nightDirector.active;
                 applyNightState(state);
-                nightDirector.stepIndex = 0;
-                nightDirector.seerResult = null;
+                if (!wasActive) {
+                    nightDirector.stepIndex = 0;
+                    nightDirector.seerResult = null;
+                }
+                updateNightButtonState();
                 if (isHost) {
-                    if (nightHostOverlay) nightHostOverlay.style.display = "flex";
-                    renderNightDirector();
+                    openNightDirectorPanel();
                 } else if (nightPlayerCurtain) {
                     nightPlayerCurtain.style.display = "flex";
                 }
@@ -3477,6 +3524,7 @@
 
             connection.on("NightChoiceUpdated", state => {
                 applyNightState(state);
+                updateNightButtonState();
                 if (isHost) renderNightDirector();
             });
 
@@ -3496,6 +3544,7 @@
                 nightDirector.witchSave = false;
                 nightDirector.witchKillTarget = null;
                 nightDirector.seerResult = null;
+                updateNightButtonState();
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
                 if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
                 if (Array.isArray(players)) {
@@ -3765,6 +3814,11 @@
                 const target = document.getElementById(id);
                 if (!target) return;
 
+                if (id === "screenAccess" || id === "screenLobby") {
+                    stopLocalJukeboxAudio();
+                    closeJukebox();
+                }
+
                 // 1) attiva subito la target
                 if ("inert" in target) target.inert = false;
                 target.classList.add("active");
@@ -3852,6 +3906,7 @@
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
                 if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
                 nightDirector.active = false;
+                updateNightButtonState();
 
                 const hostCtrls = document.getElementById("hostControls");
                 if (hostCtrls) hostCtrls.style.display = "none";
@@ -4630,6 +4685,7 @@
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
                 if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
                 nightDirector.active = false;
+                updateNightButtonState();
                 applyRoleUI();
 
                 (document.getElementById("hostNameText") || {}).textContent = hostName || "Sconosciuto";
@@ -4844,6 +4900,17 @@
                     currentPlayers = result?.players || [];
                     votingOpen = !!result?.votingOpen;
                     gameStarted = !!result?.gameStarted;
+                    if (result?.nightState) {
+                        applyNightState(result.nightState);
+                        updateNightButtonState();
+                        if (!isHost && nightDirector.active && nightPlayerCurtain) {
+                            nightPlayerCurtain.style.display = "flex";
+                        }
+                    } else {
+                        nightDirector.active = false;
+                        updateNightButtonState();
+                        if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
+                    }
 
                     // === 🔑 NUOVO: se entri a partita iniziata, usa i conteggi che il server già invia
                     if (result?.roleCounts && typeof result.roleCounts === "object") {
