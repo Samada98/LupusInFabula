@@ -67,12 +67,27 @@ namespace LupusInTabula.Hubs
             MaintenanceMode = enabled;
             if (enabled)
             {
+                await Clients.All.SendAsync("MaintenanceChanged", true);
+                foreach (var room in Rooms.Values.ToList())
+                {
+                    foreach (var connId in ConnIndex
+                        .Where(x => Same(x.Value.roomId, room.Id))
+                        .Select(x => x.Key)
+                        .ToList())
+                    {
+                        try { await Groups.RemoveFromGroupAsync(connId, room.Id); } catch { }
+                    }
+                }
+
                 Rooms.Clear();
                 AudioReady.Clear();
                 ConnIndex.Clear();
             }
+            else
+            {
+                await Clients.All.SendAsync("MaintenanceChanged", false);
+            }
 
-            await Clients.All.SendAsync("MaintenanceChanged", MaintenanceMode);
             return new { ok = true, enabled = MaintenanceMode };
         }
 
@@ -1121,7 +1136,7 @@ namespace LupusInTabula.Hubs
         {
             player.Eliminated = true;
             await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
-            await Clients.Group(room.Id).SendAsync("PlayerEliminated", player.Name, reason);
+            await Clients.Group(room.Id).SendAsync("PlayerEliminated", player.Name, reason, player.Role);
             await RevealToMediums(room, player);
         }
 
@@ -1140,7 +1155,7 @@ namespace LupusInTabula.Hubs
 
             player.Eliminated = true;
             await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
-            await Clients.Group(room.Id).SendAsync("PlayerEliminated", player.Name, reason);
+            await Clients.Group(room.Id).SendAsync("PlayerEliminated", player.Name, reason, player.Role);
             await RevealToMediums(room, player);
 
             // Se muore Romeo muore anche Giulietta.
@@ -1151,7 +1166,7 @@ namespace LupusInTabula.Hubs
                 {
                     juliet.Eliminated = true;
                     await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
-                    await Clients.Group(room.Id).SendAsync("PlayerEliminated", juliet.Name, reason);
+                    await Clients.Group(room.Id).SendAsync("PlayerEliminated", juliet.Name, reason, juliet.Role);
                     await RevealToMediums(room, juliet);
                     await Clients.Group(room.Id).SendAsync("CoupleDied", room.CoupleRomeoName, room.CoupleJulietName);
                 }

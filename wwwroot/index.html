@@ -446,6 +446,20 @@
             box-shadow: none;
         }
 
+        .login-input-wrap.is-invalid {
+            animation: loginFieldShake .28s ease;
+            border-color: rgba(239,68,68,.68);
+            box-shadow: 0 0 0 4px rgba(239,68,68,.14), inset 0 1px 0 rgba(255,255,255,.9);
+        }
+
+        @keyframes loginFieldShake {
+            0%,100% { transform: translateX(0); }
+            22% { transform: translateX(-5px); }
+            44% { transform: translateX(5px); }
+            66% { transform: translateX(-3px); }
+            82% { transform: translateX(3px); }
+        }
+
         .btn-row {
             display: grid;
             gap: 10px;
@@ -668,6 +682,36 @@
                 width: 160px;
                 text-align: left;
             }
+
+            #playersTable th.col-role {
+                text-align: center;
+            }
+
+        .role-visibility-toggle {
+            width: 100%;
+            min-height: 34px;
+            padding: 6px 8px;
+            border-radius: 10px;
+            color: #7f1d1d;
+            background: rgba(255,247,237,.9);
+            border: 1px solid rgba(139,0,0,.14);
+            box-shadow: none;
+            font-size: 13px;
+            font-weight: 900;
+            line-height: 1.1;
+        }
+
+        .role-hidden-mask {
+            display: inline-grid;
+            place-items: center;
+            width: 100%;
+            min-height: 24px;
+            border-radius: 999px;
+            color: #6b7280;
+            background: repeating-linear-gradient(135deg, #e5e7eb 0 6px, #f8fafc 6px 12px);
+            font-weight: 900;
+            letter-spacing: .12em;
+        }
 
             #playersTable th.col-status, #playersTable td.col-status {
                 width: 28px;
@@ -915,6 +959,19 @@
             margin: 6px 0
         }
 
+        .lobby-me-row {
+            display: block;
+            line-height: 1.45;
+        }
+
+            .lobby-me-row strong {
+                display: inline-block;
+                margin-top: 2px;
+                max-width: 100%;
+                color: var(--brand);
+                overflow-wrap: anywhere;
+            }
+
             .hostRow code {
                 background: #f8fafc;
                 border: 1px solid var(--border);
@@ -924,31 +981,9 @@
                 overflow-wrap: anywhere
             }
 
-        @media (max-width:600px) {
-            body {
-                background: #8b0000
-            }
-        }
-
         @media (max-width:560px) {
-            .brandbar {
-                padding: 12px 15px 13px 12px
-            }
-
-            .brand-sub {
-                font-size: 13px
-            }
-
-            .field-row {
-                grid-template-columns: 1fr
-            }
-
             .btn-row {
                 grid-template-columns: 1fr
-            }
-
-            .login-card {
-                padding: 18px
             }
         }
 
@@ -994,8 +1029,7 @@
         }
 
         .panel > h2,
-        .panel > h3,
-        .login-hero h2 {
+        .panel > h3 {
             text-align: center;
         }
 
@@ -1549,50 +1583,8 @@
             --shadow-press: 0 8px 18px rgba(82,24,18,.13);
         }
 
-        body {
-            background: #8b0000;
-        }
-
         .app-shell {
             gap: 4px;
-        }
-
-        .brandbar {
-            width: min(94%, 392px);
-            margin: max(18px, env(safe-area-inset-top, 0px)) auto 10px;
-            padding: 12px 15px 13px 12px;
-        }
-
-        .brand-mark {
-            border-radius: 22px;
-            box-shadow: inset 0 0 0 1px rgba(245,191,88,.44), 0 10px 22px rgba(69,10,10,.28);
-        }
-
-        .brand-title {
-            line-height: .86;
-            letter-spacing: 0;
-        }
-
-        .brand-sub {
-            text-align: left;
-            color: #fed7aa;
-            font-weight: 700;
-        }
-
-        .brandbar {
-            text-align: left;
-        }
-
-        .brandbar > div:last-child {
-            display: block;
-        }
-
-        .brand-sub {
-            text-align: left;
-            max-width: 245px;
-            line-height: 1.25;
-            font-style: italic;
-            margin-top: 7px;
         }
 
         .app-shell {
@@ -1738,25 +1730,81 @@
             border-radius: 20px;
         }
 
+        .fool-reveal-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: max(18px, env(safe-area-inset-top, 0px)) 16px max(18px, env(safe-area-inset-bottom, 0px));
+            background: rgba(0,0,0,.48);
+            backdrop-filter: blur(3px);
+            z-index: 130;
+        }
+
+        .fool-reveal-overlay.active {
+            display: flex;
+        }
+
+        .fool-reveal-card {
+            width: min(92vw, 430px);
+            padding: 24px 20px 20px;
+            border-radius: 24px;
+            color: #1f2937;
+            text-align: center;
+            background: linear-gradient(180deg, #fff7ed, #fff);
+            border: 1.5px solid rgba(245,191,88,.58);
+            box-shadow: 0 28px 70px rgba(0,0,0,.34);
+            animation: floatIn .25s ease both;
+        }
+
+        .fool-reveal-icon {
+            font-size: 78px;
+            line-height: 1;
+            margin-bottom: 14px;
+            filter: drop-shadow(0 8px 12px rgba(69,10,10,.18));
+        }
+
+        .fool-reveal-quote {
+            margin: 0 auto;
+            color: #4b2319;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.28;
+        }
+
+        .fool-reveal-punch {
+            margin: 16px 0 0;
+            color: #8b0000;
+            font-size: 28px;
+            font-weight: 950;
+            line-height: 1;
+        }
+
+        .fool-reveal-card.winner .fool-reveal-icon {
+            font-size: 86px;
+        }
+
+        .fool-reveal-card.winner .fool-reveal-quote {
+            font-size: 22px;
+        }
+
+        .fool-reveal-close {
+            margin-top: 18px;
+            width: 100%;
+            min-height: 46px;
+            border-radius: 16px;
+            color: #052e16;
+            background: linear-gradient(180deg, #22c55e, #16a34a);
+            font-weight: 900;
+        }
+
         @media (max-width: 560px) {
             .app-shell {
                 display: grid;
                 grid-template-rows: auto 1fr auto;
                 padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
-            }
-
-            .brandbar {
-                padding: 12px 15px 13px 12px;
-            }
-
-            .brand-mark {
-                width: 68px;
-                height: 68px;
-                font-size: 39px;
-            }
-
-            .brand-title {
-                font-size: clamp(34px,9.3vw,46px);
             }
 
             #screenLobby, #screenGame, #screenGamePlayer {
@@ -1768,11 +1816,6 @@
                 margin: 10px auto;
                 padding: 14px;
                 border-radius: 16px;
-            }
-
-            .login-card {
-                width: min(94vw, 460px);
-                border-radius: 22px;
             }
 
             .btn-row {
@@ -1824,6 +1867,17 @@
             #playersTable th.col-role,
             #playersTable td.col-role {
                 width: 104px;
+            }
+
+            .role-visibility-toggle {
+                min-height: 30px;
+                padding: 5px;
+                font-size: 11.5px;
+            }
+
+            .role-hidden-mask {
+                min-height: 22px;
+                letter-spacing: .08em;
             }
 
             #playersTable th.col-actions,
@@ -2099,7 +2153,7 @@
                     <label for="name">Il tuo nome</label>
                     <div class="login-input-wrap">
                         <span aria-hidden="true">👤</span>
-                        <input id="name" placeholder="Come ti chiami?" aria-label="Nome" />
+                        <input id="name" placeholder="Come ti chiami?" aria-label="Nome" maxlength="10" />
                     </div>
                 </div>
 
@@ -2133,6 +2187,10 @@
                 <p class="hostRow">
                     👑 Host: <span id="hostNameText"></span>
                     &nbsp;•&nbsp; 🏷️ ID: <code id="currentRoomIdText"></code>
+                </p>
+                <p class="hostRow lobby-me-row">
+                    🙋 Tu:<br>
+                    <strong id="myNameLobby">-</strong>
                 </p>
 
                 <div id="inviteBox">
@@ -2335,6 +2393,15 @@
             <button id="closeRoleCard">Chiudi</button>
         </div>
 
+        <div id="foolRevealOverlay" class="fool-reveal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+            <div id="foolRevealCard" class="fool-reveal-card">
+                <div id="foolRevealIcon" class="fool-reveal-icon" aria-hidden="true">🦧</div>
+                <p id="foolRevealQuote" class="fool-reveal-quote"></p>
+                <p id="foolRevealPunch" class="fool-reveal-punch"></p>
+                <button id="foolRevealClose" class="fool-reveal-close" type="button">Ok</button>
+            </div>
+        </div>
+
         <footer>
             © Sti Cazzi, sti grandissimi — Mark
         </footer>
@@ -2413,13 +2480,21 @@
 
         // === Helpers mapping nome (global) ===
         const NAME_MAP = {
-            "nico": "N1k0GgAY", "niko": "N1k0GgAY", "nicolo": "N1k0GgAY", "nicco": "N1k0GgAY",
+            "nico": "N1k0GgAY", "niko": "N1k0GgAY", "nicolo": "N1k0GgAY", "niccolo": "N1k0GgAY", "nicco": "N1k0GgAY",
             "gioia": "TriS5tezZa", "carly": "Carmine", "carlotta": "Carmine", "carli": "Carmine",
             "benni": "Benagol", "benny": "Benagol", "matte": "MaTTe0R0Li", "matteo": "MaTTe0R0Li"
         };
-        const normalizeName = s => (s || "").trim().toLowerCase();
+        const EUGENIA_NAMES = new Set(["eugenia", "eugi", "eugy", "euge", "eug", "eugenie", "eugenietta", "ugenia", "ugg", "uggi"]);
+        const normalizeName = s => (s || "")
+            .trim()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
         function applyNameMapping(s) {
-            return NAME_MAP[normalizeName(s || "")] || (s || "").trim();
+            const original = (s || "").trim();
+            const normalized = normalizeName(original);
+            if (EUGENIA_NAMES.has(normalized)) return `${original} ⚖️❤️`;
+            return NAME_MAP[normalized] || original;
         }
     </script>
 
@@ -2458,6 +2533,7 @@
             let gameStarted = false;
             let myName = null;
             let isJoining = false; // evita UI sporca durante transizioni
+            let hostRolesVisible = true;
             let audioUnlocked = localStorage.getItem("lupus_audioUnlocked") === "true";
             let maintenanceMode = false;
             let audioContext = null;
@@ -2634,6 +2710,31 @@
 
             const createBtn = document.getElementById("createBtn");
             const joinBtn = document.getElementById("joinBtn");
+            const nameInputEl = document.getElementById("name");
+            const trillNameInput = () => {
+                const wrap = nameInputEl?.closest(".login-input-wrap");
+                if (!wrap) return;
+                wrap.classList.remove("is-invalid");
+                void wrap.offsetWidth;
+                wrap.classList.add("is-invalid");
+                window.setTimeout(() => wrap.classList.remove("is-invalid"), 320);
+            };
+            const cleanNameInput = () => {
+                if (!nameInputEl) return;
+                const clean = nameInputEl.value.replace(/\s+/g, "").slice(0, 10);
+                if (nameInputEl.value !== clean) {
+                    nameInputEl.value = clean;
+                    trillNameInput();
+                }
+            };
+            nameInputEl?.addEventListener("keydown", e => {
+                if (e.key && /\s/.test(e.key)) {
+                    e.preventDefault();
+                    trillNameInput();
+                }
+            });
+            nameInputEl?.addEventListener("input", cleanNameInput);
+            nameInputEl?.addEventListener("paste", () => window.setTimeout(cleanNameInput, 0));
             createBtn?.addEventListener("click", createRoom);
             joinBtn?.addEventListener("click", () => joinRoom({ showAlerts: true }));
             document.getElementById("roomIdInput")?.addEventListener("keydown", e => {
@@ -3651,10 +3752,12 @@
                 const ridHost = document.getElementById("roomIdInGame");
                 const ridLobby = document.getElementById("currentRoomIdText");
                 const ridPlayer = document.getElementById("roomIdPlayer");
+                const myNameLobby = document.getElementById("myNameLobby");
                 const myNamePlayer = document.getElementById("myNamePlayer");
                 if (ridLobby) ridLobby.textContent = rid;
                 if (ridHost) ridHost.textContent = rid;
                 if (ridPlayer) ridPlayer.textContent = rid;
+                if (myNameLobby) myNameLobby.textContent = myName || "-";
                 if (myNamePlayer) myNamePlayer.textContent = myName || "-";
             }
 
@@ -4109,14 +4212,28 @@
                 const header = document.createElement("tr");
                 [
                     { text: "Nome", class: "col-name" },
-                    { text: " 🎭  Ruolo", class: "col-role" },
+                    { text: "Ruolo", class: "col-role", roleToggle: true },
                     { text: "🔗  ", class: "col-status" },
                     { text: "🗣️ ", class: "col-votes" },
                     { text: "📣", class: "col-actions" }
                 ].forEach(h => {
                     const th = document.createElement("th");
-                    th.textContent = h.text;
                     if (h.class) th.className = h.class;
+                    if (h.roleToggle) {
+                        const btn = document.createElement("button");
+                        btn.type = "button";
+                        btn.className = "role-visibility-toggle";
+                        btn.textContent = hostRolesVisible ? "🎭 Ruolo" : "🙈 Ruolo";
+                        btn.title = hostRolesVisible ? "Nascondi ruoli nella tabella" : "Mostra ruoli nella tabella";
+                        btn.setAttribute("aria-pressed", hostRolesVisible ? "true" : "false");
+                        btn.addEventListener("click", () => {
+                            hostRolesVisible = !hostRolesVisible;
+                            renderHostTable(currentPlayers);
+                        });
+                        th.appendChild(btn);
+                    } else {
+                        th.textContent = h.text;
+                    }
                     header.appendChild(th);
                 });
                 table.appendChild(header);
@@ -4168,10 +4285,16 @@
                     tdRole.className = "col-role nowrap";
                     if (roleKey) {
                         const label = roleNames[roleKey] || roleKey;
-                        tdRole.textContent = label;     // ← niente doppia emoji
-                        tdRole.title = label;
-
-                        tdRole.title = label;
+                        if (hostRolesVisible) {
+                            tdRole.textContent = label;     // niente doppia emoji
+                            tdRole.title = label;
+                        } else {
+                            const mask = document.createElement("span");
+                            mask.className = "role-hidden-mask";
+                            mask.textContent = "••••";
+                            tdRole.appendChild(mask);
+                            tdRole.title = "Ruolo nascosto";
+                        }
                     } else {
                         tdRole.textContent = "—";
                         tdRole.style.color = "#9ca3af";
@@ -4280,6 +4403,41 @@
                 });
             }
 
+            function closeFoolReveal() {
+                const overlay = document.getElementById("foolRevealOverlay");
+                if (!overlay) return;
+                overlay.classList.remove("active");
+                overlay.setAttribute("aria-hidden", "true");
+            }
+
+            function showFoolReveal(isFoolPlayer) {
+                const overlay = document.getElementById("foolRevealOverlay");
+                const card = document.getElementById("foolRevealCard");
+                const icon = document.getElementById("foolRevealIcon");
+                const quote = document.getElementById("foolRevealQuote");
+                const punch = document.getElementById("foolRevealPunch");
+                if (!overlay || !card || !icon || !quote || !punch) return;
+
+                card.classList.toggle("winner", isFoolPlayer);
+                if (isFoolPlayer) {
+                    icon.textContent = "🏆";
+                    quote.textContent = "Vincere è essere migliore? o trovarsi tra i peggiori?";
+                    punch.textContent = "";
+                } else {
+                    icon.textContent = "🦧";
+                    quote.textContent = "E coloro che vennero visti danzare furono giudicati pazzi da coloro che non potevano sentire la musica.";
+                    punch.textContent = "Idiota!";
+                }
+
+                overlay.classList.add("active");
+                overlay.setAttribute("aria-hidden", "false");
+            }
+
+            document.getElementById("foolRevealClose")?.addEventListener("click", closeFoolReveal);
+            document.getElementById("foolRevealOverlay")?.addEventListener("click", e => {
+                if (e.target?.id === "foolRevealOverlay") closeFoolReveal();
+            });
+
             /* ========================== 8) EVENTI DAL SERVER ========================== */
             connection.on("UpdateLobby", (players, hostName, hostOnlineArg) => {
                 updateConnectionUI();
@@ -4365,8 +4523,8 @@
 
             connection.on("PlayerKicked", (playerName) => { logLobby(`🚫 ${playerName} è stato espulso dall'host.`); });
 
-            connection.on("PlayerEliminated", (playerName, reason) => {
-                const player = currentPlayers.find(p => p.name === playerName);
+            connection.on("PlayerEliminated", (playerName, reason, eliminatedRole) => {
+                const player = currentPlayers.find(p => (p.name ?? p.Name) === playerName);
                 if (player) player.eliminated = true;
                 if (myVote === playerName) myVote = null;
                 renderHostTable(currentPlayers);
@@ -4374,6 +4532,11 @@
                 updateEliminatedPlayerView();
                 const source = reason === "lupi" ? "dai lupi" : "dal popolo";
                 logGame(`⚰️ ${playerName} è stato eliminato ${source}!`);
+
+                const role = (eliminatedRole || player?.role || player?.Role || "").toLowerCase();
+                if (reason === "popolo" && role === "scemo" && !isHost) {
+                    showFoolReveal((myName || "") === playerName || (myRole || "").toLowerCase() === "scemo");
+                }
             });
 
             connection.on("PlayerRevived", (playerName) => {
@@ -4514,6 +4677,7 @@
                 }
                 if (creatingRoom) return;
                 creatingRoom = true;
+                cleanNameInput();
                 const rawName = document.getElementById("name").value || "Host";
                 const name = applyNameMapping(rawName);
                 myName = name; isHost = true;
@@ -4560,6 +4724,7 @@
                 try { if (createBtnEl) createBtnEl.disabled = true; if (joinBtnEl) joinBtnEl.disabled = true; } catch { }
 
                 try {
+                    cleanNameInput();
                     const rawName = document.getElementById("name").value || "Giocatore";
                     const name = applyNameMapping(rawName);
                     myName = name;
@@ -4853,6 +5018,7 @@
                 const nmLS = localStorage.getItem("lupus_name") || "";
 
                 if (forcedName || nmLS) nameInput.value = forcedName || nmLS;
+                cleanNameInput();
                 if (roomIdFromLink) {
                     roomInput.value = roomIdFromLink;
                     logLobby(`🔗 Sei stato invitato alla stanza: ${roomIdFromLink}`);
