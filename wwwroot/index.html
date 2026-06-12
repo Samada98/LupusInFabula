@@ -166,7 +166,7 @@
             font-family: "Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
             margin: 0;
             color: var(--text);
-            background: radial-gradient(1200px 800px at 80% -10%, #ffd0c2 0%, transparent 60%), radial-gradient(1000px 700px at -10% 90%, #ffe9b0 0%, transparent 60%), linear-gradient(135deg,#fff7f3 0%,#ffe9e3 35%,#fff6e6 100%);
+            background: #8b0000;
             min-height: 100svh;
             display: grid;
             place-items: stretch;
@@ -255,37 +255,76 @@
         }
 
         .brandbar {
-            display: flex;
+            display: grid;
+            grid-template-columns: auto 1fr;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 20px 16px 8px;
-            user-select: none
+            gap: 0 12px;
+            width: min(94%, 392px);
+            margin: max(18px, env(safe-area-inset-top, 0px)) auto 18px;
+            padding: 12px 15px 13px 12px;
+            border-radius: 28px;
+            background: linear-gradient(145deg, rgba(255,255,255,.18), transparent 42%), linear-gradient(180deg, #a51616 0%, #780000 100%);
+            border: 1px solid rgba(255,247,237,.24);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.26), 0 18px 44px rgba(0,0,0,.3);
+            text-align: left;
+            user-select: none;
         }
 
         .brand-mark {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
+            width: 68px;
+            height: 68px;
+            grid-row: 1 / 3;
+            position: relative;
+            border-radius: 22px;
             display: grid;
             place-items: center;
-            background: linear-gradient(135deg,var(--brand),var(--brand-2));
+            background: rgba(69,10,10,.28);
             color: #fff;
-            font-size: 22px;
-            box-shadow: 0 10px 20px rgba(139,0,0,.15)
+            font-size: 39px;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,.2), 0 12px 26px rgba(69,10,10,.26);
+            cursor: pointer;
+            touch-action: manipulation;
+            filter: drop-shadow(0 6px 8px rgba(0,0,0,.24));
+        }
+
+        .brand-mark::before {
+            content: "";
+            position: absolute;
+            inset: 7px;
+            border-radius: 17px;
+            border: 1px solid rgba(255,247,237,.28);
         }
 
         .brand-title {
+            color: #fff7ed;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(34px,9.3vw,46px);
+            font-weight: 900;
+            line-height: .86;
+            letter-spacing: 0;
+            text-shadow: 0 4px 12px rgba(69,10,10,.42);
+        }
+
+        .brand-title span {
+            display: inline-block;
+            margin-left: 22px;
+            color: #ffedd5;
+            font-size: .78em;
+            font-style: italic;
             font-weight: 800;
-            font-size: clamp(20px,5vw,28px);
-            letter-spacing: .5px
         }
 
         .brand-sub {
-            color: var(--muted);
-            font-size: 14px;
-            margin-top: -2px;
-            text-align: center
+            grid-column: 2;
+            max-width: 245px;
+            color: #fed7aa;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.25;
+            margin-top: 7px;
+            text-align: left;
+            font-style: italic;
+            text-shadow: 0 2px 8px rgba(69,10,10,.28);
         }
 
         .screen {
@@ -302,7 +341,7 @@
 
         #screenAccess {
             place-items: center;
-            padding: 16px
+            padding: 0 16px 0
         }
 
             #screenAccess.active {
@@ -329,13 +368,13 @@
         }
 
         .login-card {
-            width: min(520px,92vw);
-            border-radius: 20px;
-            background: var(--card);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,.6);
-            box-shadow: 0 20px 40px rgba(0,0,0,.12);
-            padding: 22px;
+            width: min(100%,430px);
+            border-radius: 24px;
+            background: rgba(255,247,237,.93);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,.78);
+            box-shadow: 0 24px 60px rgba(0,0,0,.28);
+            padding: 18px;
             animation: floatIn .6s ease both
         }
 
@@ -351,51 +390,116 @@
             }
         }
 
-        .login-hero {
+        .login-field {
             display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 10px;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .login-field label {
+            color: #4b2319;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: .02em;
+        }
+
+        .login-input-wrap {
+            display: grid;
+            grid-template-columns: 42px 1fr;
             align-items: center;
-            margin-bottom: 8px
+            min-height: 54px;
+            border-radius: 18px;
+            background: #fff;
+            border: 1.5px solid rgba(127,29,29,.13);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+            overflow: hidden;
         }
 
-        .login-hero-emoji {
-            font-size: 32px
-        }
-
-        .login-hero h2 {
-            font-size: 20px;
-            font-weight: 700
-        }
-
-        .login-hero p {
-            margin: 2px 0 0;
-            color: var(--muted);
-            font-size: 14px
-        }
-
-        .field-row {
+        .login-input-wrap span {
             display: grid;
-            grid-template-columns: 1fr 120px;
-            gap: 10px;
-            margin-top: 12px
+            place-items: center;
+            height: 100%;
+            color: var(--brand);
+            font-size: 20px;
+            background: #fff7ed;
         }
 
-            .field-row input {
-                height: 46px
-            }
+        .login-input-wrap input {
+            min-width: 0;
+            width: 100%;
+            height: 54px;
+            border: 0;
+            outline: 0;
+            padding: 0 14px 0 2px;
+            color: var(--text);
+            background: transparent;
+        }
+
+        .login-input-wrap input:focus {
+            box-shadow: none;
+        }
 
         .btn-row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-top: 14px
+            margin-top: 16px
+        }
+
+        #screenAccess .btn-row {
+            grid-template-columns: 1fr;
+        }
+
+        .login-button-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #createBtn .login-button-content {
+            transform: translateX(-6px);
+        }
+
+        .login-button-icon {
+            display: grid;
+            place-items: center;
+            font-size: 32px;
+            line-height: 1;
+        }
+
+        #joinBtn .login-button-icon {
+            font-size: 27px;
+        }
+
+        #screenAccess #createBtn,
+        #screenAccess #joinBtn {
+            min-height: 54px;
+            border-radius: 18px;
+            padding: 0 16px;
+            font-weight: 950;
+            box-shadow: 0 12px 22px rgba(80,24,18,.16);
+        }
+
+        #screenAccess #createBtn {
+            background: linear-gradient(180deg, rgba(255,255,255,.15), transparent), linear-gradient(180deg, #a51616, var(--brand));
+        }
+
+        #screenAccess #joinBtn {
+            color: #052e16;
+            background: linear-gradient(180deg, rgba(255,255,255,.35), transparent), linear-gradient(180deg, #22c55e, #16a34a);
         }
 
         .helper {
-            margin-top: 10px;
+            margin: 14px 0 0;
+            padding: 12px 13px;
+            border-radius: 16px;
+            color: #7f1d1d;
+            background: rgba(254,243,199,.78);
+            border: 1px solid rgba(245,158,11,.24);
             font-size: 12.5px;
-            color: var(--muted)
+            font-weight: 700;
+            line-height: 1.4;
+            text-align: center;
         }
 
         .login-card:focus-within {
@@ -815,13 +919,13 @@
 
         @media (max-width:600px) {
             body {
-                background: radial-gradient(1200px 800px at 50% -10%, #ffd0c2 0%, transparent 55%), radial-gradient(1000px 700px at 50% 110%, #ffe9b0 0%, transparent 55%), linear-gradient(135deg,#fff7f3 0%,#ffe9e3 35%,#fff6e6 100%)
+                background: #8b0000
             }
         }
 
         @media (max-width:560px) {
             .brandbar {
-                padding-top: 14px
+                padding: 12px 15px 13px 12px
             }
 
             .brand-sub {
@@ -1439,10 +1543,7 @@
         }
 
         body {
-            background:
-                radial-gradient(820px 520px at 50% -12%, rgba(178,34,34,.22), transparent 62%),
-                radial-gradient(780px 500px at 6% 104%, rgba(245,158,11,.18), transparent 58%),
-                linear-gradient(180deg, #fff7f2 0%, #fffdf8 46%, #fff7ed 100%);
+            background: #8b0000;
         }
 
         .app-shell {
@@ -1450,44 +1551,41 @@
         }
 
         .brandbar {
-            justify-content: flex-start;
-            width: min(1000px, 100%);
-            margin: 0 auto;
-            padding: max(14px, env(safe-area-inset-top, 0px)) 14px 6px;
+            width: min(94%, 392px);
+            margin: max(18px, env(safe-area-inset-top, 0px)) auto 18px;
+            padding: 12px 15px 13px 12px;
         }
 
         .brand-mark {
-            border-radius: 14px;
-            box-shadow: 0 12px 26px rgba(139,0,0,.20);
+            border-radius: 22px;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,.2), 0 12px 26px rgba(69,10,10,.26);
         }
 
         .brand-title {
-            line-height: 1.05;
+            line-height: .86;
             letter-spacing: 0;
         }
 
         .brand-sub {
             text-align: left;
-            color: #7c2d12;
-            font-weight: 600;
+            color: #fed7aa;
+            font-weight: 700;
         }
 
         .brandbar {
-            justify-content: center;
-            text-align: center;
+            text-align: left;
         }
 
         .brandbar > div:last-child {
-            display: grid;
-            justify-items: center;
+            display: block;
         }
 
         .brand-sub {
-            text-align: center;
-            max-width: 320px;
+            text-align: left;
+            max-width: 245px;
             line-height: 1.25;
             font-style: italic;
-            margin-top: 6px;
+            margin-top: 7px;
         }
 
         .app-shell {
@@ -1511,7 +1609,7 @@
             margin: 0 auto;
         }
 
-        .panel, .login-card {
+        .panel {
             background: var(--surface);
             border-color: rgba(255,255,255,.78);
             box-shadow: var(--shadow-soft);
@@ -1640,18 +1738,17 @@
             }
 
             .brandbar {
-                padding-left: 12px;
-                padding-right: 12px;
+                padding: 12px 15px 13px 12px;
             }
 
             .brand-mark {
-                width: 38px;
-                height: 38px;
-                font-size: 20px;
+                width: 68px;
+                height: 68px;
+                font-size: 39px;
             }
 
             .brand-title {
-                font-size: 22px;
+                font-size: clamp(34px,9.3vw,46px);
             }
 
             #screenLobby, #screenGame, #screenGamePlayer {
@@ -1983,34 +2080,39 @@
     <div class="app-shell">
         <header class="brandbar" aria-label="Intestazione">
             <div id="maintenanceWolfSwitch" class="brand-mark" role="button" tabindex="0" aria-label="Interruttore nascosto">🐺</div>
-            <div>
-                <div class="brand-title">Lupus in Fabula</div>
-                <div class="brand-sub">Tieniti stretti gli amici,<br>ma ancora di più i tuoi nemici.</div>
-            </div>
+            <div class="brand-title">Lupus<br><span>in Fabula</span></div>
+            <div class="brand-sub">Tieniti stretti gli amici,<br>ma ancora di più i tuoi nemici.</div>
         </header>
 
         <!-- ====================== ACCESSO ====================== -->
         <main id="screenAccess" class="screen active" aria-labelledby="accessoTitolo">
             <section class="login-card" role="group" aria-describedby="accessoHelp">
-                <div class="login-hero">
-                    <div class="login-hero-emoji" aria-hidden="true">🎲</div>
-                    <div>
-                        <h2 id="accessoTitolo">Accesso</h2>
-                        <p id="accessoHelp">Entra con il tuo nome e l'ID della stanza. Benvenutə al villaggio!</p>
+                <div class="login-field">
+                    <label for="name">Il tuo nome</label>
+                    <div class="login-input-wrap">
+                        <span aria-hidden="true">👤</span>
+                        <input id="name" placeholder="Come ti chiami?" aria-label="Nome" />
                     </div>
                 </div>
 
-                <div class="field-row">
-                    <input id="name" placeholder="Il tuo nome" aria-label="Nome" />
-                    <input id="roomIdInput" placeholder="ID stanza" aria-label="ID Stanza" />
+                <div class="login-field">
+                    <label for="roomIdInput">Codice stanza</label>
+                    <div class="login-input-wrap">
+                        <span aria-hidden="true">#</span>
+                        <input id="roomIdInput" placeholder="Es. AB" aria-label="ID Stanza" />
+                    </div>
                 </div>
 
                 <div class="btn-row">
-                    <button id="createBtn">🎪 Crea stanza</button>
-                    <button id="joinBtn">➡️ Unisciti</button>
+                    <button id="createBtn">
+                        <span class="login-button-content"><span class="login-button-icon" aria-hidden="true">🎪</span>Crea stanza</span>
+                    </button>
+                    <button id="joinBtn">
+                        <span class="login-button-content"><span class="login-button-icon" aria-hidden="true">➜</span>Entra nel villaggio</span>
+                    </button>
                 </div>
 
-                <div class="helper">
+                <div id="accessoHelp" class="helper">
                     Il Lupus in Fabula della Banda di Roccamalatina. Dove le amicizie conoscono i confini e i confini conoscono ehm... InDiIo0
                 </div>
             </section>
@@ -2226,7 +2328,7 @@
         </div>
 
         <footer>
-            © Villaggio di Lupus — Mark Lavacchielli
+            © Sti Cazzi, sti grandissimi — Mark
         </footer>
     </div>
 
@@ -2871,14 +2973,8 @@
             connection.on("MaintenanceChanged", enabled => {
                 applyMaintenanceMode(!!enabled);
                 if (enabled) {
-                    stopLocalJukeboxAudio(false);
-                    currentRoomId = null;
-                    isHost = false;
-                    gameStarted = false;
-                    votingOpen = false;
-                    myVote = null;
-                    localStorage.removeItem("lupus_roomId");
-                    localStorage.setItem("lupus_autoJoin", "false");
+                    resetUiForMaintenance();
+                    applyMaintenanceMode(true);
                 }
             });
 
@@ -3460,6 +3556,35 @@
                 const j = document.getElementById("joinBtn");
                 if (c) c.disabled = false;
                 if (j) j.disabled = false;
+            }
+
+            function resetUiForMaintenance() {
+                stopLocalJukeboxAudio(false);
+                if (jbOverlay) jbOverlay.style.display = "none";
+                if (nightHostOverlay) nightHostOverlay.style.display = "none";
+                if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
+                hideAudioPermission();
+                if (overlay) overlay.style.display = "none";
+                if (roleCard) roleCard.style.display = "none";
+
+                currentRoomId = null;
+                isHost = false;
+                gameStarted = false;
+                votingOpen = false;
+                myVote = null;
+                myRole = null;
+                currentPlayers = [];
+                nightDirector.active = false;
+                selectedRoleCounts = null;
+
+                localStorage.removeItem("lupus_roomId");
+                localStorage.removeItem("lupus_hostRoomId");
+                localStorage.setItem("lupus_autoJoin", "false");
+
+                hardResetUI();
+                showScreen("screenLogin");
+                applyRoleUI();
+                updateConnectionUI();
             }
 
             function focusFirstInside(id) {
