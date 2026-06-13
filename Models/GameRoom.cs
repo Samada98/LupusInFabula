@@ -20,6 +20,11 @@ namespace LupusInTabula.Models
         public string? NightProtectedTarget { get; set; }
         public bool NightWitchSave { get; set; } = false;
         public string? NightWitchKillTarget { get; set; }
+        public bool NightCoupleChoiceDone { get; set; } = false;
+        public bool NightWolfChoiceDone { get; set; } = false;
+        public bool NightProtectChoiceDone { get; set; } = false;
+        public bool NightWitchChoiceDone { get; set; } = false;
+        public bool NightSeerChoiceDone { get; set; } = false;
         public bool WitchSavePotionUsed { get; set; } = false;
         public bool WitchKillPotionUsed { get; set; } = false;
         public bool HostAvailableForJukeboxRandom { get; set; } = true;

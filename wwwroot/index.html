@@ -851,7 +851,14 @@
             place-items: center;
             position: relative;
             box-shadow: 0 8px 16px rgba(0,0,0,.12);
-            font-size: 15px
+            font-size: 18px;
+            font-weight: 900;
+            line-height: 1.15;
+            background: #4A90E2;
+        }
+
+        .playerTitle {
+            overflow-wrap: anywhere;
         }
 
             .playersGridItem[role="button"] {
@@ -1170,7 +1177,7 @@
             inset: 0;
             background: rgba(0,0,0,.55);
             backdrop-filter: blur(3px);
-            z-index: 100; /* sopra tutto */
+            z-index: 220; /* sopra la scheda Buonanotte */
             align-items: center;
             justify-content: center;
             padding: max(14px, env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px));
@@ -1187,7 +1194,7 @@
             width: min(92vw, 520px);
             max-height: calc(100svh - 28px);
             overflow-y: auto;
-            z-index: 110;
+            z-index: 230;
             text-align: center;
             animation: floatIn .35s ease both;
         }
@@ -1370,18 +1377,22 @@
 
         .night-picks {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 8px;
             margin-top: 12px;
         }
 
         .night-pick-btn {
-            min-height: 50px;
+            min-height: 46px;
             border-radius: 12px;
+            padding: 10px 8px;
             background: #1f2937;
             color: #fff;
             border: 1px solid rgba(148,163,184,.26);
             box-shadow: none;
+            font-size: 14px;
+            line-height: 1.15;
+            overflow-wrap: anywhere;
         }
 
         .night-pick-btn.selected {
@@ -1414,9 +1425,18 @@
             border-radius: 12px;
         }
 
-        #nightGoodMorningBtn {
+        #nightFinishBtn {
             grid-column: 1 / -1;
+            background: #7f1d1d;
+        }
+
+        #nightFinishBtn.ready {
             background: #16a34a;
+        }
+
+        .night-jukebox-btn {
+            grid-column: 1 / -1;
+            background: #374151;
         }
 
         .night-sleep-icon {
@@ -2388,7 +2408,8 @@
                 <div class="night-actions">
                     <button id="nightPrevBtn" type="button" class="btn-secondary">Indietro</button>
                     <button id="nightNextBtn" type="button">Avanti</button>
-                    <button id="nightGoodMorningBtn" type="button">Buongiorno</button>
+                    <button id="nightOpenJukeboxBtn" type="button" class="night-jukebox-btn">🎵 Apri JukeBox</button>
+                    <button id="nightFinishBtn" type="button">Annulla Notte</button>
                 </div>
             </div>
         </div>
@@ -2604,7 +2625,15 @@
                 witchKillTarget: null,
                 witchSavePotionUsed: false,
                 witchKillPotionUsed: false,
-                seerResult: null
+                seerResult: null,
+                coupleChoiceDone: false,
+                wolfChoiceDone: false,
+                protectChoiceDone: false,
+                witchChoiceDone: false,
+                seerChoiceDone: false,
+                ready: false,
+                romeoName: "",
+                julietName: ""
             };
 
             const roleNames = {
@@ -2887,25 +2916,31 @@
                 }
             }
 
-            function scheduleLocalJukeboxAudio(track, volume = 1, loop = false, startAtServerMs = null) {
+            function scheduleLocalJukeboxAudio(track, volume = 1, loop = false, startAtServerMs = null, manual = false) {
                 const startAt = Number(startAtServerMs || 0);
                 if (!startAt) {
-                    playLocalJukeboxAudio(track, volume, loop);
+                    playLocalJukeboxAudio(track, volume, loop, { manual });
                     return;
                 }
 
                 const localServerNow = Date.now() + jukeboxServerOffsetMs;
                 const delay = Math.max(0, startAt - localServerNow);
+                const lateByMs = Math.max(0, localServerNow - startAt);
                 const playToken = jukeboxPlaybackToken;
+                preloadOneJukeboxTrack(track).catch(() => { });
                 setTimeout(() => {
                     if (playToken !== jukeboxPlaybackToken) return;
-                    playLocalJukeboxAudio(track, volume, loop);
+                    playLocalJukeboxAudio(track, volume, loop, {
+                        manual,
+                        offsetSeconds: lateByMs / 1000,
+                        startAtServerMs: startAt
+                    });
                 }, delay);
             }
 
-            function playLocalJukeboxAudio(track, volume = 1, loop = false) {
+            function playLocalJukeboxAudio(track, volume = 1, loop = false, options = {}) {
                 if (Date.now() < jukeboxIgnorePlayUntil) return;
-                if (hostJukeboxAudioBlocked()) {
+                if (!options.manual && hostJukeboxAudioBlocked()) {
                     stopLocalJukeboxAudio(false);
                     return;
                 }
@@ -2928,7 +2963,7 @@
                 jukeboxAudios.set(key, audio);
                 try {
                     audio.pause();
-                    audio.currentTime = 0;
+                    audio.currentTime = Math.max(0, Number(options.offsetSeconds || 0));
                 } catch { }
                 const playPromise = audio.play();
                 if (playPromise && typeof playPromise.then === "function") {
@@ -2940,6 +2975,16 @@
                                     audio.currentTime = 0;
                                 } catch { }
                                 jukeboxAudios.delete(key);
+                                return;
+                            }
+                            if (options.manual && options.startAtServerMs && !loop) {
+                                setTimeout(() => {
+                                    if (playToken !== jukeboxPlaybackToken || audio.paused) return;
+                                    const expected = Math.max(0, ((Date.now() + jukeboxServerOffsetMs) - Number(options.startAtServerMs)) / 1000);
+                                    if (Number.isFinite(expected) && Math.abs(audio.currentTime - expected) > 0.22) {
+                                        try { audio.currentTime = expected; } catch { }
+                                    }
+                                }, 1200);
                             }
                         })
                         .catch(err => {
@@ -3012,9 +3057,10 @@
             async function playJukeboxTrack(track) {
                 if (!currentRoomId) return;
                 try {
-                    await syncJukeboxClock();
+                    await preloadOneJukeboxTrack(track);
+                    await syncJukeboxClock(true);
                     await connection.invoke("JukeboxPlay", currentRoomId, track, 1);
-                    if (jukeboxStatus) jukeboxStatus.textContent = `In partenza tra ${jukeboxScheduleDelayMs} ms: ${track}`;
+                    if (jukeboxStatus) jukeboxStatus.textContent = `In partenza sincronizzata: ${track}`;
                 } catch (err) {
                     console.error("JukeBox play fallito:", err);
                     if (jukeboxStatus) jukeboxStatus.textContent = "Non riesco ad avviare la traccia.";
@@ -3112,9 +3158,9 @@
             });
             renderHostRandomAudioToggle();
 
-            connection.on("JukeboxPlayLocal", async (track, volume, loop, startAtServerMs) => {
-                await syncJukeboxClock();
-                scheduleLocalJukeboxAudio(track, volume, loop, startAtServerMs);
+            connection.on("JukeboxPlayLocal", async (track, volume, loop, startAtServerMs, manual = false) => {
+                await syncJukeboxClock(true);
+                scheduleLocalJukeboxAudio(track, volume, loop, startAtServerMs, !!manual);
             });
             connection.on("JukeboxStop", () => {
                 stopLocalJukeboxAudio();
@@ -3169,7 +3215,8 @@
             const nightResult = document.getElementById("nightResult");
             const nightPrevBtn = document.getElementById("nightPrevBtn");
             const nightNextBtn = document.getElementById("nightNextBtn");
-            const nightGoodMorningBtn = document.getElementById("nightGoodMorningBtn");
+            const nightFinishBtn = document.getElementById("nightFinishBtn");
+            const nightOpenJukeboxBtn = document.getElementById("nightOpenJukeboxBtn");
             const nightCard = nightHostOverlay?.querySelector(".night-card");
 
             function playerNameOf(p) { return p?.name ?? p?.Name ?? ""; }
@@ -3295,6 +3342,14 @@
                 nightDirector.witchKillTarget = state.witchKillTarget ?? state.WitchKillTarget ?? null;
                 nightDirector.witchSavePotionUsed = !!(state.witchSavePotionUsed ?? state.WitchSavePotionUsed ?? false);
                 nightDirector.witchKillPotionUsed = !!(state.witchKillPotionUsed ?? state.WitchKillPotionUsed ?? false);
+                nightDirector.coupleChoiceDone = !!(state.coupleChoiceDone ?? state.CoupleChoiceDone ?? false);
+                nightDirector.wolfChoiceDone = !!(state.wolfChoiceDone ?? state.WolfChoiceDone ?? false);
+                nightDirector.protectChoiceDone = !!(state.protectChoiceDone ?? state.ProtectChoiceDone ?? false);
+                nightDirector.witchChoiceDone = !!(state.witchChoiceDone ?? state.WitchChoiceDone ?? false);
+                nightDirector.seerChoiceDone = !!(state.seerChoiceDone ?? state.SeerChoiceDone ?? false);
+                nightDirector.ready = !!(state.ready ?? state.Ready ?? false);
+                nightDirector.romeoName = state.romeoName ?? state.RomeoName ?? nightDirector.romeoName ?? "";
+                nightDirector.julietName = state.julietName ?? state.JulietName ?? nightDirector.julietName ?? "";
             }
 
             function selectedForStep(step, name) {
@@ -3307,7 +3362,10 @@
 
             function nightChoiceLabel(step) {
                 if (step.type === "couplehouse") {
-                    return `Dormono a casa di ${nightDirector.coupleHouse === "giulietta" ? "Giulietta" : "Romeo"}.`;
+                    const romeo = nightDirector.romeoName || "Romeo";
+                    const juliet = nightDirector.julietName || "Giulietta";
+                    const house = nightDirector.coupleHouse === "giulietta" ? `${juliet} (Giulietta)` : `${romeo} (Romeo)`;
+                    return `Romeo → ${romeo}. Giulietta → ${juliet}. Dormono da ${house}.`;
                 }
                 if (step.type === "wolf") return nightDirector.wolfTarget ? `Vittima segnata: ${nightDirector.wolfTarget}` : "Nessuna vittima segnata.";
                 if (step.type === "protect") return nightDirector.protectedTarget ? `Protetto: ${nightDirector.protectedTarget}` : "Nessun protetto segnato.";
@@ -3348,6 +3406,22 @@
                 return "";
             }
 
+            function nightStepDone(step) {
+                if (!step) return false;
+                if (step.type === "couplehouse") return !!nightDirector.coupleChoiceDone;
+                if (step.type === "wolf") return !!nightDirector.wolfChoiceDone;
+                if (step.type === "protect") return !!nightDirector.protectChoiceDone;
+                if (step.type === "witch") return !!nightDirector.witchChoiceDone;
+                if (step.type === "seer") return !!nightDirector.seerChoiceDone;
+                return true;
+            }
+
+            function requiredNightStepsDone() {
+                return buildNightSteps()
+                    .filter(s => !["info", "summary"].includes(s.type))
+                    .every(nightStepDone);
+            }
+
             function renderNightDirector() {
                 const steps = buildNightSteps();
                 if (!steps.length) return;
@@ -3357,7 +3431,12 @@
 
                 if (nightHostKicker) nightHostKicker.textContent = `Notte ${nightDirector.nightNumber || 1}`;
                 if (nightHostTitle) nightHostTitle.textContent = step.title;
-                if (nightInstruction) nightInstruction.textContent = step.instruction;
+                if (nightInstruction) {
+                    const coupleLine = step.type === "couplehouse"
+                        ? `\n\nRomeo → ${nightDirector.romeoName || "?"}\nGiulietta → ${nightDirector.julietName || "?"}`
+                        : "";
+                    nightInstruction.textContent = step.instruction + coupleLine;
+                }
 
                 if (nightStepsEl) {
                     nightStepsEl.innerHTML = "";
@@ -3385,7 +3464,10 @@
                             const btn = document.createElement("button");
                             btn.type = "button";
                             btn.className = "night-pick-btn" + (nightDirector.coupleHouse === house ? " selected" : "");
-                            btn.textContent = label;
+                            const who = house === "romeo"
+                                ? (nightDirector.romeoName || "Romeo")
+                                : (nightDirector.julietName || "Giulietta");
+                            btn.textContent = `${label} (${who})`;
                             btn.addEventListener("click", () => chooseNightTarget("couplehouse", house));
                             nightPickList.appendChild(btn);
                         });
@@ -3444,6 +3526,11 @@
                 if (nightResult) nightResult.textContent = nightChoiceLabel(step);
                 if (nightPrevBtn) nightPrevBtn.disabled = nightDirector.stepIndex === 0;
                 if (nightNextBtn) nightNextBtn.disabled = nightDirector.stepIndex >= steps.length - 1;
+                const ready = nightDirector.ready || requiredNightStepsDone();
+                if (nightFinishBtn) {
+                    nightFinishBtn.classList.toggle("ready", ready);
+                    nightFinishBtn.textContent = ready ? "☀️ Buongiorno" : "Annulla Notte";
+                }
             }
 
             async function startNightDirector() {
@@ -3489,6 +3576,22 @@
                 }
             }
 
+            async function cancelNightDirector() {
+                if (!isHost || !currentRoomId) return;
+                try {
+                    await connection.invoke("CancelNight", currentRoomId);
+                } catch (err) {
+                    console.error("Errore annulla notte:", err);
+                    alert("Non riesco ad annullare la notte.");
+                }
+            }
+
+            function submitNightFinishAction() {
+                const ready = nightDirector.ready || requiredNightStepsDone();
+                if (ready) endNightDirector();
+                else cancelNightDirector();
+            }
+
             nightBtn?.addEventListener("click", startNightDirector);
             nightHostOverlay?.addEventListener("click", e => {
                 if (e.target === nightHostOverlay) closeNightDirectorPanel();
@@ -3504,7 +3607,8 @@
                 nightDirector.seerResult = null;
                 renderNightDirector();
             });
-            nightGoodMorningBtn?.addEventListener("click", endNightDirector);
+            nightFinishBtn?.addEventListener("click", submitNightFinishAction);
+            nightOpenJukeboxBtn?.addEventListener("click", openJukebox);
 
             connection.on("NightStarted", state => {
                 const wasActive = nightDirector.active;
@@ -3528,6 +3632,12 @@
                 if (isHost) renderNightDirector();
             });
 
+            connection.on("NightNotReady", state => {
+                applyNightState(state);
+                if (isHost) renderNightDirector();
+                if (nightResult) nightResult.textContent = "Completa tutte le chiamate obbligatorie prima di dare il Buongiorno.";
+            });
+
             connection.on("NightSeerResult", result => {
                 nightDirector.seerResult = {
                     target: result?.target ?? result?.Target ?? "",
@@ -3544,6 +3654,12 @@
                 nightDirector.witchSave = false;
                 nightDirector.witchKillTarget = null;
                 nightDirector.seerResult = null;
+                nightDirector.ready = false;
+                nightDirector.coupleChoiceDone = false;
+                nightDirector.wolfChoiceDone = false;
+                nightDirector.protectChoiceDone = false;
+                nightDirector.witchChoiceDone = false;
+                nightDirector.seerChoiceDone = false;
                 updateNightButtonState();
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
                 if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
@@ -3553,6 +3669,31 @@
                     if (isHost) renderHostTable(currentPlayers);
                 }
                 logGame(`☀️ ${message || "Il villaggio si risveglia."}`);
+            });
+
+            connection.on("NightCancelled", players => {
+                nightDirector.active = false;
+                nightDirector.wolfTarget = null;
+                nightDirector.protectedTarget = null;
+                nightDirector.coupleHouse = "romeo";
+                nightDirector.witchSave = false;
+                nightDirector.witchKillTarget = null;
+                nightDirector.seerResult = null;
+                nightDirector.ready = false;
+                nightDirector.coupleChoiceDone = false;
+                nightDirector.wolfChoiceDone = false;
+                nightDirector.protectChoiceDone = false;
+                nightDirector.witchChoiceDone = false;
+                nightDirector.seerChoiceDone = false;
+                updateNightButtonState();
+                if (nightHostOverlay) nightHostOverlay.style.display = "none";
+                if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
+                if (Array.isArray(players)) {
+                    currentPlayers = players;
+                    renderPlayers(currentPlayers);
+                    if (isHost) renderHostTable(currentPlayers);
+                }
+                logGame("Notte annullata.");
             });
 
             /* ======================================================
@@ -4470,7 +4611,7 @@
                     card.appendChild(title);
 
                     const isMyPick = (myVote === p.name);
-                    card.style.backgroundColor = p.eliminated ? "#9ca3af" : (votingOpen ? (isMyPick ? "#f59e0b" : "#4A90E2") : "#6b7280");
+                    card.style.backgroundColor = p.eliminated ? "#9ca3af" : (isMyPick ? "#f59e0b" : "#4A90E2");
                     card.style.cursor = (votingOpen && !p.eliminated && !meEliminated) ? "pointer" : "default";
                     card.style.opacity = p.isOnline ? "1" : ".7";
 
@@ -4642,8 +4783,8 @@
                 renderHostTable(currentPlayers);
                 renderPlayers(currentPlayers);
                 updateEliminatedPlayerView();
-                const source = reason === "lupi" ? "dai lupi" : "dal popolo";
-                logGame(`⚰️ ${playerName} è stato eliminato ${source}!`);
+                const phase = reason === "popolo" ? "di giorno" : "di notte";
+                logGame(`⚰️ ${playerName} è morto ${phase}.`);
 
                 const role = (eliminatedRole || player?.role || player?.Role || "").toLowerCase();
                 if (reason === "popolo" && role === "scemo" && !isHost) {
@@ -4666,13 +4807,13 @@
                 logGame(`💘 Sei in coppia con ${partnerName} (${rn}).`);
             });
             connection.on("CoupleSaved", (julietName, romeoName) => {
-                logGame(`🛡️ Coppia salva: attacco su ${julietName} annullato (dormivate da ${romeoName}).`);
+                // Evento notturno privato: niente log pubblico per evitare spoiler.
             });
             connection.on("CoupleDied", (romeo, giulietta) => {
-                logGame(`💔 Coppia eliminata: ${romeo} e ${giulietta}.`);
+                // Le morti arrivano già come PlayerEliminated senza rivelare la causa.
             });
             connection.on("CoupleSleepSet", (where) => {
-                logGame(`🛏️ La coppia dormirà da ${where === "romeo" ? "Romeo" : "Giulietta"}.`);
+                // Scelta notturna privata: niente log pubblico.
             });
             connection.on("MediumReveal", (deadName, deadRole) => {
                 logGame(`🔮 [Medium] ${deadName} era ${roleNames[deadRole] || deadRole}.`);
@@ -5255,6 +5396,11 @@
                     })();
                 }
             });
+
+            setInterval(() => {
+                if (document.hidden || !currentRoomId || autoLoginInProgress || roomRefreshInProgress) return;
+                refreshCurrentRoom().catch(() => { });
+            }, 15000);
 
             /* ========================== 11) USCITA / RESET ========================== */
             async function exitToLogin() {
