@@ -1020,6 +1020,64 @@
                 overflow-wrap: anywhere;
             }
 
+        .day-timer-panel {
+            margin: 10px 0 14px;
+            padding: 12px;
+            border-radius: 16px;
+            color: #4b2319;
+            background: linear-gradient(180deg, #fff7ed, #fff);
+            border: 1px solid rgba(245,191,88,.55);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+        }
+
+            .day-timer-panel label {
+                display: block;
+                margin-bottom: 8px;
+                font-size: 15px;
+                font-weight: 950;
+            }
+
+            .day-timer-panel select {
+                width: 100%;
+                min-height: 44px;
+                border-radius: 14px;
+                color: #3b180f;
+                background: #fff;
+                border: 1px solid rgba(139,0,0,.18);
+                font-weight: 900;
+            }
+
+        .day-timer-note {
+            display: block;
+            margin-top: 7px;
+            color: #7c2d12;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .day-timer-badge {
+            position: fixed;
+            top: max(10px, env(safe-area-inset-top, 0px));
+            right: 10px;
+            z-index: 120;
+            display: none;
+            padding: 8px 10px;
+            border-radius: 999px;
+            color: #3b180f;
+            background: rgba(255,247,237,.94);
+            border: 1px solid rgba(245,191,88,.74);
+            box-shadow: 0 10px 26px rgba(0,0,0,.18);
+            font-size: 13px;
+            font-weight: 950;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+            .day-timer-badge.active {
+                display: block;
+            }
+
             .hostRow code {
                 background: #f8fafc;
                 border: 1px solid var(--border);
@@ -1873,6 +1931,72 @@
             font-weight: 900;
         }
 
+        .game-result-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: max(18px, env(safe-area-inset-top, 0px)) 16px max(18px, env(safe-area-inset-bottom, 0px));
+            background: rgba(10, 10, 10, .56);
+            backdrop-filter: blur(4px);
+            z-index: 145;
+        }
+
+        .game-result-overlay.active {
+            display: flex;
+        }
+
+        .game-result-card {
+            width: min(92vw, 430px);
+            padding: 24px 20px 20px;
+            border-radius: 26px;
+            text-align: center;
+            color: #1f2937;
+            background: linear-gradient(180deg, #fff7ed, #ffffff);
+            border: 2px solid rgba(245, 191, 88, .72);
+            box-shadow: 0 28px 76px rgba(0,0,0,.38);
+            animation: floatIn .25s ease both;
+        }
+
+        .game-result-card.wolf-loss {
+            color: #fef2f2;
+            background: linear-gradient(180deg, #3b0a0a, #111827);
+            border-color: rgba(248, 113, 113, .78);
+        }
+
+        .game-result-icon {
+            font-size: 76px;
+            line-height: 1;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 8px 14px rgba(0,0,0,.22));
+        }
+
+        .game-result-title {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 950;
+            line-height: 1.05;
+        }
+
+        .game-result-copy {
+            margin: 12px auto 0;
+            max-width: 320px;
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.28;
+        }
+
+        .game-result-close {
+            margin-top: 18px;
+            width: 100%;
+            min-height: 48px;
+            border-radius: 16px;
+            color: #052e16;
+            background: linear-gradient(180deg, #facc15, #eab308);
+            font-weight: 950;
+        }
+
         @media (max-width: 560px) {
             .app-shell {
                 display: grid;
@@ -2210,6 +2334,8 @@
         </div>
     </div>
 
+    <div id="dayTimerBadge" class="day-timer-badge" aria-live="polite"></div>
+
     <!-- =========================================================
          APP SHELL
     ========================================================== -->
@@ -2295,6 +2421,24 @@
                 <div class="countWrap" style="margin:6px 0 12px;">
                     <span class="count-left">👥 In stanza: <span id="playerCount">0</span></span>
                     <span class="muted">• Mancano: <strong id="rolesRemaining">0</strong></span>
+                </div>
+
+                <div class="day-timer-panel">
+                    <label for="dayTimerSelect">☀️ Timer Buongiorno</label>
+                    <select id="dayTimerSelect" aria-label="Timer automatico Buonanotte">
+                        <option value="0">Off - senza timer</option>
+                        <option value="1">1 minuto</option>
+                        <option value="2">2 minuti</option>
+                        <option value="3">3 minuti</option>
+                        <option value="4">4 minuti</option>
+                        <option value="5">5 minuti</option>
+                        <option value="6">6 minuti</option>
+                        <option value="7">7 minuti</option>
+                        <option value="8">8 minuti</option>
+                        <option value="9">9 minuti</option>
+                        <option value="10">10 minuti</option>
+                    </select>
+                    <span class="day-timer-note">Se attivo, dopo il Buongiorno partirà il conto alla rovescia e allo zero sarà Buonanotte.</span>
                 </div>
 
                 <div class="rolesBox">
@@ -2477,6 +2621,15 @@
             </div>
         </div>
 
+        <div id="gameResultOverlay" class="game-result-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+            <div id="gameResultCard" class="game-result-card">
+                <div id="gameResultIcon" class="game-result-icon" aria-hidden="true">🏡</div>
+                <h2 id="gameResultTitle" class="game-result-title"></h2>
+                <p id="gameResultCopy" class="game-result-copy"></p>
+                <button id="gameResultClose" class="game-result-close" type="button">Chiudi</button>
+            </div>
+        </div>
+
         <footer>
             © Sti Cazzi, sti grandissimi — Mark
         </footer>
@@ -2612,6 +2765,11 @@
             let roomRefreshInProgress = false;
             let hostRolesVisible = true;
             let audioUnlocked = localStorage.getItem("lupus_audioUnlocked") === "true";
+            let audioUnlockInProgress = false;
+            let dayTimerMinutes = Number(localStorage.getItem("lupus_dayTimerMinutes") || 0) || 0;
+            let dayTimerEndsAtMs = null;
+            let dayTimerServerOffsetMs = 0;
+            let dayTimerInterval = null;
             let maintenanceMode = false;
             let audioContext = null;
             const nightDirector = {
@@ -2674,6 +2832,15 @@
                 if (roleText) roleText.textContent = roleNames[roleKey] || roleKey;
                 if (roleDescEl) roleDescEl.textContent = roleDescriptions[roleKey] || "Nessuna descrizione.";
                 openRoleCard();
+            }
+
+            function getMyAssignedRole() {
+                const me = (currentPlayers || []).find(p => (p.name ?? p.Name) === myName);
+                const serverRole = ((me?.role ?? me?.Role) || "").trim();
+                const localRole = (myRole || "").trim();
+                const role = serverRole || localRole;
+                if (role && role !== myRole) myRole = role;
+                return role;
             }
 
             /* ======================================================
@@ -2822,6 +2989,11 @@
             nameInputEl?.addEventListener("paste", () => window.setTimeout(cleanNameInput, 0));
             createBtn?.addEventListener("click", createRoom);
             joinBtn?.addEventListener("click", () => joinRoom({ showAlerts: true }));
+            const dayTimerSelect = document.getElementById("dayTimerSelect");
+            if (dayTimerSelect) {
+                dayTimerSelect.value = String(dayTimerMinutes);
+                dayTimerSelect.addEventListener("change", setDayTimerFromSelect);
+            }
             document.getElementById("roomIdInput")?.addEventListener("keydown", e => {
                 if (e.key === "Enter") joinRoom({ showAlerts: true });
             });
@@ -3240,8 +3412,9 @@
             }
 
             function hasNightRole(countKey, roleKey) {
-                const fromCounts = selectedRoleCounts && Number(selectedRoleCounts[countKey] || 0) > 0;
                 const fromPlayers = (currentPlayers || []).some(p => playerRoleOf(p) === roleKey && !playerEliminatedOf(p));
+                if (gameStarted || (currentPlayers || []).length) return fromPlayers;
+                const fromCounts = selectedRoleCounts && Number(selectedRoleCounts[countKey] || 0) > 0;
                 return fromCounts || fromPlayers;
             }
 
@@ -3411,7 +3584,7 @@
                 if (step.type === "couplehouse") return !!nightDirector.coupleChoiceDone;
                 if (step.type === "wolf") return !!nightDirector.wolfChoiceDone;
                 if (step.type === "protect") return !!nightDirector.protectChoiceDone;
-                if (step.type === "witch") return !!nightDirector.witchChoiceDone;
+                if (step.type === "witch") return !!nightDirector.witchChoiceDone || (nightDirector.witchSavePotionUsed && nightDirector.witchKillPotionUsed);
                 if (step.type === "seer") return !!nightDirector.seerChoiceDone;
                 return true;
             }
@@ -3732,6 +3905,9 @@
                 const box = document.getElementById("audioPermission");
                 if (!box) return;
                 box.classList.remove("is-visible", "is-loading");
+                const btn = document.getElementById("audioPermissionBtn");
+                if (btn) btn.disabled = false;
+                resetAudioPermissionProgress();
             }
 
             function resetAudioPermissionProgress() {
@@ -3826,7 +4002,7 @@
 
                     setTimeout(() => {
                         if (!preloadedJukeboxAudio.has(track)) finish(audio.readyState >= 2);
-                    }, 5000);
+                    }, 1800);
                 });
             }
 
@@ -3844,6 +4020,16 @@
                 if (subtitle) subtitle.textContent = "Audio pronto. Buona partita!";
             }
 
+            function withAudioTimeout(promise, ms, fallback = false) {
+                return Promise.race([
+                    Promise.resolve(promise).catch(err => {
+                        console.warn("Operazione audio non completata:", err);
+                        return fallback;
+                    }),
+                    new Promise(resolve => setTimeout(() => resolve(fallback), ms))
+                ]);
+            }
+
             async function notifyJukeboxAudioReady() {
                 if (!audioUnlocked || !currentRoomId || !connection) return;
                 try {
@@ -3859,27 +4045,32 @@
             async function enableGameAudio() {
                 const box = document.getElementById("audioPermission");
                 const btn = document.getElementById("audioPermissionBtn");
-                if (!box || audioUnlocked) return;
+                if (!box || audioUnlocked || audioUnlockInProgress) return;
 
+                audioUnlockInProgress = true;
                 box.classList.add("is-loading");
                 if (btn) btn.disabled = true;
 
                 try {
                     const AudioCtx = window.AudioContext || window.webkitAudioContext;
                     if (AudioCtx) {
-                        audioContext = audioContext || new AudioCtx();
-                        if (audioContext.state === "suspended") await audioContext.resume();
-                        const osc = audioContext.createOscillator();
-                        const gain = audioContext.createGain();
-                        gain.gain.value = 0.0001;
-                        osc.connect(gain).connect(audioContext.destination);
-                        osc.start();
-                        osc.stop(audioContext.currentTime + 0.04);
+                        try {
+                            audioContext = audioContext || new AudioCtx();
+                            if (audioContext.state === "suspended") await audioContext.resume();
+                            const osc = audioContext.createOscillator();
+                            const gain = audioContext.createGain();
+                            gain.gain.value = 0.0001;
+                            osc.connect(gain).connect(audioContext.destination);
+                            osc.start();
+                            osc.stop(audioContext.currentTime + 0.04);
+                        } catch (unlockErr) {
+                            console.warn("Sblocco AudioContext non riuscito, continuo con HTMLAudio:", unlockErr);
+                        }
                     }
 
                     await Promise.all([
-                        animateAudioPermissionProgress(3200, 93),
-                        preloadJukeboxTracks()
+                        animateAudioPermissionProgress(2600, 93),
+                        withAudioTimeout(preloadJukeboxTracks(), 4500, false)
                     ]);
                     audioUnlocked = true;
                     localStorage.setItem("lupus_audioUnlocked", "true");
@@ -3891,9 +4082,14 @@
                     console.error("Audio non abilitato:", err);
                     audioUnlocked = false;
                     localStorage.removeItem("lupus_audioUnlocked");
-                    box.classList.remove("is-loading");
-                    if (btn) btn.disabled = false;
                     alert("Non riesco ad abilitare l'audio su questo dispositivo. Riprova con un tap sul pulsante.");
+                } finally {
+                    audioUnlockInProgress = false;
+                    if (!audioUnlocked) {
+                        box.classList.remove("is-loading");
+                        if (btn) btn.disabled = false;
+                        resetAudioPermissionProgress();
+                    }
                 }
             }
 
@@ -4686,9 +4882,133 @@
                 overlay.setAttribute("aria-hidden", "false");
             }
 
+            function closeGameResult() {
+                const overlay = document.getElementById("gameResultOverlay");
+                if (!overlay) return;
+                overlay.classList.remove("active");
+                overlay.setAttribute("aria-hidden", "true");
+            }
+
+            function currentPlayerRoleKey() {
+                const fromMe = (myRole || "").toLowerCase();
+                if (fromMe) return fromMe;
+                const me = (currentPlayers || []).find(p => (p.name ?? p.Name) === myName);
+                return ((me?.role ?? me?.Role) || "").toLowerCase();
+            }
+
+            function syncMyRoleFromPlayers() {
+                const me = (currentPlayers || []).find(p => (p.name ?? p.Name) === myName);
+                const serverRole = ((me?.role ?? me?.Role) || "").trim();
+                if (serverRole) myRole = serverRole;
+                return myRole;
+            }
+
+            function stopDayTimerBadge() {
+                if (dayTimerInterval) {
+                    clearInterval(dayTimerInterval);
+                    dayTimerInterval = null;
+                }
+                dayTimerEndsAtMs = null;
+                const badge = document.getElementById("dayTimerBadge");
+                if (badge) {
+                    badge.classList.remove("active");
+                    badge.textContent = "";
+                }
+            }
+
+            function formatCountdown(ms) {
+                const total = Math.max(0, Math.ceil(ms / 1000));
+                const minutes = Math.floor(total / 60);
+                const seconds = total % 60;
+                return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+            }
+
+            function renderDayTimerBadge() {
+                const badge = document.getElementById("dayTimerBadge");
+                if (!badge || !dayTimerEndsAtMs) {
+                    stopDayTimerBadge();
+                    return;
+                }
+
+                const remaining = dayTimerEndsAtMs - (Date.now() + dayTimerServerOffsetMs);
+                if (remaining <= 0) {
+                    badge.textContent = "🌙 Buonanotte...";
+                    return;
+                }
+
+                badge.textContent = `🌙 Buonanotte tra ${formatCountdown(remaining)}`;
+                badge.classList.add("active");
+            }
+
+            function applyDayTimerState(state) {
+                const minutes = Number(state?.minutes ?? state?.Minutes ?? dayTimerMinutes ?? 0) || 0;
+                const endsAt = state?.endsAtMs ?? state?.EndsAtMs ?? null;
+                const serverNow = Number(state?.serverNowMs ?? state?.ServerNowMs ?? 0) || 0;
+
+                dayTimerMinutes = Math.max(0, Math.min(10, minutes));
+                localStorage.setItem("lupus_dayTimerMinutes", String(dayTimerMinutes));
+
+                const select = document.getElementById("dayTimerSelect");
+                if (select && select.value !== String(dayTimerMinutes)) select.value = String(dayTimerMinutes);
+
+                if (serverNow) dayTimerServerOffsetMs = serverNow - Date.now();
+                dayTimerEndsAtMs = endsAt ? Number(endsAt) : null;
+
+                if (!dayTimerEndsAtMs) {
+                    stopDayTimerBadge();
+                    return;
+                }
+
+                if (!dayTimerInterval) dayTimerInterval = setInterval(renderDayTimerBadge, 500);
+                renderDayTimerBadge();
+            }
+
+            async function setDayTimerFromSelect() {
+                const select = document.getElementById("dayTimerSelect");
+                if (!select) return;
+                const minutes = Math.max(0, Math.min(10, Number(select.value) || 0));
+                dayTimerMinutes = minutes;
+                localStorage.setItem("lupus_dayTimerMinutes", String(minutes));
+                if (!isHost || !currentRoomId || !connection || connection.state !== signalR.HubConnectionState.Connected) return;
+                try {
+                    await connection.invoke("SetDayTimer", currentRoomId, minutes);
+                } catch (err) {
+                    console.warn("Timer giorno non aggiornato:", err);
+                }
+            }
+
+            function showGameResult(winningFaction) {
+                const overlay = document.getElementById("gameResultOverlay");
+                const card = document.getElementById("gameResultCard");
+                const icon = document.getElementById("gameResultIcon");
+                const title = document.getElementById("gameResultTitle");
+                const copy = document.getElementById("gameResultCopy");
+                if (!overlay || !card || !icon || !title || !copy) return;
+
+                const isWolfSide = currentPlayerRoleKey() === "wolf";
+                card.classList.toggle("wolf-loss", isWolfSide);
+
+                if (winningFaction === "village" && isWolfSide) {
+                    icon.textContent = "🐺🌘";
+                    title.textContent = "La caccia è finita";
+                    copy.textContent = "Il villaggio ha resistito. I lupi tornano nel bosco a pancia vuota.";
+                } else {
+                    icon.textContent = "🏡🌞🎉";
+                    title.textContent = "Congratulazioni!";
+                    copy.textContent = "Il villaggio è salvo dai lupi. Le campane suonano, almeno per stanotte.";
+                }
+
+                overlay.classList.add("active");
+                overlay.setAttribute("aria-hidden", "false");
+            }
+
             document.getElementById("foolRevealClose")?.addEventListener("click", closeFoolReveal);
             document.getElementById("foolRevealOverlay")?.addEventListener("click", e => {
                 if (e.target?.id === "foolRevealOverlay") closeFoolReveal();
+            });
+            document.getElementById("gameResultClose")?.addEventListener("click", closeGameResult);
+            document.getElementById("gameResultOverlay")?.addEventListener("click", e => {
+                if (e.target?.id === "gameResultOverlay") closeGameResult();
             });
 
             /* ========================== 8) EVENTI DAL SERVER ========================== */
@@ -4740,7 +5060,7 @@
                 refreshInviteUI(currentRoomId);
             });
 
-            connection.on("ReceiveRole", role => { myRole = role; applyRoleUI(); });
+            connection.on("ReceiveRole", role => { myRole = (role || "").trim(); applyRoleUI(); });
 
             connection.on("VotingStarted", () => {
                 votingOpen = true;
@@ -4762,6 +5082,7 @@
 
             connection.on("UpdateVotes", (players) => {
                 currentPlayers = players || [];
+                syncMyRoleFromPlayers();
                 if (myName) {
                     let mine = null;
                     for (const p of currentPlayers) {
@@ -4775,6 +5096,16 @@
             });
 
             connection.on("PlayerKicked", (playerName) => { logLobby(`🚫 ${playerName} è stato espulso dall'host.`); });
+
+            connection.on("GameResult", (winningFaction, players) => {
+                currentPlayers = players || currentPlayers || [];
+                votingOpen = false;
+                myVote = null;
+                renderPlayers(currentPlayers);
+                if (isHost) renderHostTable(currentPlayers);
+                updateEliminatedPlayerView();
+                showGameResult(winningFaction);
+            });
 
             connection.on("PlayerEliminated", (playerName, reason, eliminatedRole) => {
                 const player = currentPlayers.find(p => (p.name ?? p.Name) === playerName);
@@ -4819,8 +5150,14 @@
                 logGame(`🔮 [Medium] ${deadName} era ${roleNames[deadRole] || deadRole}.`);
             });
 
+            connection.on("DayTimerUpdated", state => {
+                applyDayTimerState(state);
+            });
+
             connection.on("GameRestarted", (players, hostName) => {
                 gameStarted = false; votingOpen = false; myVote = null; myRole = null; currentPlayers = players || [];
+                stopDayTimerBadge();
+                closeGameResult();
                 if (overlay) overlay.style.display = "none";
                 if (roleCard) roleCard.style.display = "none";
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
@@ -4860,6 +5197,8 @@
                 gameStarted = true;
                 myVote = null;
                 currentPlayers = players || [];
+                syncMyRoleFromPlayers();
+                closeGameResult();
 
                 // 1) Se il server manda i conteggi, usali e salvali
                 if (roleCounts && typeof roleCounts === "object") {
@@ -4955,6 +5294,8 @@
                     applyRoleUI();
                     ensureHostLobbyControls();
                     refreshInviteUI(currentRoomId);
+                    applyDayTimerState({ minutes: dayTimerMinutes, endsAtMs: null, serverNowMs: Date.now() });
+                    await setDayTimerFromSelect();
                     await notifyJukeboxAudioReady();
                 } catch (err) {
                     console.error(err);
@@ -5037,8 +5378,9 @@
 
                     // === Stato base dal server
                     isHost = !!result?.isHost;
-                    myRole = result?.role || null;
+                    myRole = (result?.role || "").trim() || null;
                     currentPlayers = result?.players || [];
+                    syncMyRoleFromPlayers();
                     votingOpen = !!result?.votingOpen;
                     gameStarted = !!result?.gameStarted;
                     if (result?.nightState) {
@@ -5054,6 +5396,9 @@
                     }
 
                     // === 🔑 NUOVO: se entri a partita iniziata, usa i conteggi che il server già invia
+                    if (result?.dayTimer) applyDayTimerState(result.dayTimer);
+                    else applyDayTimerState({ minutes: dayTimerMinutes, endsAtMs: null, serverNowMs: Date.now() });
+
                     if (result?.roleCounts && typeof result.roleCounts === "object") {
                         selectedRoleCounts = result.roleCounts;
                         try {

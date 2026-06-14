@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LupusInTabula.Hubs
@@ -17,6 +18,7 @@ namespace LupusInTabula.Hubs
         private static readonly ConcurrentDictionary<string, (string roomId, string? playerName, bool isHost)> ConnIndex = new();
         // RoomId -> connessioni che hanno sbloccato l'audio nel browser
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> AudioReady = new();
+        private static readonly ConcurrentDictionary<string, CancellationTokenSource> DayTimerJobs = new();
         private const int JukeboxScheduleDelayMs = 850;
         private const int ManualJukeboxScheduleDelayMs = 1400;
         private const string MaintenanceCode = "251";
@@ -82,6 +84,8 @@ namespace LupusInTabula.Hubs
 
                 Rooms.Clear();
                 AudioReady.Clear();
+                foreach (var timer in DayTimerJobs.Values) timer.Cancel();
+                DayTimerJobs.Clear();
                 ConnIndex.Clear();
             }
             else
@@ -235,7 +239,8 @@ namespace LupusInTabula.Hubs
                     role = (string?)null,
                     players = MapPlayers(room),
                     roleCounts = room.GameStarted ? room.SavedRoleCounts : null,
-                    nightState = room.NightInProgress ? BuildNightState(room) : null
+                    nightState = room.NightInProgress ? BuildNightState(room) : null,
+                    dayTimer = BuildDayTimerState(room)
                 };
             }
 
@@ -319,7 +324,8 @@ namespace LupusInTabula.Hubs
                 role = player.Role,
                 players = MapPlayers(room),
                 roleCounts = room.GameStarted ? room.SavedRoleCounts : null,
-                nightState = room.NightInProgress ? BuildNightState(room) : null
+                nightState = room.NightInProgress ? BuildNightState(room) : null,
+                dayTimer = BuildDayTimerState(room)
             };
         }
 
@@ -363,8 +369,10 @@ namespace LupusInTabula.Hubs
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
             room.GameStarted = false;
+            room.GameEnded = false;
             room.VotingOpen = false;
             room.SavedRoleCounts = null; // ← azzera i conteggi salvati
+            CancelDayTimer(room);
             ResetNight(room, resetCounter: true);
 
             foreach (var p in room.Players)
@@ -396,7 +404,9 @@ namespace LupusInTabula.Hubs
 
             // 0) Reset pulito
             room.GameStarted = false;
+            room.GameEnded = false;
             room.VotingOpen = false;
+            CancelDayTimer(room);
             ResetNight(room, resetCounter: true);
             foreach (var p in room.Players)
             {
@@ -433,6 +443,7 @@ namespace LupusInTabula.Hubs
 
             // 5) Stato partita
             room.GameStarted = true;
+            room.GameEnded = false;
             room.VotingOpen = false;
             ResetNight(room, resetCounter: true);
 
@@ -533,6 +544,7 @@ namespace LupusInTabula.Hubs
             if (player == null || player.Eliminated) return;
 
             await EliminatePlayerCore(room, player, "popolo");
+            await CheckVillageVictory(room);
         }
 
         public async Task RevivePlayer(string roomId, string playerName)
@@ -546,6 +558,7 @@ namespace LupusInTabula.Hubs
 
             player.Eliminated = false;
             player.CurrentVote = null;
+            room.GameEnded = false;
 
             await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
             await Clients.Group(room.Id).SendAsync("PlayerRevived", playerName);
@@ -559,25 +572,30 @@ namespace LupusInTabula.Hubs
             if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
-            if (!room.GameStarted) return;
+            await BeginNightCore(room);
+        }
 
-            room.NightInProgress = true;
-            room.NightNumber++;
-            room.NightWolfTarget = null;
-            room.NightProtectedTarget = null;
-            room.NightWitchSave = false;
-            room.NightWitchKillTarget = null;
-            room.NightCoupleChoiceDone = false;
-            room.NightWolfChoiceDone = false;
-            room.NightProtectChoiceDone = false;
-            room.NightWitchChoiceDone = false;
-            room.NightSeerChoiceDone = false;
-            room.VotingOpen = false;
-            foreach (var p in room.Players) p.CurrentVote = null;
+        public async Task SetDayTimer(string roomId, int minutes)
+        {
+            if (MaintenanceMode) return;
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
+            if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
 
-            var state = BuildNightState(room);
-            await Clients.Group(room.Id).SendAsync("NightStarted", state);
-            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+            room.DayTimerMinutes = Math.Clamp(minutes, 0, 10);
+            if (room.DayTimerMinutes == 0)
+            {
+                CancelDayTimer(room);
+                await Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
+                return;
+            }
+
+            if (room.GameStarted && !room.NightInProgress && !room.GameEnded)
+            {
+                StartDayTimerIfNeeded(room);
+                return;
+            }
+
+            await Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
         }
 
         public async Task<object?> SetNightChoice(string roomId, string choiceType, string targetName)
@@ -746,6 +764,9 @@ namespace LupusInTabula.Hubs
             ResetNight(room, resetCounter: false);
             await Clients.Group(room.Id).SendAsync("NightEnded", message, MapPlayers(room));
             await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+            await CheckVillageVictory(room);
+            if (!room.GameEnded)
+                StartDayTimerIfNeeded(room);
         }
 
         public async Task CancelNight(string roomId)
@@ -757,6 +778,8 @@ namespace LupusInTabula.Hubs
 
             if (room.NightNumber > 0) room.NightNumber--;
             ResetNight(room, resetCounter: false);
+            CancelDayTimer(room);
+            await Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
             await Clients.Group(room.Id).SendAsync("NightCancelled", MapPlayers(room));
             await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
         }
@@ -993,12 +1016,22 @@ namespace LupusInTabula.Hubs
                 .Cast<object>()
                 .ToList();
 
-        private static void Shuffle<T>(IList<T> list)
+        private static int ChaoticIndex(int maxExclusive, long salt)
         {
-            // Fisher–Yates/Durstenfeld con RNG crittografico
+            if (maxExclusive <= 1) return 0;
+
+            var crypto = RandomNumberGenerator.GetInt32(maxExclusive);
+            var timeMix = DateTime.UtcNow.Ticks + Environment.TickCount64 + salt;
+            var timeOffset = (int)((timeMix % maxExclusive + maxExclusive) % maxExclusive);
+            return (crypto + timeOffset) % maxExclusive;
+        }
+
+        private static void Shuffle<T>(IList<T> list, long salt = 0)
+        {
+            // Fisher–Yates con RNG forte più un sale temporale per evitare pattern percepiti.
             for (int i = list.Count - 1; i > 0; i--)
             {
-                int j = RandomNumberGenerator.GetInt32(i + 1); // 0..i inclusi
+                int j = ChaoticIndex(i + 1, salt + (i * 7919L));
                 (list[i], list[j]) = (list[j], list[i]);
             }
         }
@@ -1056,23 +1089,28 @@ namespace LupusInTabula.Hubs
             var bestCandidates = candidates.Take(n).ToList();
             var bestScore = int.MaxValue;
 
-            // Random puro può ripetere spesso gli stessi ruoli. Proviamo più mazzi
-            // e scegliamo quello che ripete meno i ruoli della partita precedente.
-            var attempts = Math.Clamp(n * 18, 80, 260);
+            // Proviamo più mazzi, ma non scegliamo sempre in modo deterministico:
+            // tra soluzioni equivalenti lasciamo spazio al caos dell'orario.
+            var chaosSeed = DateTime.UtcNow.Ticks
+                ^ Environment.TickCount64
+                ^ RandomNumberGenerator.GetInt32(int.MaxValue);
+            var attempts = Math.Clamp(n * 24, 120, 420);
             for (int attempt = 0; attempt < attempts; attempt++)
             {
                 var trialRoles = roles.ToList();
                 var trialCandidates = candidates.ToList();
-                Shuffle(trialRoles);
-                Shuffle(trialCandidates);
+                var salt = chaosSeed + (attempt * 104729L);
+                Shuffle(trialRoles, salt);
+                Shuffle(trialCandidates, salt ^ 0x5DEECE66DL);
 
                 var score = ScoreRoleAssignment(trialRoles, trialCandidates, room.PreviousRolesByPlayer, n);
-                if (score < bestScore)
+                var nearBest = score == bestScore && ChaoticIndex(100, salt) < 38;
+                var closeEnough = score > bestScore && score <= bestScore + 2 && ChaoticIndex(100, salt) < 14;
+                if (score < bestScore || nearBest || closeEnough)
                 {
                     bestScore = score;
                     bestRoles = trialRoles.Take(n).ToList();
                     bestCandidates = trialCandidates.Take(n).ToList();
-                    if (bestScore == 0) break;
                 }
             }
 
@@ -1167,6 +1205,85 @@ namespace LupusInTabula.Hubs
             julietName = room.CoupleJulietName
         };
 
+        private static object BuildDayTimerState(GameRoom room) => new
+        {
+            minutes = room.DayTimerMinutes,
+            endsAtMs = room.DayTimerEndsAtMs,
+            serverNowMs = ServerNowMs()
+        };
+
+        private void CancelDayTimer(GameRoom room)
+        {
+            room.DayTimerEndsAtMs = null;
+            if (DayTimerJobs.TryRemove(room.Id, out var old))
+            {
+                old.Cancel();
+                old.Dispose();
+            }
+        }
+
+        private async Task BeginNightCore(GameRoom room)
+        {
+            if (!room.GameStarted || room.GameEnded || room.NightInProgress) return;
+
+            CancelDayTimer(room);
+            await Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
+
+            room.NightInProgress = true;
+            room.NightNumber++;
+            room.NightWolfTarget = null;
+            room.NightProtectedTarget = null;
+            room.NightWitchSave = false;
+            room.NightWitchKillTarget = null;
+            room.NightCoupleChoiceDone = false;
+            room.NightWolfChoiceDone = false;
+            room.NightProtectChoiceDone = false;
+            room.NightWitchChoiceDone = false;
+            room.NightSeerChoiceDone = false;
+            room.VotingOpen = false;
+            foreach (var p in room.Players) p.CurrentVote = null;
+
+            var state = BuildNightState(room);
+            await Clients.Group(room.Id).SendAsync("NightStarted", state);
+            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+        }
+
+        private void StartDayTimerIfNeeded(GameRoom room)
+        {
+            CancelDayTimer(room);
+            if (room.DayTimerMinutes <= 0 || !room.GameStarted || room.GameEnded || room.NightInProgress)
+            {
+                _ = Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
+                return;
+            }
+
+            var endsAtMs = ServerNowMs() + (room.DayTimerMinutes * 60_000L);
+            room.DayTimerEndsAtMs = endsAtMs;
+
+            var cts = new CancellationTokenSource();
+            DayTimerJobs[room.Id] = cts;
+            _ = Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(room.DayTimerMinutes), cts.Token);
+                    if (cts.IsCancellationRequested) return;
+                    if (!Rooms.TryGetValue(room.Id, out var current)) return;
+                    if (current.DayTimerEndsAtMs != endsAtMs || current.NightInProgress || current.GameEnded || !current.GameStarted) return;
+                    await BeginNightCore(current);
+                }
+                catch (TaskCanceledException) { }
+                finally
+                {
+                    if (DayTimerJobs.TryGetValue(room.Id, out var active) && ReferenceEquals(active, cts))
+                        DayTimerJobs.TryRemove(room.Id, out _);
+                    cts.Dispose();
+                }
+            });
+        }
+
         private static void ResetNight(GameRoom room, bool resetCounter)
         {
             room.NightInProgress = false;
@@ -1187,7 +1304,9 @@ namespace LupusInTabula.Hubs
             if (!room.NightInProgress) return false;
             if (HasActiveRole(room, "wolf") && !room.NightWolfChoiceDone) return false;
             if (HasActiveRole(room, "guard") && !room.NightProtectChoiceDone) return false;
-            if (HasActiveRole(room, "witch") && !room.NightWitchChoiceDone) return false;
+            if (HasActiveRole(room, "witch")
+                && !(room.WitchSavePotionUsed && room.WitchKillPotionUsed)
+                && !room.NightWitchChoiceDone) return false;
             if (HasActiveRole(room, "seer") && !room.NightSeerChoiceDone) return false;
 
             var hasCouple = HasActiveRole(room, "romeo") && HasActiveRole(room, "giulietta");
@@ -1271,6 +1390,22 @@ namespace LupusInTabula.Hubs
                     await Clients.Group(room.Id).SendAsync("CoupleDied", room.CoupleRomeoName, room.CoupleJulietName);
                 }
             }
+        }
+
+        private async Task CheckVillageVictory(GameRoom room)
+        {
+            if (room.GameEnded || !room.GameStarted) return;
+
+            var wolves = room.Players.Where(p => Same(p.Role, "wolf")).ToList();
+            if (wolves.Count == 0 || wolves.Any(p => !p.Eliminated)) return;
+
+            room.GameEnded = true;
+            room.VotingOpen = false;
+            CancelDayTimer(room);
+
+            await Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
+            await Clients.Group(room.Id).SendAsync("GameResult", "village", MapPlayers(room));
+            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
         }
 
         private async Task PairCouples(GameRoom room)
