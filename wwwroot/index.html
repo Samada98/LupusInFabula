@@ -1437,6 +1437,11 @@
             color: #cbd5e1;
             background: rgba(15,23,42,.85);
             font-size: 12px;
+            box-shadow: none;
+            width: auto;
+            min-height: 0;
+            cursor: default;
+            pointer-events: none;
         }
 
         .night-step-pill.active {
@@ -1458,9 +1463,16 @@
 
         .night-picks {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 9px;
             margin-top: 12px;
+        }
+
+        .night-picks.one-column {
+            grid-template-columns: 1fr;
+        }
+
+        .night-picks.two-column {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .night-pick-btn {
@@ -1535,8 +1547,15 @@
 
         .witch-choice-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 8px;
+        }
+
+        .witch-choice-grid.one-column {
+            grid-template-columns: 1fr;
+        }
+
+        .witch-choice-grid.two-column {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .night-actions {
@@ -2860,7 +2879,8 @@
                 seerChoiceDone: false,
                 ready: false,
                 romeoName: "",
-                julietName: ""
+                julietName: "",
+                mediumTarget: null
             };
 
             const roleNames = {
@@ -3469,6 +3489,16 @@
                 return (currentPlayers || []).filter(p => !playerEliminatedOf(p));
             }
 
+            function eliminatedPlayers() {
+                return (currentPlayers || []).filter(playerEliminatedOf);
+            }
+
+            function applyNightChoiceLayout(container, count) {
+                if (!container) return;
+                container.classList.toggle("two-column", count > 4);
+                container.classList.toggle("one-column", count <= 4);
+            }
+
             function isCurrentPlayerEliminated() {
                 if (!myName) return false;
                 const me = (currentPlayers || []).find(p => playerNameOf(p).toLowerCase() === myName.toLowerCase());
@@ -3533,6 +3563,15 @@
                         title: "Veggente",
                         instruction: "Apre gli occhi il Veggente. Indica un giocatore da controllare. Tocca il nome: l'app ti dirà se è Lupo o non Lupo.",
                         type: "seer"
+                    });
+                }
+
+                if (hasNightRole("medium", "medium")) {
+                    steps.push({
+                        id: "medium",
+                        title: "Medium",
+                        instruction: "Apre gli occhi il Medium. Può interagire con i giocatori eliminati e consultare chi è già uscito dal villaggio.",
+                        type: "medium"
                     });
                 }
 
@@ -3620,6 +3659,7 @@
                 if (step.type === "protect") return nightDirector.protectedTarget === name;
                 if (step.type === "seer") return nightDirector.seerResult?.target === name;
                 if (step.type === "witch") return nightDirector.witchKillTarget === name;
+                if (step.type === "medium") return nightDirector.mediumTarget === name;
                 return false;
             }
 
@@ -3647,6 +3687,13 @@
                 }
                 if (step.type === "seer" && nightDirector.seerResult) {
                     return `${nightDirector.seerResult.target}: ${nightDirector.seerResult.isWolf ? "È Lupo" : "Non è Lupo"}`;
+                }
+                if (step.type === "medium") {
+                    if (!eliminatedPlayers().length) return "Non ci sono ancora eliminati da consultare.";
+                    if (!nightDirector.mediumTarget) return "Scegli un eliminato da consultare con il Medium.";
+                    const dead = eliminatedPlayers().find(p => playerNameOf(p) === nightDirector.mediumTarget);
+                    const role = playerRoleOf(dead);
+                    return role ? `${nightDirector.mediumTarget}: ${roleNames[role] || role}` : `${nightDirector.mediumTarget}: ruolo non disponibile.`;
                 }
                 if (step.type === "summary") {
                     const attack = nightDirector.wolfTarget || "nessuno";
@@ -3676,6 +3723,7 @@
                 if (step.type === "protect") return !!nightDirector.protectChoiceDone;
                 if (step.type === "witch") return !!nightDirector.witchChoiceDone || (nightDirector.witchSavePotionUsed && nightDirector.witchKillPotionUsed);
                 if (step.type === "seer") return !!nightDirector.seerChoiceDone;
+                if (step.type === "medium") return true;
                 return true;
             }
 
@@ -3699,6 +3747,7 @@
                     : "Prima scegli la vittima dei lupi, poi la Strega potrà decidere se salvarla.";
                 const lifeGrid = document.createElement("div");
                 lifeGrid.className = "witch-choice-grid";
+                applyNightChoiceLayout(lifeGrid, 2);
 
                 const saveBtn = document.createElement("button");
                 saveBtn.type = "button";
@@ -3725,6 +3774,7 @@
                 poisonText.textContent = "Scegli se avvelenare qualcuno stanotte oppure conserva la pozione.";
                 const poisonGrid = document.createElement("div");
                 poisonGrid.className = "witch-choice-grid";
+                applyNightChoiceLayout(poisonGrid, alivePlayers().length + 1);
 
                 const skipPoisonBtn = document.createElement("button");
                 skipPoisonBtn.type = "button";
@@ -3748,6 +3798,33 @@
                 poison.append(poisonTitle, poisonText, poisonGrid);
                 wrap.append(life, poison);
                 container.appendChild(wrap);
+            }
+
+            function renderMediumNightChoices(container) {
+                const deadPlayers = eliminatedPlayers();
+                applyNightChoiceLayout(container, deadPlayers.length);
+
+                if (!deadPlayers.length) {
+                    const empty = document.createElement("div");
+                    empty.className = "night-result";
+                    empty.style.gridColumn = "1 / -1";
+                    empty.textContent = "Nessun eliminato da consultare per ora.";
+                    container.appendChild(empty);
+                    return;
+                }
+
+                deadPlayers.forEach(p => {
+                    const name = playerNameOf(p);
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "night-pick-btn" + (nightDirector.mediumTarget === name ? " selected" : "");
+                    btn.textContent = name;
+                    btn.addEventListener("click", () => {
+                        nightDirector.mediumTarget = name;
+                        renderNightDirector();
+                    });
+                    container.appendChild(btn);
+                });
             }
 
             function renderNightDirector() {
@@ -3780,22 +3857,18 @@
                 if (nightStepsEl) {
                     nightStepsEl.innerHTML = "";
                     steps.forEach((s, i) => {
-                        const pill = document.createElement("button");
-                        pill.type = "button";
+                        const pill = document.createElement("span");
                         pill.className = "night-step-pill" + (i === nightDirector.stepIndex ? " active" : "");
                         pill.textContent = s.title;
-                        pill.addEventListener("click", () => {
-                            nightDirector.stepIndex = i;
-                            nightDirector.seerResult = null;
-                            renderNightDirector();
-                        });
                         nightStepsEl.appendChild(pill);
                     });
                 }
 
                 if (nightPickList) {
                     nightPickList.innerHTML = "";
+                    nightPickList.classList.remove("one-column", "two-column");
                     if (step.type === "couplehouse") {
+                        applyNightChoiceLayout(nightPickList, 2);
                         [
                             ["romeo", "Casa di Romeo"],
                             ["giulietta", "Casa di Giulietta"]
@@ -3811,6 +3884,7 @@
                             nightPickList.appendChild(btn);
                         });
                     } else if (step.type === "witch") {
+                        applyNightChoiceLayout(nightPickList, 1);
                         renderWitchNightChoices(nightPickList);
                     } else if (false && step.type === "witch") {
                         const saveBtn = document.createElement("button");
@@ -3851,8 +3925,12 @@
                             btn.addEventListener("click", () => chooseNightTarget("witchkill", name));
                             nightPickList.appendChild(btn);
                         });
+                    } else if (step.type === "medium") {
+                        renderMediumNightChoices(nightPickList);
                     } else if (["wolf", "protect", "seer"].includes(step.type)) {
-                        alivePlayers().forEach(p => {
+                        const targets = alivePlayers();
+                        applyNightChoiceLayout(nightPickList, targets.length);
+                        targets.forEach(p => {
                             const name = playerNameOf(p);
                             const btn = document.createElement("button");
                             btn.type = "button";
@@ -4037,6 +4115,7 @@
                 nightDirector.coupleHouse = "romeo";
                 nightDirector.witchSave = false;
                 nightDirector.witchKillTarget = null;
+                nightDirector.mediumTarget = null;
                 nightDirector.seerResult = null;
                 nightDirector.ready = false;
                 nightDirector.coupleChoiceDone = false;
@@ -4062,6 +4141,7 @@
                 nightDirector.coupleHouse = "romeo";
                 nightDirector.witchSave = false;
                 nightDirector.witchKillTarget = null;
+                nightDirector.mediumTarget = null;
                 nightDirector.seerResult = null;
                 nightDirector.ready = false;
                 nightDirector.coupleChoiceDone = false;
@@ -5316,6 +5396,7 @@
                 renderPlayers(currentPlayers);
                 if (isHost) renderHostTable(currentPlayers);
                 updateEliminatedPlayerView();
+                if (isHost && nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
             });
 
             connection.on("PlayerKicked", (playerName) => { logLobby(`🚫 ${playerName} è stato espulso dall'host.`); });
@@ -5337,6 +5418,7 @@
                 renderHostTable(currentPlayers);
                 renderPlayers(currentPlayers);
                 updateEliminatedPlayerView();
+                if (isHost && nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
                 const phase = reason === "popolo" ? "di giorno" : "di notte";
                 logGame(`⚰️ ${playerName} è morto ${phase}.`);
 
@@ -5352,9 +5434,9 @@
                 renderHostTable(currentPlayers);
                 renderPlayers(currentPlayers);
                 updateEliminatedPlayerView();
+                if (isHost && nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
                 // logGame(`💚 ${playerName} è tornato in vita!`);
             });
-
             // === NUOVI HANDLER: Coppia & Medium (registrati una sola volta) ===
             connection.on("CouplePaired", (partnerName, partnerRole) => {
                 const rn = roleNames[partnerRole] || partnerRole;
