@@ -1355,6 +1355,12 @@
             backdrop-filter: blur(5px);
             align-items: center;
             justify-content: center;
+            overscroll-behavior: contain;
+            touch-action: none;
+        }
+
+        body.night-modal-open {
+            overflow: hidden;
         }
 
         #nightPlayerCurtain {
@@ -1379,6 +1385,9 @@
             border-radius: 22px;
             box-shadow: 0 26px 70px rgba(0,0,0,.48);
             padding: 18px;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
         }
 
         .night-kicker {
@@ -3623,6 +3632,7 @@
 
             function openNightDirectorPanel() {
                 if (!isHost || !nightHostOverlay) return;
+                document.body.classList.add("night-modal-open");
                 nightHostOverlay.style.display = "flex";
                 renderNightDirector();
                 updateNightButtonState();
@@ -3630,6 +3640,7 @@
 
             function closeNightDirectorPanel() {
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
+                document.body.classList.remove("night-modal-open");
                 updateNightButtonState();
             }
 
@@ -3968,6 +3979,7 @@
                     alert("Non riesco ad avviare la notte.");
                 } finally {
                     nightActionBusy = false;
+                    if (nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
                 }
             }
 
@@ -3991,6 +4003,7 @@
                     if (nightResult) nightResult.textContent = "Non riesco a salvare questa scelta.";
                 } finally {
                     nightActionBusy = false;
+                    if (nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
                 }
             }
 
@@ -4022,6 +4035,7 @@
                     alert("Non riesco a chiudere la notte.");
                 } finally {
                     nightActionBusy = false;
+                    if (nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
                 }
             }
 
@@ -4036,6 +4050,7 @@
                     alert("Non riesco ad annullare la notte.");
                 } finally {
                     nightActionBusy = false;
+                    if (nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
                 }
             }
 
@@ -4049,7 +4064,11 @@
             nightHostOverlay?.addEventListener("click", e => {
                 if (e.target === nightHostOverlay) closeNightDirectorPanel();
             });
+            nightHostOverlay?.addEventListener("touchmove", e => {
+                if (e.target === nightHostOverlay) e.preventDefault();
+            }, { passive: false });
             nightCard?.addEventListener("click", e => e.stopPropagation());
+            nightCard?.addEventListener("touchmove", e => e.stopPropagation(), { passive: true });
             nightPrevBtn?.addEventListener("click", () => {
                 nightDirector.stepIndex--;
                 nightDirector.seerResult = null;
@@ -4125,6 +4144,7 @@
                 nightDirector.seerChoiceDone = false;
                 updateNightButtonState();
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
+                document.body.classList.remove("night-modal-open");
                 if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
                 if (Array.isArray(players)) {
                     currentPlayers = players;
@@ -4151,6 +4171,7 @@
                 nightDirector.seerChoiceDone = false;
                 updateNightButtonState();
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
+                document.body.classList.remove("night-modal-open");
                 if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
                 if (Array.isArray(players)) {
                     currentPlayers = players;
@@ -4418,6 +4439,7 @@
                 stopLocalJukeboxAudio(false);
                 if (jbOverlay) jbOverlay.style.display = "none";
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
+                document.body.classList.remove("night-modal-open");
                 if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
                 hideAudioPermission();
                 if (overlay) overlay.style.display = "none";
@@ -4544,6 +4566,7 @@
                 if (overlay) overlay.style.display = "none";
                 if (roleCard) roleCard.style.display = "none";
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
+                document.body.classList.remove("night-modal-open");
                 if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
                 nightDirector.active = false;
                 updateNightButtonState();
@@ -5466,6 +5489,7 @@
                 if (overlay) overlay.style.display = "none";
                 if (roleCard) roleCard.style.display = "none";
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
+                document.body.classList.remove("night-modal-open");
                 if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
                 nightDirector.active = false;
                 updateNightButtonState();
