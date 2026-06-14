@@ -23,6 +23,12 @@ namespace LupusInTabula.Hubs
         private const int ManualJukeboxScheduleDelayMs = 1400;
         private const string MaintenanceCode = "251";
         private static volatile bool MaintenanceMode = true;
+        private readonly IHubContext<GameHub> _hubContext;
+
+        public GameHub(IHubContext<GameHub> hubContext)
+        {
+            _hubContext = hubContext;
+        }
 
         // =========================================================
         // =============== LIFECYCLE & CONNESSIONI =================
@@ -572,7 +578,7 @@ namespace LupusInTabula.Hubs
             if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
             if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
-            await BeginNightCore(room);
+            await BeginNightCore(room, _hubContext);
         }
 
         public async Task SetDayTimer(string roomId, int minutes)
@@ -591,7 +597,7 @@ namespace LupusInTabula.Hubs
 
             if (room.GameStarted && !room.NightInProgress && !room.GameEnded)
             {
-                StartDayTimerIfNeeded(room);
+                StartDayTimerIfNeeded(room, _hubContext);
                 return;
             }
 
@@ -766,7 +772,7 @@ namespace LupusInTabula.Hubs
             await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
             await CheckVillageVictory(room);
             if (!room.GameEnded)
-                StartDayTimerIfNeeded(room);
+                StartDayTimerIfNeeded(room, _hubContext);
         }
 
         public async Task CancelNight(string roomId)
@@ -1212,7 +1218,7 @@ namespace LupusInTabula.Hubs
             serverNowMs = ServerNowMs()
         };
 
-        private void CancelDayTimer(GameRoom room)
+        private static void CancelDayTimer(GameRoom room)
         {
             room.DayTimerEndsAtMs = null;
             if (DayTimerJobs.TryRemove(room.Id, out var old))
@@ -1222,12 +1228,12 @@ namespace LupusInTabula.Hubs
             }
         }
 
-        private async Task BeginNightCore(GameRoom room)
+        private static async Task BeginNightCore(GameRoom room, IHubContext<GameHub> hubContext)
         {
             if (!room.GameStarted || room.GameEnded || room.NightInProgress) return;
 
             CancelDayTimer(room);
-            await Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
+            await hubContext.Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
 
             room.NightInProgress = true;
             room.NightNumber++;
@@ -1244,16 +1250,16 @@ namespace LupusInTabula.Hubs
             foreach (var p in room.Players) p.CurrentVote = null;
 
             var state = BuildNightState(room);
-            await Clients.Group(room.Id).SendAsync("NightStarted", state);
-            await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+            await hubContext.Clients.Group(room.Id).SendAsync("NightStarted", state);
+            await hubContext.Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
         }
 
-        private void StartDayTimerIfNeeded(GameRoom room)
+        private static void StartDayTimerIfNeeded(GameRoom room, IHubContext<GameHub> hubContext)
         {
             CancelDayTimer(room);
             if (room.DayTimerMinutes <= 0 || !room.GameStarted || room.GameEnded || room.NightInProgress)
             {
-                _ = Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
+                _ = hubContext.Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
                 return;
             }
 
@@ -1262,7 +1268,7 @@ namespace LupusInTabula.Hubs
 
             var cts = new CancellationTokenSource();
             DayTimerJobs[room.Id] = cts;
-            _ = Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
+            _ = hubContext.Clients.Group(room.Id).SendAsync("DayTimerUpdated", BuildDayTimerState(room));
 
             _ = Task.Run(async () =>
             {
@@ -1272,7 +1278,7 @@ namespace LupusInTabula.Hubs
                     if (cts.IsCancellationRequested) return;
                     if (!Rooms.TryGetValue(room.Id, out var current)) return;
                     if (current.DayTimerEndsAtMs != endsAtMs || current.NightInProgress || current.GameEnded || !current.GameStarted) return;
-                    await BeginNightCore(current);
+                    await BeginNightCore(current, hubContext);
                 }
                 catch (TaskCanceledException) { }
                 finally

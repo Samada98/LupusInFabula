@@ -4954,12 +4954,24 @@
                 const ok = await connectPromise;
                 return ok;
             }
-            (async () => { await refreshMaintenanceState(); })();
+            function hasStoredAutoLoginTarget(roomIdFromLink = null) {
+                const forced = sessionStorage.getItem("lupus_refreshAutoLogin") === "true";
+                const auto = localStorage.getItem("lupus_autoJoin") === "true";
+                const roomId = roomIdFromLink || sessionStorage.getItem("lupus_refreshRoomId") || localStorage.getItem("lupus_roomId") || "";
+                const name = sessionStorage.getItem("lupus_refreshName") || localStorage.getItem("lupus_name") || "";
+                return !!roomIdFromLink || ((forced || auto) && !!roomId && !!name);
+            }
+
+            function refreshMaintenanceStateSoon() {
+                window.setTimeout(() => {
+                    refreshMaintenanceState().catch(() => { });
+                }, 250);
+            }
 
             connection.onreconnecting(updateConnectionUI);
             connection.onreconnected(() => {
                 updateConnectionUI();
-                refreshMaintenanceState();
+                refreshMaintenanceStateSoon();
                 refreshCurrentRoom({ fromReconnect: true }).catch(() => {
                     attemptStoredAutoLogin({ force: true }).catch(() => { });
                 });
@@ -6059,14 +6071,25 @@
             window.addEventListener("load", () => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const roomIdFromLink = urlParams.get("roomId");
-                attemptStoredAutoLogin({ roomIdFromLink });
+                hydrateLoginFields(roomIdFromLink);
+                updateRolesLeft();
+                renderRolesGuide("rolesGuideHost");
+
+                if (hasStoredAutoLoginTarget(roomIdFromLink)) {
+                    attemptStoredAutoLogin({ roomIdFromLink });
+                } else {
+                    setRejoinOverlay(false);
+                    updateConnectionUI();
+                    refreshMaintenanceStateSoon();
+                }
             });
 
             document.addEventListener("visibilitychange", () => {
                 if (!document.hidden) {
                     (async () => {
                         if (currentRoomId) await refreshCurrentRoom();
-                        else await attemptStoredAutoLogin();
+                        else if (hasStoredAutoLoginTarget()) await attemptStoredAutoLogin();
+                        else refreshMaintenanceStateSoon();
                     })();
                 }
             });
