@@ -1372,16 +1372,18 @@
             max-height: calc(100svh - 28px);
             overflow-y: auto;
             color: #f9fafb;
-            background: linear-gradient(155deg, #111827, #020617);
-            border: 1px solid rgba(148,163,184,.24);
-            border-radius: 18px;
-            box-shadow: 0 26px 70px rgba(0,0,0,.42);
+            background:
+                radial-gradient(circle at 16% 0%, rgba(245,191,88,.16), transparent 28%),
+                linear-gradient(155deg, #111827, #020617);
+            border: 1.5px solid rgba(245,191,88,.34);
+            border-radius: 22px;
+            box-shadow: 0 26px 70px rgba(0,0,0,.48);
             padding: 18px;
         }
 
         .night-kicker {
             margin: 0 0 4px;
-            color: #86efac;
+            color: #facc15;
             font-size: 12px;
             font-weight: 800;
             letter-spacing: .08em;
@@ -1389,14 +1391,35 @@
         }
 
         .night-card h2 {
-            margin: 0 0 10px;
-            font-size: 26px;
+            margin: 0 0 8px;
+            font-size: 30px;
+            line-height: 1.05;
         }
 
         .night-instruction {
             margin: 10px 0 14px;
             color: #d1d5db;
             line-height: 1.45;
+        }
+
+        .night-role-hero {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: center;
+            gap: 12px;
+            margin: 8px 0 10px;
+        }
+
+        .night-role-icon {
+            width: 58px;
+            height: 58px;
+            display: grid;
+            place-items: center;
+            border-radius: 18px;
+            font-size: 34px;
+            background: rgba(250,204,21,.12);
+            border: 1px solid rgba(250,204,21,.3);
+            box-shadow: inset 0 0 18px rgba(250,204,21,.08);
         }
 
         .night-steps {
@@ -1436,26 +1459,28 @@
         .night-picks {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 8px;
+            gap: 9px;
             margin-top: 12px;
         }
 
         .night-pick-btn {
-            min-height: 46px;
+            min-height: 52px;
             border-radius: 12px;
-            padding: 10px 8px;
-            background: #1f2937;
-            color: #fff;
+            padding: 10px 9px;
+            background: #f8fafc;
+            color: #111827;
             border: 1px solid rgba(148,163,184,.26);
-            box-shadow: none;
-            font-size: 14px;
-            line-height: 1.15;
+            box-shadow: 0 8px 18px rgba(0,0,0,.14);
+            font-size: 17px;
+            font-weight: 950;
+            line-height: 1.12;
             overflow-wrap: anywhere;
         }
 
         .night-pick-btn.selected {
             background: #16a34a;
             border-color: #86efac;
+            color: #f0fdf4;
         }
 
         .night-pick-btn:disabled {
@@ -1469,6 +1494,49 @@
             margin-top: 12px;
             color: #bbf7d0;
             font-weight: 700;
+        }
+
+        .witch-sections {
+            display: grid;
+            gap: 12px;
+            grid-column: 1 / -1;
+        }
+
+        .witch-section {
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid rgba(148,163,184,.22);
+            background: rgba(15,23,42,.82);
+        }
+
+        .witch-section.life {
+            border-color: rgba(34,197,94,.36);
+            background: linear-gradient(180deg, rgba(20,83,45,.55), rgba(15,23,42,.9));
+        }
+
+        .witch-section.poison {
+            border-color: rgba(168,85,247,.38);
+            background: linear-gradient(180deg, rgba(88,28,135,.52), rgba(15,23,42,.9));
+        }
+
+        .witch-section h4 {
+            margin: 0 0 5px;
+            font-size: 17px;
+            color: #fff7ed;
+        }
+
+        .witch-section p {
+            margin: 0 0 10px;
+            color: #d1d5db;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.28;
+        }
+
+        .witch-choice-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
         }
 
         .night-actions {
@@ -2762,6 +2830,7 @@
             let myName = null;
             let isJoining = false; // evita UI sporca durante transizioni
             let autoLoginInProgress = false;
+            let rejoinOverlayTimer = null;
             let roomRefreshInProgress = false;
             let hostRolesVisible = true;
             let audioUnlocked = localStorage.getItem("lupus_audioUnlocked") === "true";
@@ -3390,6 +3459,7 @@
             const nightFinishBtn = document.getElementById("nightFinishBtn");
             const nightOpenJukeboxBtn = document.getElementById("nightOpenJukeboxBtn");
             const nightCard = nightHostOverlay?.querySelector(".night-card");
+            let nightActionBusy = false;
 
             function playerNameOf(p) { return p?.name ?? p?.Name ?? ""; }
             function playerRoleOf(p) { return p?.role ?? p?.Role ?? ""; }
@@ -3483,6 +3553,26 @@
                 });
 
                 return steps;
+            }
+
+            function nightStepIcon(step) {
+                const map = {
+                    couplehouse: "💘",
+                    wolf: "🐺",
+                    protect: "💋",
+                    witch: "🧪",
+                    seer: "🔮",
+                    info: "🌙",
+                    summary: "☀️"
+                };
+                return map[step?.type] || "🌙";
+            }
+
+            function setNightButtonsBusy(busy) {
+                nightActionBusy = !!busy;
+                [nightPrevBtn, nightNextBtn, nightFinishBtn, nightOpenJukeboxBtn].forEach(btn => {
+                    if (btn) btn.disabled = !!busy || btn.dataset.locked === "true";
+                });
             }
 
             function updateNightButtonState() {
@@ -3595,6 +3685,71 @@
                     .every(nightStepDone);
             }
 
+            function renderWitchNightChoices(container) {
+                const wrap = document.createElement("div");
+                wrap.className = "witch-sections";
+
+                const life = document.createElement("section");
+                life.className = "witch-section life";
+                const lifeTitle = document.createElement("h4");
+                lifeTitle.textContent = "💚 Pozione della vita";
+                const lifeText = document.createElement("p");
+                lifeText.textContent = nightDirector.wolfTarget
+                    ? `Vittima dei lupi: ${nightDirector.wolfTarget}. Vuoi salvarla?`
+                    : "Prima scegli la vittima dei lupi, poi la Strega potrà decidere se salvarla.";
+                const lifeGrid = document.createElement("div");
+                lifeGrid.className = "witch-choice-grid";
+
+                const saveBtn = document.createElement("button");
+                saveBtn.type = "button";
+                saveBtn.className = "night-pick-btn" + (nightDirector.witchSave ? " selected" : "");
+                saveBtn.textContent = nightDirector.witchSavePotionUsed ? "Già usata" : "Salva vittima";
+                saveBtn.disabled = nightDirector.witchSavePotionUsed || !nightDirector.wolfTarget;
+                saveBtn.addEventListener("click", () => chooseNightTarget("witchsave", "save"));
+
+                const noSaveBtn = document.createElement("button");
+                noSaveBtn.type = "button";
+                noSaveBtn.className = "night-pick-btn" + (!nightDirector.witchSave ? " selected" : "");
+                noSaveBtn.textContent = nightDirector.witchSavePotionUsed ? "Pozione finita" : "Non salvare";
+                noSaveBtn.disabled = nightDirector.witchSavePotionUsed;
+                noSaveBtn.addEventListener("click", () => chooseNightTarget("witchsave", "skip"));
+
+                lifeGrid.append(saveBtn, noSaveBtn);
+                life.append(lifeTitle, lifeText, lifeGrid);
+
+                const poison = document.createElement("section");
+                poison.className = "witch-section poison";
+                const poisonTitle = document.createElement("h4");
+                poisonTitle.textContent = "☠️ Pozione del veleno";
+                const poisonText = document.createElement("p");
+                poisonText.textContent = "Scegli se avvelenare qualcuno stanotte oppure conserva la pozione.";
+                const poisonGrid = document.createElement("div");
+                poisonGrid.className = "witch-choice-grid";
+
+                const skipPoisonBtn = document.createElement("button");
+                skipPoisonBtn.type = "button";
+                skipPoisonBtn.className = "night-pick-btn" + (!nightDirector.witchKillTarget ? " selected" : "");
+                skipPoisonBtn.textContent = nightDirector.witchKillPotionUsed ? "Veleno finito" : "Non usare";
+                skipPoisonBtn.disabled = nightDirector.witchKillPotionUsed;
+                skipPoisonBtn.addEventListener("click", () => chooseNightTarget("witchkill", "skip"));
+                poisonGrid.appendChild(skipPoisonBtn);
+
+                alivePlayers().forEach(p => {
+                    const name = playerNameOf(p);
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "night-pick-btn" + (nightDirector.witchKillTarget === name ? " selected" : "");
+                    btn.textContent = name;
+                    btn.disabled = nightDirector.witchKillPotionUsed;
+                    btn.addEventListener("click", () => chooseNightTarget("witchkill", name));
+                    poisonGrid.appendChild(btn);
+                });
+
+                poison.append(poisonTitle, poisonText, poisonGrid);
+                wrap.append(life, poison);
+                container.appendChild(wrap);
+            }
+
             function renderNightDirector() {
                 const steps = buildNightSteps();
                 if (!steps.length) return;
@@ -3603,7 +3758,18 @@
                 const step = steps[nightDirector.stepIndex];
 
                 if (nightHostKicker) nightHostKicker.textContent = `Notte ${nightDirector.nightNumber || 1}`;
-                if (nightHostTitle) nightHostTitle.textContent = step.title;
+                if (nightHostTitle) {
+                    nightHostTitle.innerHTML = "";
+                    const hero = document.createElement("span");
+                    hero.className = "night-role-hero";
+                    const icon = document.createElement("span");
+                    icon.className = "night-role-icon";
+                    icon.textContent = nightStepIcon(step);
+                    const label = document.createElement("span");
+                    label.textContent = step.title;
+                    hero.append(icon, label);
+                    nightHostTitle.appendChild(hero);
+                }
                 if (nightInstruction) {
                     const coupleLine = step.type === "couplehouse"
                         ? `\n\nRomeo → ${nightDirector.romeoName || "?"}\nGiulietta → ${nightDirector.julietName || "?"}`
@@ -3645,6 +3811,8 @@
                             nightPickList.appendChild(btn);
                         });
                     } else if (step.type === "witch") {
+                        renderWitchNightChoices(nightPickList);
+                    } else if (false && step.type === "witch") {
                         const saveBtn = document.createElement("button");
                         saveBtn.type = "button";
                         saveBtn.className = "night-pick-btn" + (nightDirector.witchSave ? " selected" : "");
@@ -3697,10 +3865,11 @@
                 }
 
                 if (nightResult) nightResult.textContent = nightChoiceLabel(step);
-                if (nightPrevBtn) nightPrevBtn.disabled = nightDirector.stepIndex === 0;
-                if (nightNextBtn) nightNextBtn.disabled = nightDirector.stepIndex >= steps.length - 1;
+                if (nightPrevBtn) nightPrevBtn.disabled = nightActionBusy || nightDirector.stepIndex === 0;
+                if (nightNextBtn) nightNextBtn.disabled = nightActionBusy || nightDirector.stepIndex >= steps.length - 1;
                 const ready = nightDirector.ready || requiredNightStepsDone();
                 if (nightFinishBtn) {
+                    nightFinishBtn.disabled = nightActionBusy;
                     nightFinishBtn.classList.toggle("ready", ready);
                     nightFinishBtn.textContent = ready ? "☀️ Buongiorno" : "Annulla Notte";
                 }
@@ -3712,16 +3881,22 @@
                     openNightDirectorPanel();
                     return;
                 }
+                if (nightActionBusy) return;
+                nightActionBusy = true;
                 try {
                     await connection.invoke("BeginNight", currentRoomId);
                 } catch (err) {
                     console.error("Errore avvio notte:", err);
                     alert("Non riesco ad avviare la notte.");
+                } finally {
+                    nightActionBusy = false;
                 }
             }
 
             async function chooseNightTarget(type, name) {
                 if (!isHost || !currentRoomId) return;
+                if (nightActionBusy) return;
+                nightActionBusy = true;
                 try {
                     const result = await connection.invoke("SetNightChoice", currentRoomId, type, name);
                     if (type === "seer" && result) {
@@ -3736,26 +3911,53 @@
                 } catch (err) {
                     console.error("Scelta notte fallita:", err);
                     if (nightResult) nightResult.textContent = "Non riesco a salvare questa scelta.";
+                } finally {
+                    nightActionBusy = false;
+                }
+            }
+
+            async function confirmWitchDefaultsIfNeeded() {
+                if (nightDirector.witchChoiceDone || (nightDirector.witchSavePotionUsed && nightDirector.witchKillPotionUsed)) return true;
+                if (!isHost || !currentRoomId) return false;
+
+                try {
+                    const saveState = await connection.invoke("SetNightChoice", currentRoomId, "witchsave", "skip");
+                    if (saveState) applyNightState(saveState);
+                    const killState = await connection.invoke("SetNightChoice", currentRoomId, "witchkill", "skip");
+                    if (killState) applyNightState(killState);
+                    return true;
+                } catch (err) {
+                    console.error("Default Strega non salvati:", err);
+                    if (nightResult) nightResult.textContent = "Non riesco a confermare le scelte della Strega.";
+                    return false;
                 }
             }
 
             async function endNightDirector() {
                 if (!isHost || !currentRoomId) return;
+                if (nightActionBusy) return;
+                nightActionBusy = true;
                 try {
                     await connection.invoke("EndNight", currentRoomId);
                 } catch (err) {
                     console.error("Errore fine notte:", err);
                     alert("Non riesco a chiudere la notte.");
+                } finally {
+                    nightActionBusy = false;
                 }
             }
 
             async function cancelNightDirector() {
                 if (!isHost || !currentRoomId) return;
+                if (nightActionBusy) return;
+                nightActionBusy = true;
                 try {
                     await connection.invoke("CancelNight", currentRoomId);
                 } catch (err) {
                     console.error("Errore annulla notte:", err);
                     alert("Non riesco ad annullare la notte.");
+                } finally {
+                    nightActionBusy = false;
                 }
             }
 
@@ -3775,7 +3977,16 @@
                 nightDirector.seerResult = null;
                 renderNightDirector();
             });
-            nightNextBtn?.addEventListener("click", () => {
+            nightNextBtn?.addEventListener("click", async () => {
+                if (nightActionBusy) return;
+                const steps = buildNightSteps();
+                const currentStep = steps[nightDirector.stepIndex];
+                if (currentStep?.type === "witch" && !nightStepDone(currentStep)) {
+                    nightActionBusy = true;
+                    const ok = await confirmWitchDefaultsIfNeeded();
+                    nightActionBusy = false;
+                    if (!ok) return;
+                }
                 nightDirector.stepIndex++;
                 nightDirector.seerResult = null;
                 renderNightDirector();
@@ -4106,9 +4317,21 @@
             const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
             function setRejoinOverlay(visible) {
-                document.body.classList.toggle("is-auto-rejoining", !!visible);
+                if (rejoinOverlayTimer) {
+                    clearTimeout(rejoinOverlayTimer);
+                    rejoinOverlayTimer = null;
+                }
                 const rejoinOverlay = document.getElementById("rejoinOverlay");
-                if (rejoinOverlay) rejoinOverlay.setAttribute("aria-hidden", visible ? "false" : "true");
+                if (!visible) {
+                    document.body.classList.remove("is-auto-rejoining");
+                    if (rejoinOverlay) rejoinOverlay.setAttribute("aria-hidden", "true");
+                    return;
+                }
+
+                rejoinOverlayTimer = setTimeout(() => {
+                    document.body.classList.add("is-auto-rejoining");
+                    if (rejoinOverlay) rejoinOverlay.setAttribute("aria-hidden", "false");
+                }, 700);
             }
 
             function resetUiForMaintenance() {
