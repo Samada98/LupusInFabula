@@ -2083,6 +2083,35 @@
             line-height: 1.28;
         }
 
+        .game-result-prize {
+            display: none;
+            margin-top: 18px;
+            padding: 18px 14px 16px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(254, 243, 199, .92));
+            border: 2px solid rgba(234, 179, 8, .55);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 14px 34px rgba(120, 53, 15, .16);
+        }
+
+        .game-result-prize.active {
+            display: block;
+            animation: floatIn .22s ease both;
+        }
+
+        .game-result-prize-icon {
+            font-size: 92px;
+            line-height: 1;
+            filter: drop-shadow(0 10px 18px rgba(0,0,0,.18));
+        }
+
+        .game-result-prize-text {
+            margin-top: 8px;
+            color: #451a03;
+            font-size: 30px;
+            font-weight: 950;
+            line-height: 1;
+        }
+
         .game-result-close {
             margin-top: 18px;
             width: 100%;
@@ -2722,6 +2751,10 @@
                 <div id="gameResultIcon" class="game-result-icon" aria-hidden="true">🏡</div>
                 <h2 id="gameResultTitle" class="game-result-title"></h2>
                 <p id="gameResultCopy" class="game-result-copy"></p>
+                <div id="gameResultPrize" class="game-result-prize" aria-hidden="true">
+                    <div class="game-result-prize-icon" aria-hidden="true">👌</div>
+                    <div class="game-result-prize-text">Sto cazzo.</div>
+                </div>
                 <button id="gameResultClose" class="game-result-close" type="button">Chiudi</button>
             </div>
         </div>
@@ -2806,7 +2839,8 @@
         const NAME_MAP = {
             "nico": "N1k0GgAY", "niko": "N1k0GgAY", "nicolo": "N1k0GgAY", "niccolo": "N1k0GgAY", "nicco": "N1k0GgAY",
             "gioia": "TriS5tezZa", "carly": "Carmine", "carlotta": "Carmine", "carli": "Carmine",
-            "benni": "Benagol", "benny": "Benagol", "matte": "MaTTe0R0Li", "matteo": "MaTTe0R0Li"
+            "benni": "Benagol", "benny": "Benagol", "matte": "MaTTe0R0Li", "matteo": "MaTTe0R0Li",
+            "tristezza": "Gioia \u{1F9E1}", "nicogay": "Nico \u{1FA75}"
         };
         const EUGENIA_NAMES = new Set(["eugenia", "eugi", "eugy", "euge", "eug", "eugenie", "eugenietta", "ugenia", "ugg", "uggi"]);
         const normalizeName = s => (s || "")
@@ -2858,6 +2892,7 @@
             let myName = null;
             let isJoining = false; // evita UI sporca durante transizioni
             let autoLoginInProgress = false;
+            let lastJoinFailurePermanent = false;
             let rejoinOverlayTimer = null;
             let roomRefreshInProgress = false;
             let hostRolesVisible = true;
@@ -5222,9 +5257,14 @@
 
             function closeGameResult() {
                 const overlay = document.getElementById("gameResultOverlay");
+                const prize = document.getElementById("gameResultPrize");
+                const btn = document.getElementById("gameResultClose");
                 if (!overlay) return;
                 overlay.classList.remove("active");
                 overlay.setAttribute("aria-hidden", "true");
+                prize?.classList.remove("active");
+                prize?.setAttribute("aria-hidden", "true");
+                if (btn) btn.textContent = "Chiudi";
             }
 
             function currentPlayerRoleKey() {
@@ -5321,10 +5361,16 @@
                 const icon = document.getElementById("gameResultIcon");
                 const title = document.getElementById("gameResultTitle");
                 const copy = document.getElementById("gameResultCopy");
+                const prize = document.getElementById("gameResultPrize");
+                const btn = document.getElementById("gameResultClose");
                 if (!overlay || !card || !icon || !title || !copy) return;
 
                 const isWolfSide = currentPlayerRoleKey() === "wolf";
                 card.classList.toggle("wolf-loss", isWolfSide);
+                card.dataset.prizeAvailable = "false";
+                prize?.classList.remove("active");
+                prize?.setAttribute("aria-hidden", "true");
+                if (btn) btn.textContent = "Chiudi";
 
                 if (winningFaction === "village" && isWolfSide) {
                     icon.textContent = "🐺🌘";
@@ -5340,11 +5386,39 @@
                 overlay.setAttribute("aria-hidden", "false");
             }
 
+            const showGameResultBase = showGameResult;
+            showGameResult = function (winningFaction) {
+                showGameResultBase(winningFaction);
+                const card = document.getElementById("gameResultCard");
+                const copy = document.getElementById("gameResultCopy");
+                const prize = document.getElementById("gameResultPrize");
+                const btn = document.getElementById("gameResultClose");
+                const isWolfSide = currentPlayerRoleKey() === "wolf";
+                if (winningFaction === "village" && !isWolfSide) {
+                    if (copy) copy.textContent = "grazie alla vostra astuzia avete salvato il villaggio dai lupi!";
+                    if (card) card.dataset.prizeAvailable = "true";
+                    prize?.classList.remove("active");
+                    prize?.setAttribute("aria-hidden", "true");
+                    if (btn) btn.textContent = "Scopri il tuo premio!";
+                }
+            };
+
             document.getElementById("foolRevealClose")?.addEventListener("click", closeFoolReveal);
             document.getElementById("foolRevealOverlay")?.addEventListener("click", e => {
                 if (e.target?.id === "foolRevealOverlay") closeFoolReveal();
             });
-            document.getElementById("gameResultClose")?.addEventListener("click", closeGameResult);
+            document.getElementById("gameResultClose")?.addEventListener("click", () => {
+                const card = document.getElementById("gameResultCard");
+                const prize = document.getElementById("gameResultPrize");
+                const btn = document.getElementById("gameResultClose");
+                if (card?.dataset.prizeAvailable === "true" && !prize?.classList.contains("active")) {
+                    prize?.classList.add("active");
+                    prize?.setAttribute("aria-hidden", "false");
+                    if (btn) btn.textContent = "Chiudi";
+                    return;
+                }
+                closeGameResult();
+            });
             document.getElementById("gameResultOverlay")?.addEventListener("click", e => {
                 if (e.target?.id === "gameResultOverlay") closeGameResult();
             });
@@ -5654,6 +5728,7 @@
                 }
                 if (isJoining) return false;
                 isJoining = true;
+                lastJoinFailurePermanent = false;
 
                 const createBtnEl = document.getElementById("createBtn");
                 const joinBtnEl = document.getElementById("joinBtn");
@@ -5713,6 +5788,11 @@
 
                     if (result && result.ok === false) {
                         const msg = result.error || "Impossibile entrare nella stanza.";
+                        lastJoinFailurePermanent = /stanza non trovata/i.test(msg);
+                        if (lastJoinFailurePermanent) {
+                            currentRoomId = null;
+                            clearStoredAutoLoginRoom();
+                        }
                         if (showAlerts) alert(`× ${msg}`); else if (!silent) logLobby(`× ${msg}`);
                         return false;
                     }
@@ -5949,10 +6029,15 @@
             }
 
             function rememberCurrentSessionForRefresh() {
-                const nameInput = document.getElementById("name");
-                const roomInput = document.getElementById("roomIdInput");
-                const rid = currentRoomId || localStorage.getItem("lupus_roomId") || roomInput?.value?.trim() || "";
-                const nm = myName || localStorage.getItem("lupus_name") || nameInput?.value?.trim() || "";
+                if (!currentRoomId) {
+                    sessionStorage.removeItem("lupus_refreshAutoLogin");
+                    sessionStorage.removeItem("lupus_refreshRoomId");
+                    sessionStorage.removeItem("lupus_refreshName");
+                    return;
+                }
+
+                const rid = currentRoomId;
+                const nm = myName || localStorage.getItem("lupus_name") || "";
                 if (rid) {
                     localStorage.setItem("lupus_roomId", rid);
                     sessionStorage.setItem("lupus_refreshRoomId", rid);
@@ -5965,6 +6050,15 @@
                     localStorage.setItem("lupus_autoJoin", "true");
                     sessionStorage.setItem("lupus_refreshAutoLogin", "true");
                 }
+            }
+
+            function clearStoredAutoLoginRoom() {
+                localStorage.removeItem("lupus_roomId");
+                localStorage.removeItem("lupus_hostRoomId");
+                localStorage.setItem("lupus_autoJoin", "false");
+                sessionStorage.removeItem("lupus_refreshAutoLogin");
+                sessionStorage.removeItem("lupus_refreshRoomId");
+                sessionStorage.removeItem("lupus_refreshName");
             }
 
             function hydrateLoginFields(roomIdFromLink = null) {
@@ -6034,6 +6128,7 @@
                             autoLoginInProgress = false;
                             return true;
                         }
+                        if (lastJoinFailurePermanent) break;
                     } catch { /* retry below */ }
 
                     if (attempts < maxAttempts) await delay(forced ? 900 : 650);
