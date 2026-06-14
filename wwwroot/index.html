@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="it">
 <head>
     <!-- =========================================================
@@ -13,7 +13,7 @@
          ICONS / MANIFEST
     ========================================================== -->
     <link rel="icon"
-          href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="24" ry="24" fill="%238b0000"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" font-size="88">🐺</text></svg>'>
+          href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="24" ry="24" fill="%238b0000"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" font-size="88">ðŸº</text></svg>'>
     <link rel="apple-touch-icon" href="/icons/wolf-180.png" sizes="180x180">
     <link rel="icon" href="/icons/wolf-192.png" type="image/png" sizes="192x192">
     <link rel="manifest" href="/site.webmanifest">
@@ -42,7 +42,7 @@
             s.onload = callback;
             s.onerror = () => {
                 console.error('Impossibile caricare SignalR (CDN e locale).');
-                alert('⚠️ Errore nel caricare la libreria SignalR.');
+                alert('âš ï¸ Errore nel caricare la libreria SignalR.');
             };
             document.head.appendChild(s);
         }
@@ -827,7 +827,7 @@
                 text-align: left;
             }
         }
-        /* ellissi elegante se il testo è lungo */
+        /* ellissi elegante se il testo Ã¨ lungo */
         #playersTable td.nowrap, #playersTable th.nowrap {
             white-space: nowrap;
             overflow: hidden;
@@ -1265,7 +1265,7 @@
         #jukeboxContent {
             margin-top: 16px;
             margin-bottom: 24px;
-            min-height: 200px; /* così sembra un contenitore vuoto pronto */
+            min-height: 200px; /* cosÃ¬ sembra un contenitore vuoto pronto */
         }
 
         .jukebox-grid {
@@ -2122,6 +2122,56 @@
             font-weight: 950;
         }
 
+        .silenced-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: rgba(17, 24, 39, .56);
+            backdrop-filter: blur(4px);
+            z-index: 146;
+        }
+
+        .silenced-overlay.active {
+            display: flex;
+        }
+
+        .silenced-card {
+            width: min(90vw, 390px);
+            padding: 24px 20px 20px;
+            border-radius: 24px;
+            text-align: center;
+            color: #f8fafc;
+            background: linear-gradient(180deg, #1f2937, #0f172a);
+            border: 2px solid rgba(148, 163, 184, .62);
+            box-shadow: 0 24px 68px rgba(0,0,0,.42);
+        }
+
+        .silenced-icon {
+            font-size: 82px;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .silenced-card p {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 900;
+            line-height: 1.25;
+        }
+
+        .silenced-close {
+            margin-top: 18px;
+            width: 100%;
+            min-height: 46px;
+            border-radius: 16px;
+            color: #111827;
+            background: linear-gradient(180deg, #facc15, #eab308);
+            font-weight: 950;
+        }
+
         @media (max-width: 560px) {
             .app-shell {
                 display: grid;
@@ -2417,9 +2467,9 @@
             <div class="maintenance-house" style="transform:scale(1.08); margin-top:-6px"></div>
         </div>
         <main class="maintenance-card">
-            <button id="maintenanceMoon" class="maintenance-moon" type="button" aria-label="Sblocco nascosto">🌙</button>
+            <button id="maintenanceMoon" class="maintenance-moon" type="button" aria-label="Sblocco nascosto">ðŸŒ™</button>
             <h1 id="maintenanceTitle">Il villaggio dorme</h1>
-            <p>Il server è spento. Per giocare chiedi a Mark.</p>
+            <p>Il server Ã¨ spento. Per giocare chiedi a Mark.</p>
             <div id="maintenanceStatus" class="maintenance-status">Accesso al gioco momentaneamente chiuso</div>
             <div class="maintenance-code" aria-label="Sblocco nascosto">
                 <input id="maintenanceCode" inputmode="numeric" autocomplete="off" placeholder="codice segreto">
@@ -2431,14 +2481,14 @@
 
     <div id="audioPermission" class="audio-permission" role="status" aria-live="polite">
         <div class="audio-copy">
-            <strong>Accetta sti biscotti! 🍪</strong>
+            <strong>Accetta sti biscotti! ðŸª</strong>
             <span>Non fare lo sciacqua cozze.</span>
         </div>
         <div class="audio-progress" aria-hidden="true">
             <span class="audio-track">
                 <span class="audio-track-fill"></span>
-                <span class="audio-wolf">🐺</span>
-                <span class="audio-farmer">👨‍🌾</span>
+                <span class="audio-wolf">ðŸº</span>
+                <span class="audio-farmer">ðŸ‘¨â€ðŸŒ¾</span>
             </span>
         </div>
         <button id="audioPermissionBtn" class="audio-confirm-btn" type="button">Abilita audio</button>
@@ -2449,12 +2499,12 @@
     ========================================================== -->
     <div id="ptr" aria-hidden="true">
         <div id="ptr-bar"></div>
-        <span id="ptr-text">Trascina per aggiornare…</span>
+        <span id="ptr-text">Trascina per aggiornareâ€¦</span>
     </div>
 
     <div id="rejoinOverlay" class="rejoin-overlay" aria-live="polite" aria-hidden="true">
         <div class="rejoin-card">
-            <strong>Rientro nel villaggio…</strong>
+            <strong>Rientro nel villaggioâ€¦</strong>
             <span>Sto recuperando stanza e giocatori.</span>
         </div>
     </div>
@@ -2466,9 +2516,9 @@
     ========================================================== -->
     <div class="app-shell">
         <header class="brandbar" aria-label="Intestazione">
-            <div id="maintenanceWolfSwitch" class="brand-mark" role="button" tabindex="0" aria-label="Interruttore nascosto">🐺</div>
+            <div id="maintenanceWolfSwitch" class="brand-mark" role="button" tabindex="0" aria-label="Interruttore nascosto">ðŸº</div>
             <div class="brand-title">Lupus<br><span>in Fabula</span></div>
-            <div class="brand-sub">Tieniti stretti gli amici,<br>ma ancora di più i tuoi nemici.</div>
+            <div class="brand-sub">Tieniti stretti gli amici,<br>ma ancora di piÃ¹ i tuoi nemici.</div>
         </header>
 
         <!-- ====================== ACCESSO ====================== -->
@@ -2477,7 +2527,7 @@
                 <div class="login-field">
                     <label for="name">Il tuo nome</label>
                     <div class="login-input-wrap">
-                        <span aria-hidden="true">👤</span>
+                        <span aria-hidden="true">ðŸ‘¤</span>
                         <input id="name" placeholder="Come ti chiami?" aria-label="Nome" maxlength="10" />
                     </div>
                 </div>
@@ -2492,10 +2542,10 @@
 
                 <div class="btn-row">
                     <button id="createBtn">
-                        <span class="login-button-content"><span class="login-button-icon" aria-hidden="true">🎪</span>Crea stanza</span>
+                        <span class="login-button-content"><span class="login-button-icon" aria-hidden="true">ðŸŽª</span>Crea stanza</span>
                     </button>
                     <button id="joinBtn">
-                        <span class="login-button-content"><span class="login-button-icon" aria-hidden="true">➜</span>Entra nel villaggio</span>
+                        <span class="login-button-content"><span class="login-button-icon" aria-hidden="true">âžœ</span>Entra nel villaggio</span>
                     </button>
                 </div>
 
@@ -2510,11 +2560,11 @@
             <div class="panel">
                 <h2 id="lobbyTitolo">Lobby</h2>
                 <p class="hostRow">
-                    👑 Host: <span id="hostNameText"></span>
-                    &nbsp;•&nbsp; 🏷️ ID: <code id="currentRoomIdText"></code>
+                    ðŸ‘‘ Host: <span id="hostNameText"></span>
+                    &nbsp;â€¢&nbsp; ðŸ·ï¸ ID: <code id="currentRoomIdText"></code>
                 </p>
                 <p class="hostRow lobby-me-row">
-                    🙋 Tu:<br>
+                    ðŸ™‹ Tu:<br>
                     <strong id="myNameLobby">-</strong>
                 </p>
 
@@ -2522,34 +2572,34 @@
                     <p>Invita altri giocatori con questo link:</p>
                     <input id="inviteLink" type="text" readonly />
                     <div class="btn-row" style="margin-top:8px;">
-                        <button onclick="copyInvite()">📋 Copia link</button>
+                        <button onclick="copyInvite()">ðŸ“‹ Copia link</button>
                         <button id="shareBtn" type="button" class="btn-secondary" onclick="return shareInvite(event)">
-                            📤 Condividi
+                            ðŸ“¤ Condividi
                         </button>
                     </div>
                 </div>
 
                 <div class="btn-row" style="margin-top:8px;">
-                    <button class="btn-secondary" onclick="exitToLogin()">⏏️ Esci</button>
+                    <button class="btn-secondary" onclick="exitToLogin()">âï¸ Esci</button>
                 </div>
             </div>
 
             <div class="panel">
-                <h3 class="centered-heading">👥 Giocatori connessi</h3>
+                <h3 class="centered-heading">ðŸ‘¥ Giocatori connessi</h3>
                 <div id="playerList"></div>
             </div>
 
             <!-- SOLO HOST -->
             <div id="hostControls" class="panel" style="display:none;">
-                <h3 class="centered-heading">⚔️ Imposta ruoli e avvia</h3>
+                <h3 class="centered-heading">âš”ï¸ Imposta ruoli e avvia</h3>
 
                 <div class="countWrap" style="margin:6px 0 12px;">
-                    <span class="count-left">👥 In stanza: <span id="playerCount">0</span></span>
-                    <span class="muted">• Mancano: <strong id="rolesRemaining">0</strong></span>
+                    <span class="count-left">ðŸ‘¥ In stanza: <span id="playerCount">0</span></span>
+                    <span class="muted">â€¢ Mancano: <strong id="rolesRemaining">0</strong></span>
                 </div>
 
                 <div class="day-timer-panel">
-                    <label for="dayTimerSelect">☀️ Timer Buongiorno</label>
+                    <label for="dayTimerSelect">â˜€ï¸ Timer Buongiorno</label>
                     <select id="dayTimerSelect" aria-label="Timer automatico Buonanotte">
                         <option value="0">Off - senza timer</option>
                         <option value="1">1 minuto</option>
@@ -2563,36 +2613,37 @@
                         <option value="9">9 minuti</option>
                         <option value="10">10 minuti</option>
                     </select>
-                    <span class="day-timer-note">Se attivo, dopo il Buongiorno partirà il conto alla rovescia e allo zero sarà Buonanotte.</span>
+                    <span class="day-timer-note">Se attivo, dopo il Buongiorno partirÃ  il conto alla rovescia e allo zero sarÃ  Buonanotte.</span>
                 </div>
 
                 <div class="rolesBox">
-                    <div class="number-control" data-role="wolves"><label>🐺 Lupi</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
-                    <div class="number-control" data-role="villagers"><label>🌾 Contadini</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
-                    <div class="number-control" data-role="guards"><label>💋 Puttane</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
-                    <div class="number-control" data-role="seers"><label>🔮 Veggenti</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
-                    <div class="number-control" data-role="scemo"><label>🦧 Scemo</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
-                    <div class="number-control" data-role="hunter"><label>🏹 Cacciatore</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
-                    <div class="number-control" data-role="witch"><label>🧪 Strega</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
-                    <div class="number-control" data-role="lara"><label>🌙 Lara</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
-                    <div class="number-control" data-role="mayor"><label>🎖️ Sindaco</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
-                    <div class="number-control" data-role="hitman"><label>🔫 Sicario</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
-                    <div class="number-control" data-role="medium"><label>🪄 Medium</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
-                    <div class="number-control" data-role="couple"><label>💘 Romeo & Giulietta</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="silencer"><label>&#x1F910; Silenziatore</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
+                    <div class="number-control" data-role="wolves"><label>ðŸº Lupi</label><span class="dec-btn" role="button" tabindex="0">âž–</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">âž•</span></div>
+                    <div class="number-control" data-role="villagers"><label>ðŸŒ¾ Contadini</label><span class="dec-btn" role="button" tabindex="0">âž–</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">âž•</span></div>
+                    <div class="number-control" data-role="guards"><label>ðŸ’‹ Puttane</label><span class="dec-btn" role="button" tabindex="0">âž–</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">âž•</span></div>
+                    <div class="number-control" data-role="seers"><label>ðŸ”® Veggenti</label><span class="dec-btn" role="button" tabindex="0">âž–</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">âž•</span></div>
+                    <div class="number-control" data-role="scemo"><label>ðŸ¦§ Scemo</label><span class="dec-btn" role="button" tabindex="0">âž–</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">âž•</span></div>
+                    <div class="number-control" data-role="hunter"><label>ðŸ¹ Cacciatore</label><span class="dec-btn" role="button" tabindex="0">âž–</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">âž•</span></div>
+                    <div class="number-control" data-role="witch"><label>ðŸ§ª Strega</label><span class="dec-btn" role="button" tabindex="0">âž–</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">âž•</span></div>
+                    <div class="number-control" data-role="lara"><label>ðŸŒ™ Lara</label><span class="dec-btn" role="button" tabindex="0">âž–</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">âž•</span></div>
+                    <div class="number-control" data-role="mayor"><label>ðŸŽ–ï¸ Sindaco</label><span class="dec-btn" role="button" tabindex="0">âž–</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">âž•</span></div>
+                    <div class="number-control" data-role="hitman"><label>ðŸ”« Sicario</label><span class="dec-btn" role="button" tabindex="0">âž–</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">âž•</span></div>
+                    <div class="number-control" data-role="medium"><label>ðŸª„ Medium</label><span class="dec-btn" role="button" tabindex="0">âž–</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">âž•</span></div>
+                    <div class="number-control" data-role="couple"><label>ðŸ’˜ Romeo & Giulietta</label><span class="dec-btn" role="button" tabindex="0">âž–</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">âž•</span></div>
                 </div>
 
                 <div class="btn-row" style="margin-top:10px;">
-                    <button class="btn-full" onclick="startGame()">🚀 Avvia partita</button>
+                    <button class="btn-full" onclick="startGame()">ðŸš€ Avvia partita</button>
                 </div>
             </div>
 
             <div class="panel" id="rolesPanelHost">
-                <h3>📘 Ruoli del gioco</h3>
+                <h3>ðŸ“˜ Ruoli del gioco</h3>
                 <div id="rolesGuideHost" class="rolesGuideGrid"></div>
             </div>
 
             <div class="panel" id="logPanelLobby">
-                <h3>📜 Log eventi</h3>
+                <h3>ðŸ“œ Log eventi</h3>
                 <ul id="log" aria-live="polite"></ul>
             </div>
         </section>
@@ -2602,29 +2653,29 @@
 
             <!-- Panel 1: info + tabella + pulsanti -->
             <div class="panel">
-                <h2 id="giocoHostTitolo" class="centered-heading">🎲 Partita in corso</h2>
-                <p>👑 Host: <span id="hostNameInGame"></span> &nbsp;•&nbsp; 🏷️ ID: <code id="roomIdInGame"></code></p>
+                <h2 id="giocoHostTitolo" class="centered-heading">ðŸŽ² Partita in corso</h2>
+                <p>ðŸ‘‘ Host: <span id="hostNameInGame"></span> &nbsp;â€¢&nbsp; ðŸ·ï¸ ID: <code id="roomIdInGame"></code></p>
 
-                <h3 class="centered-heading">👥 Giocatori e ruoli</h3>
+                <h3 class="centered-heading">ðŸ‘¥ Giocatori e ruoli</h3>
                 <table id="playersTable" border="0"></table>
 
                 <div class="btn-row" style="margin-top:10px;">
                     <button id="votingBtn" onclick="toggleVoting()">Votazione</button>
-                    <button id="nightBtn" class="bigButton" type="button">🌙 Buonanotte</button>
-                    <button id="jukeboxBtn" class="bigButton">🎵 JukeBox</button>
+                    <button id="nightBtn" class="bigButton" type="button">ðŸŒ™ Buonanotte</button>
+                    <button id="jukeboxBtn" class="bigButton">ðŸŽµ JukeBox</button>
 
-                    <button id="restartBtn" class="btn-secondary" onclick="restartGame()">🔄 Restart</button>
-                    <button class="btn-secondary" onclick="exitToLogin()">⏏️ Esci</button>
+                    <button id="restartBtn" class="btn-secondary" onclick="restartGame()">ðŸ”„ Restart</button>
+                    <button class="btn-secondary" onclick="exitToLogin()">âï¸ Esci</button>
                 </div>
             </div> <!-- /panel 1 -->
             <!-- Panel 2: log eventi -->
             <div class="panel">
-                <h3 style="margin-top:14px;">📜 Log eventi</h3>
+                <h3 style="margin-top:14px;">ðŸ“œ Log eventi</h3>
                 <ul id="gameLog" aria-live="polite"></ul>
             </div> <!-- /panel 2 -->
             <!-- Panel 3: ruoli in partita -->
             <div class="panel">
-                <h3 class="centered-heading" style="margin-top:14px;">📘 Ruoli in partita</h3>
+                <h3 class="centered-heading" style="margin-top:14px;">ðŸ“˜ Ruoli in partita</h3>
                 <div id="rolesSummaryHost" class="rolesGuideGrid"></div>
             </div> <!-- /panel 3 -->
 
@@ -2632,11 +2683,11 @@
 
         <div id="jukeboxOverlay" class="overlay" style="display:none;">
             <div id="jukeboxCard" class="modal">
-                <button id="closeJukebox" class="closeBtn" aria-label="Chiudi">×</button>
-                <h2 id="jukeboxTitle">🎵 JukeBox</h2>
+                <button id="closeJukebox" class="closeBtn" aria-label="Chiudi">Ã—</button>
+                <h2 id="jukeboxTitle">ðŸŽµ JukeBox</h2>
                 <div id="jukeboxContent">
                     <button id="jukeboxHostAudioToggle" class="jukebox-host-audio-toggle" type="button" title="Include o esclude l'host dai suoni random della notte">
-                        🔊 Host nei random
+                        ðŸ”Š Host nei random
                     </button>
                     <div id="jukeboxMainView" class="jukebox-view active">
                         <p class="jukebox-subtitle">Scegli una traccia o avvia la scena Notte.</p>
@@ -2662,7 +2713,7 @@
                     <button id="jukeboxStopBtn" class="jukebox-stop-btn" type="button">Stop</button>
                     <div id="jukeboxStatus" class="jukebox-status">Scegli una traccia da riprodurre.</div>
                 </div>
-                <button id="backFromJukebox" class="bigButton">⬅️ Torna al gioco</button>
+                <button id="backFromJukebox" class="bigButton">â¬…ï¸ Torna al gioco</button>
             </div>
         </div>
 
@@ -2677,7 +2728,7 @@
                 <div class="night-actions">
                     <button id="nightPrevBtn" type="button" class="btn-secondary">Indietro</button>
                     <button id="nightNextBtn" type="button">Avanti</button>
-                    <button id="nightOpenJukeboxBtn" type="button" class="night-jukebox-btn">🎵 Apri JukeBox</button>
+                    <button id="nightOpenJukeboxBtn" type="button" class="night-jukebox-btn">ðŸŽµ Apri JukeBox</button>
                     <button id="nightFinishBtn" type="button">Annulla Notte</button>
                 </div>
             </div>
@@ -2685,8 +2736,8 @@
 
         <div id="nightPlayerCurtain">
             <div class="night-player-box">
-                <div class="night-sleep-icon">🌙</div>
-                <h2>È notte...</h2>
+                <div class="night-sleep-icon">ðŸŒ™</div>
+                <h2>Ãˆ notte...</h2>
                 <p>Chiudi gli occhi e aspetta la voce dell'host.</p>
             </div>
         </div>
@@ -2697,12 +2748,12 @@
 
             <!-- Panel 1: griglia giocatori + pulsanti -->
             <div class="panel">
-                <h2 id="giocoPlayerTitolo" class="centered-heading">🎲 Partita in corso</h2>
-                <p>👑 Host: <span id="hostNamePlayer"></span> &nbsp;•&nbsp; 🏷️ ID: <code id="roomIdPlayer"></code> &nbsp;•&nbsp; 🙋 Tu: <strong id="myNamePlayer">-</strong></p>
+                <h2 id="giocoPlayerTitolo" class="centered-heading">ðŸŽ² Partita in corso</h2>
+                <p>ðŸ‘‘ Host: <span id="hostNamePlayer"></span> &nbsp;â€¢&nbsp; ðŸ·ï¸ ID: <code id="roomIdPlayer"></code> &nbsp;â€¢&nbsp; ðŸ™‹ Tu: <strong id="myNamePlayer">-</strong></p>
 
-                <h3 class="centered-heading">👥 Giocatori</h3>
+                <h3 class="centered-heading">ðŸ‘¥ Giocatori</h3>
                 <div id="eliminatedCurtain" aria-live="polite">
-                    <div class="eliminated-decor">⚰️💐</div>
+                    <div class="eliminated-decor">âš°ï¸ðŸ’</div>
                     <div class="eliminated-title">Sei fuori dal villaggio</div>
                     <p class="eliminated-copy">Puoi ancora mostrare il ruolo e uscire dal gioco, ma niente voti: ormai sei leggenda.</p>
                 </div>
@@ -2710,17 +2761,17 @@
 
                 <button id="showRoleBtn" style="display:none;">Mostra ruolo</button>
                 <div class="btn-row" style="justify-content:center; margin-top:8px;">
-                    <button class="btn-secondary" onclick="exitToLogin()" style="width:min(360px,92%);">⏏️ Esci</button>
+                    <button class="btn-secondary" onclick="exitToLogin()" style="width:min(360px,92%);">âï¸ Esci</button>
                 </div>
             </div> <!-- /panel 1 -->
             <!-- Panel 2: log eventi -->
             <div class="panel">
-                <h3 style="margin-top:14px;">📜 Log eventi</h3>
+                <h3 style="margin-top:14px;">ðŸ“œ Log eventi</h3>
                 <ul id="gameLogPlayer" aria-live="polite"></ul>
             </div> <!-- /panel 2 -->
             <!-- Panel 3: ruoli in partita -->
             <div class="panel">
-                <h3 class="centered-heading">📘 Ruoli in partita</h3>
+                <h3 class="centered-heading">ðŸ“˜ Ruoli in partita</h3>
                 <div id="rolesGuidePlayer" class="rolesGuideGrid"></div>
             </div> <!-- /panel 3 -->
 
@@ -2730,7 +2781,7 @@
         <!-- ====================== MODALE RUOLO ====================== -->
         <div id="overlay"></div>
         <div id="roleCard" role="dialog" aria-modal="true" aria-labelledby="roleTitle" aria-hidden="true">
-            <h2 id="roleTitle">🃏 Il tuo ruolo</h2>
+            <h2 id="roleTitle">ðŸƒ Il tuo ruolo</h2>
             <img id="nicoEasterEgg" alt="nico-gay" src="images/easter-egg.png" />
             <p id="roleText">Nessun ruolo</p>
             <p id="roleDescription" style="margin-top:10px; font-style:italic; color:#555;">Descrizione</p>
@@ -2739,20 +2790,28 @@
 
         <div id="foolRevealOverlay" class="fool-reveal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
             <div id="foolRevealCard" class="fool-reveal-card">
-                <div id="foolRevealIcon" class="fool-reveal-icon" aria-hidden="true">🦧</div>
+                <div id="foolRevealIcon" class="fool-reveal-icon" aria-hidden="true">ðŸ¦§</div>
                 <p id="foolRevealQuote" class="fool-reveal-quote"></p>
                 <p id="foolRevealPunch" class="fool-reveal-punch"></p>
                 <button id="foolRevealClose" class="fool-reveal-close" type="button">Ok</button>
             </div>
         </div>
 
+        <div id="silencedOverlay" class="silenced-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+            <div class="silenced-card">
+                <div class="silenced-icon" aria-hidden="true">ðŸ¤</div>
+                <p>Ti hanno messo il bavaglio: oggi non puoi parlare nÃ© votare.</p>
+                <button id="silencedClose" class="silenced-close" type="button">Ok</button>
+            </div>
+        </div>
+
         <div id="gameResultOverlay" class="game-result-overlay" role="dialog" aria-modal="true" aria-hidden="true">
             <div id="gameResultCard" class="game-result-card">
-                <div id="gameResultIcon" class="game-result-icon" aria-hidden="true">🏡</div>
+                <div id="gameResultIcon" class="game-result-icon" aria-hidden="true">ðŸ¡</div>
                 <h2 id="gameResultTitle" class="game-result-title"></h2>
                 <p id="gameResultCopy" class="game-result-copy"></p>
                 <div id="gameResultPrize" class="game-result-prize" aria-hidden="true">
-                    <div class="game-result-prize-icon" aria-hidden="true">👌</div>
+                    <div class="game-result-prize-icon" aria-hidden="true">ðŸ‘Œ</div>
                     <div class="game-result-prize-text">Sto cazzo.</div>
                 </div>
                 <button id="gameResultClose" class="game-result-close" type="button">Chiudi</button>
@@ -2760,13 +2819,13 @@
         </div>
 
         <footer>
-            © Sti Cazzi, sti grandissimi — Mark
+            Â© Sti Cazzi, sti grandissimi â€” Mark
         </footer>
     </div>
 
     <!-- =========================================================
-         SCRIPT GLOBALI (A11Y helpers + mapping) — PRIMA di initApp
-         (così evitiamo ReferenceError e riusiamo in più punti)
+         SCRIPT GLOBALI (A11Y helpers + mapping) â€” PRIMA di initApp
+         (cosÃ¬ evitiamo ReferenceError e riusiamo in piÃ¹ punti)
     ========================================================== -->
     <script>
         // === Globals usati anche fuori da initApp ===
@@ -2851,7 +2910,7 @@
         function applyNameMapping(s) {
             const original = (s || "").trim();
             const normalized = normalizeName(original);
-            if (EUGENIA_NAMES.has(normalized)) return `${original} ⚖️❤️`;
+            if (EUGENIA_NAMES.has(normalized)) return `${original} \u2696\uFE0F\u{1F49B}`;
             return NAME_MAP[normalized] || original;
         }
     </script>
@@ -2924,23 +2983,25 @@
                 ready: false,
                 romeoName: "",
                 julietName: "",
-                mediumTarget: null
+                mediumTarget: null,
+                silencerTarget: null,
+                silencerChoiceDone: false
             };
 
             const roleNames = {
-                wolf: "🐺 Lupo", villager: "👨‍🌾 Contadino", seer: "🔮 Veggente", guard: "💋 Puttana",
-                scemo: "🦧 Scemo", hunter: "🏹 Cacciatore", witch: "🧪 Strega", lara: "🌙 Lara",
-                mayor: "🎖️ Sindaco", hitman: "🔫 Sicario", medium: "🪄 Medium", romeo: "💘 Romeo", giulietta: "💘 Giulietta", couple: "💘 Romeo & Giulietta"
+                wolf: "ðŸº Lupo", villager: "ðŸ‘¨â€ðŸŒ¾ Contadino", seer: "ðŸ”® Veggente", guard: "ðŸ’‹ Puttana",
+                scemo: "ðŸ¦§ Scemo", hunter: "ðŸ¹ Cacciatore", witch: "ðŸ§ª Strega", lara: "ðŸŒ™ Lara",
+                mayor: "ðŸŽ–ï¸ Sindaco", hitman: "ðŸ”« Sicario", medium: "ðŸª„ Medium", romeo: "ðŸ’˜ Romeo", giulietta: "ðŸ’˜ Giulietta", couple: "ðŸ’˜ Romeo & Giulietta"
             };
             const roleDescriptions = {
                 wolf: `Di notte scegliete insieme una vittima.\nVincete se i lupi eliminano tutti gli altri.`,
                 villager: `Non hai poteri speciali.\nUsa l'astuzia per smascherare i lupi.`,
-                seer: `Ogni notte puoi scoprire se un giocatore è lupo.`,
+                seer: `Ogni notte puoi scoprire se un giocatore Ã¨ lupo.`,
                 guard: `Ogni notte puoi proteggere un giocatore o te stessa\ndall'attacco dei lupi.`,
                 scemo: `Vinci se vieni eliminato dai voti del villaggio.`,
                 hunter: `Se vieni eliminato, puoi scegliere immediatamente\nun altro giocatore da portare con te.`,
                 witch: `Hai due pozioni: una per salvare una vittima, una per uccidere.\nPuoi usarle solo una volta ciascuna.`,
-                lara: `All'inizio sei una cittadina.\nSe vieni uccisa dai lupi, diventi un Lupo.\nVinci con i cittadini finché sei cittadina,\nma se diventi Lupo vinci con i lupi.`,
+                lara: `All'inizio sei una cittadina.\nSe vieni uccisa dai lupi, diventi un Lupo.\nVinci con i cittadini finchÃ© sei cittadina,\nma se diventi Lupo vinci con i lupi.`,
                 mayor: `Durante le votazioni il tuo voto conta doppio.`,
                 hitman: `Hai una pistola con un solo colpo.\nPuoi usarla una volta in tutta la partita per eliminare un giocatore.`,
                 medium: `Ogni morte ti rivela in segreto il ruolo del defunto.`,
@@ -2949,10 +3010,13 @@
                 couple: `Romeo & Giulietta: si svegliano insieme, conoscono i ruoli e scelgono ogni notte in quale casa dormire. Casa vuota: nessuna vittima. Casa con la coppia: muoiono entrambi.`
             };
 
+            roleNames.silencer = "ðŸ¤ Silenziatore";
+            roleDescriptions.silencer = "Ogni notte scegli un giocatore: il giorno dopo non potrÃƒÂ  votare. Se scegli la Puttana, il Silenziatore muore.";
+
             function roleEmoji(roleKey) {
                 const label = roleNames[roleKey] || "";
                 const first = label.split(" ")[0] || "";
-                return /\p{Extended_Pictographic}/u.test(first) ? first : "🃏";
+                return /\p{Extended_Pictographic}/u.test(first) ? first : "ðŸƒ";
             }
 
             function roleNameOnly(roleKey) {
@@ -3135,7 +3199,7 @@
             const showRoleBtn = document.getElementById("showRoleBtn");
             if (showRoleBtn) {
                 showRoleBtn.onclick = () => {
-                    if (!myRole) { alert("× Nessun ruolo assegnato ancora."); return; }
+                    if (!myRole) { alert("Ã— Nessun ruolo assegnato ancora."); return; }
                     closeRoleCardEEFn();
                     if (roleText) roleText.textContent = roleNames[myRole] || myRole;
                     if (roleDescEl) roleDescEl.textContent = roleDescriptions[myRole] || "Nessuna descrizione.";
@@ -3306,17 +3370,17 @@
                 jukeboxView = view;
                 jukeboxMainView?.classList.toggle("active", view === "main");
                 jukeboxNightView?.classList.toggle("active", view === "night");
-                if (jukeboxTitle) jukeboxTitle.textContent = view === "night" ? "🌙 Notte" : "🎵 JukeBox";
+                if (jukeboxTitle) jukeboxTitle.textContent = view === "night" ? "ðŸŒ™ Notte" : "ðŸŽµ JukeBox";
             }
 
             function renderHostRandomAudioToggle() {
                 if (!jukeboxHostAudioToggle) return;
                 jukeboxHostAudioToggle.classList.toggle("off", !hostRandomAudioEnabled);
                 jukeboxHostAudioToggle.textContent = hostRandomAudioEnabled
-                    ? "🔊 Host nei random"
-                    : "🔇 Host escluso";
+                    ? "ðŸ”Š Host nei random"
+                    : "ðŸ”‡ Host escluso";
                 jukeboxHostAudioToggle.title = hostRandomAudioEnabled
-                    ? "Il dispositivo host può essere scelto per ambiente e rumori random."
+                    ? "Il dispositivo host puÃ² essere scelto per ambiente e rumori random."
                     : "Il dispositivo host viene escluso da ambiente e rumori random.";
             }
 
@@ -3504,10 +3568,10 @@
                 nightBtn.id = "nightBtn";
                 nightBtn.className = "bigButton";
                 nightBtn.type = "button";
-                nightBtn.textContent = "🌙 Buonanotte";
+                nightBtn.textContent = "ðŸŒ™ Buonanotte";
                 hostJukeboxBtn.parentElement.insertBefore(nightBtn, hostJukeboxBtn);
             } else if (nightBtn && hostJukeboxBtn?.parentElement && nightBtn.nextElementSibling !== hostJukeboxBtn) {
-                nightBtn.textContent = "🌙 Buonanotte";
+                nightBtn.textContent = "ðŸŒ™ Buonanotte";
                 hostJukeboxBtn.parentElement.insertBefore(nightBtn, hostJukeboxBtn);
             }
             const nightHostOverlay = document.getElementById("nightHostOverlay");
@@ -3596,7 +3660,7 @@
                     steps.push({
                         id: "witch",
                         title: "Strega",
-                        instruction: "Chiama la Strega. Può usare una volta la pozione di salvataggio sulla vittima dei lupi e una volta la pozione veleno su un giocatore.",
+                        instruction: "Chiama la Strega. PuÃ² usare una volta la pozione di salvataggio sulla vittima dei lupi e una volta la pozione veleno su un giocatore.",
                         type: "witch"
                     });
                 }
@@ -3605,7 +3669,7 @@
                     steps.push({
                         id: "seer",
                         title: "Veggente",
-                        instruction: "Apre gli occhi il Veggente. Indica un giocatore da controllare. Tocca il nome: l'app ti dirà se è Lupo o non Lupo.",
+                        instruction: "Apre gli occhi il Veggente. Indica un giocatore da controllare. Tocca il nome: l'app ti dirÃ  se Ã¨ Lupo o non Lupo.",
                         type: "seer"
                     });
                 }
@@ -3614,8 +3678,17 @@
                     steps.push({
                         id: "medium",
                         title: "Medium",
-                        instruction: "Apre gli occhi il Medium. Può interagire con i giocatori eliminati e consultare chi è già uscito dal villaggio.",
+                        instruction: "Apre gli occhi il Medium. PuÃ² interagire con i giocatori eliminati e consultare chi Ã¨ giÃ  uscito dal villaggio.",
                         type: "medium"
+                    });
+                }
+
+                if (hasNightRole("silencer", "silencer")) {
+                    steps.push({
+                        id: "silencer",
+                        title: "Silenziatore",
+                        instruction: "Apre gli occhi il Silenziatore. Sceglie un giocatore da zittire: domani non potrÃƒÂ  votare. Se sceglie la Puttana, il Silenziatore muore.",
+                        type: "silencer"
                     });
                 }
 
@@ -3639,16 +3712,17 @@
             }
 
             function nightStepIcon(step) {
+                if (step?.type === "silencer") return "ðŸ¤";
                 const map = {
-                    couplehouse: "💘",
-                    wolf: "🐺",
-                    protect: "💋",
-                    witch: "🧪",
-                    seer: "🔮",
-                    info: "🌙",
-                    summary: "☀️"
+                    couplehouse: "ðŸ’˜",
+                    wolf: "ðŸº",
+                    protect: "ðŸ’‹",
+                    witch: "ðŸ§ª",
+                    seer: "ðŸ”®",
+                    info: "ðŸŒ™",
+                    summary: "â˜€ï¸"
                 };
-                return map[step?.type] || "🌙";
+                return map[step?.type] || "ðŸŒ™";
             }
 
             function setNightButtonsBusy(busy) {
@@ -3662,7 +3736,7 @@
                 if (!nightBtn) return;
                 nightBtn.classList.toggle("night-active", !!nightDirector.active);
                 nightBtn.setAttribute("aria-pressed", nightDirector.active ? "true" : "false");
-                nightBtn.textContent = nightDirector.active ? "🌙 Buonanotte attiva" : "🌙 Buonanotte";
+                nightBtn.textContent = nightDirector.active ? "ðŸŒ™ Buonanotte attiva" : "ðŸŒ™ Buonanotte";
             }
 
             function openNightDirectorPanel() {
@@ -3695,6 +3769,8 @@
                 nightDirector.protectChoiceDone = !!(state.protectChoiceDone ?? state.ProtectChoiceDone ?? false);
                 nightDirector.witchChoiceDone = !!(state.witchChoiceDone ?? state.WitchChoiceDone ?? false);
                 nightDirector.seerChoiceDone = !!(state.seerChoiceDone ?? state.SeerChoiceDone ?? false);
+                nightDirector.silencerChoiceDone = !!(state.silencerChoiceDone ?? state.SilencerChoiceDone ?? false);
+                nightDirector.silencerTarget = state.silencerTarget ?? state.SilencerTarget ?? null;
                 nightDirector.ready = !!(state.ready ?? state.Ready ?? false);
                 nightDirector.romeoName = state.romeoName ?? state.RomeoName ?? nightDirector.romeoName ?? "";
                 nightDirector.julietName = state.julietName ?? state.JulietName ?? nightDirector.julietName ?? "";
@@ -3706,6 +3782,7 @@
                 if (step.type === "seer") return nightDirector.seerResult?.target === name;
                 if (step.type === "witch") return nightDirector.witchKillTarget === name;
                 if (step.type === "medium") return nightDirector.mediumTarget === name;
+                if (step.type === "silencer") return nightDirector.silencerTarget === name;
                 return false;
             }
 
@@ -3714,25 +3791,26 @@
                     const romeo = nightDirector.romeoName || "Romeo";
                     const juliet = nightDirector.julietName || "Giulietta";
                     const house = nightDirector.coupleHouse === "giulietta" ? `${juliet} (Giulietta)` : `${romeo} (Romeo)`;
-                    return `Romeo → ${romeo}. Giulietta → ${juliet}. Dormono da ${house}.`;
+                    return `Romeo â†’ ${romeo}. Giulietta â†’ ${juliet}. Dormono da ${house}.`;
                 }
                 if (step.type === "wolf") return nightDirector.wolfTarget ? `Vittima segnata: ${nightDirector.wolfTarget}` : "Nessuna vittima segnata.";
                 if (step.type === "protect") return nightDirector.protectedTarget ? `Protetto: ${nightDirector.protectedTarget}` : "Nessun protetto segnato.";
+                if (step.type === "silencer") return nightDirector.silencerTarget ? `Silenziato: ${nightDirector.silencerTarget}` : "Nessun giocatore silenziato.";
                 if (step.type === "witch") {
                     const save = nightDirector.witchSavePotionUsed
-                        ? "salvataggio già usato"
+                        ? "salvataggio giÃ  usato"
                         : nightDirector.witchSave
                             ? "salva la vittima dei lupi"
                             : "non salva";
                     const kill = nightDirector.witchKillPotionUsed
-                        ? "veleno già usato"
+                        ? "veleno giÃ  usato"
                         : nightDirector.witchKillTarget
                             ? `veleno su ${nightDirector.witchKillTarget}`
                             : "veleno non usato";
                     return `Strega: ${save}. ${kill}.`;
                 }
                 if (step.type === "seer" && nightDirector.seerResult) {
-                    return `${nightDirector.seerResult.target}: ${nightDirector.seerResult.isWolf ? "È Lupo" : "Non è Lupo"}`;
+                    return `${nightDirector.seerResult.target}: ${nightDirector.seerResult.isWolf ? "Ãˆ Lupo" : "Non Ã¨ Lupo"}`;
                 }
                 if (step.type === "medium") {
                     if (!eliminatedPlayers().length) return "Non ci sono ancora eliminati da consultare.";
@@ -3770,6 +3848,7 @@
                 if (step.type === "witch") return !!nightDirector.witchChoiceDone || (nightDirector.witchSavePotionUsed && nightDirector.witchKillPotionUsed);
                 if (step.type === "seer") return !!nightDirector.seerChoiceDone;
                 if (step.type === "medium") return true;
+                if (step.type === "silencer") return !!nightDirector.silencerChoiceDone;
                 return true;
             }
 
@@ -3786,11 +3865,11 @@
                 const life = document.createElement("section");
                 life.className = "witch-section life";
                 const lifeTitle = document.createElement("h4");
-                lifeTitle.textContent = "💚 Pozione della vita";
+                lifeTitle.textContent = "ðŸ’š Pozione della vita";
                 const lifeText = document.createElement("p");
                 lifeText.textContent = nightDirector.wolfTarget
                     ? `Vittima dei lupi: ${nightDirector.wolfTarget}. Vuoi salvarla?`
-                    : "Prima scegli la vittima dei lupi, poi la Strega potrà decidere se salvarla.";
+                    : "Prima scegli la vittima dei lupi, poi la Strega potrÃ  decidere se salvarla.";
                 const lifeGrid = document.createElement("div");
                 lifeGrid.className = "witch-choice-grid";
                 applyNightChoiceLayout(lifeGrid, 2);
@@ -3798,7 +3877,7 @@
                 const saveBtn = document.createElement("button");
                 saveBtn.type = "button";
                 saveBtn.className = "night-pick-btn" + (nightDirector.witchSave ? " selected" : "");
-                saveBtn.textContent = nightDirector.witchSavePotionUsed ? "Già usata" : "Salva vittima";
+                saveBtn.textContent = nightDirector.witchSavePotionUsed ? "GiÃ  usata" : "Salva vittima";
                 saveBtn.disabled = nightDirector.witchSavePotionUsed || !nightDirector.wolfTarget;
                 saveBtn.addEventListener("click", () => chooseNightTarget("witchsave", "save"));
 
@@ -3815,7 +3894,7 @@
                 const poison = document.createElement("section");
                 poison.className = "witch-section poison";
                 const poisonTitle = document.createElement("h4");
-                poisonTitle.textContent = "☠️ Pozione del veleno";
+                poisonTitle.textContent = "â˜ ï¸ Pozione del veleno";
                 const poisonText = document.createElement("p");
                 poisonText.textContent = "Scegli se avvelenare qualcuno stanotte oppure conserva la pozione.";
                 const poisonGrid = document.createElement("div");
@@ -3895,7 +3974,7 @@
                 }
                 if (nightInstruction) {
                     const coupleLine = step.type === "couplehouse"
-                        ? `\n\nRomeo → ${nightDirector.romeoName || "?"}\nGiulietta → ${nightDirector.julietName || "?"}`
+                        ? `\n\nRomeo â†’ ${nightDirector.romeoName || "?"}\nGiulietta â†’ ${nightDirector.julietName || "?"}`
                         : "";
                     nightInstruction.textContent = step.instruction + coupleLine;
                 }
@@ -3937,7 +4016,7 @@
                         saveBtn.type = "button";
                         saveBtn.className = "night-pick-btn" + (nightDirector.witchSave ? " selected" : "");
                         saveBtn.textContent = nightDirector.witchSavePotionUsed
-                            ? "Salvataggio già usato"
+                            ? "Salvataggio giÃ  usato"
                             : nightDirector.wolfTarget
                                 ? "Salva la vittima"
                                 : "Prima scegli la vittima";
@@ -3956,7 +4035,7 @@
                         const skipPoisonBtn = document.createElement("button");
                         skipPoisonBtn.type = "button";
                         skipPoisonBtn.className = "night-pick-btn" + (!nightDirector.witchKillTarget ? " selected" : "");
-                        skipPoisonBtn.textContent = nightDirector.witchKillPotionUsed ? "Veleno già usato" : "Non usare veleno";
+                        skipPoisonBtn.textContent = nightDirector.witchKillPotionUsed ? "Veleno giÃ  usato" : "Non usare veleno";
                         skipPoisonBtn.disabled = nightDirector.witchKillPotionUsed;
                         skipPoisonBtn.addEventListener("click", () => chooseNightTarget("witchkill", "skip"));
                         nightPickList.appendChild(skipPoisonBtn);
@@ -3973,7 +4052,7 @@
                         });
                     } else if (step.type === "medium") {
                         renderMediumNightChoices(nightPickList);
-                    } else if (["wolf", "protect", "seer"].includes(step.type)) {
+                    } else if (["wolf", "protect", "seer", "silencer"].includes(step.type)) {
                         const targets = alivePlayers();
                         applyNightChoiceLayout(nightPickList, targets.length);
                         targets.forEach(p => {
@@ -3995,7 +4074,7 @@
                 if (nightFinishBtn) {
                     nightFinishBtn.disabled = nightActionBusy;
                     nightFinishBtn.classList.toggle("ready", ready);
-                    nightFinishBtn.textContent = ready ? "☀️ Buongiorno" : "Annulla Notte";
+                    nightFinishBtn.textContent = ready ? "â˜€ï¸ Buongiorno" : "Annulla Notte";
                 }
             }
 
@@ -4139,7 +4218,7 @@
                 } else if (nightPlayerCurtain) {
                     nightPlayerCurtain.style.display = "flex";
                 }
-                logGame("🌙 È notte.");
+                logGame("ðŸŒ™ Ãˆ notte.");
             });
 
             connection.on("NightChoiceUpdated", state => {
@@ -4177,6 +4256,8 @@
                 nightDirector.protectChoiceDone = false;
                 nightDirector.witchChoiceDone = false;
                 nightDirector.seerChoiceDone = false;
+                nightDirector.silencerChoiceDone = false;
+                nightDirector.silencerTarget = null;
                 updateNightButtonState();
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
                 document.body.classList.remove("night-modal-open");
@@ -4186,7 +4267,7 @@
                     renderPlayers(currentPlayers);
                     if (isHost) renderHostTable(currentPlayers);
                 }
-                logGame(`☀️ ${message || "Il villaggio si risveglia."}`);
+                logGame(`â˜€ï¸ ${message || "Il villaggio si risveglia."}`);
             });
 
             connection.on("NightCancelled", players => {
@@ -4204,6 +4285,8 @@
                 nightDirector.protectChoiceDone = false;
                 nightDirector.witchChoiceDone = false;
                 nightDirector.seerChoiceDone = false;
+                nightDirector.silencerChoiceDone = false;
+                nightDirector.silencerTarget = null;
                 updateNightButtonState();
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
                 document.body.classList.remove("night-modal-open");
@@ -4532,7 +4615,7 @@
                 document.querySelectorAll(".screen").forEach(s => {
                     if (s === target) return;
                     if (s.contains(document.activeElement)) {
-                        // nel caso improbabile in cui il focus sia ancora lì, rimuovilo
+                        // nel caso improbabile in cui il focus sia ancora lÃ¬, rimuovilo
                         try { document.activeElement.blur(); } catch { }
                     }
                     s.classList.remove("active");
@@ -4573,7 +4656,7 @@
             function renderRolesGuide(containerId) {
                 const el = document.getElementById(containerId); if (!el) return;
                 el.innerHTML = "";
-                const order = ["wolf", "villager", "seer", "guard", "scemo", "hunter", "witch", "lara", "mayor", "hitman", "medium", "couple"];
+                const order = ["wolf", "villager", "seer", "guard", "scemo", "hunter", "witch", "lara", "mayor", "hitman", "medium", "silencer", "couple"];
                 order.forEach(k => {
                     const card = document.createElement("div"); card.className = "roleCardMini clickable";
                     card.tabIndex = 0;
@@ -4654,7 +4737,7 @@
                 const vbtn = document.getElementById("votingBtn");
                 if (vbtn) {
                     if (isHost) {
-                        if (votingOpen) { vbtn.style.backgroundColor = "#4A90E2"; vbtn.textContent = "Il dado è tratto"; }
+                        if (votingOpen) { vbtn.style.backgroundColor = "#4A90E2"; vbtn.textContent = "Il dado Ã¨ tratto"; }
                         else { vbtn.style.backgroundColor = "var(--brand)"; vbtn.textContent = "Votazione"; }
                     } else {
                         vbtn.style.backgroundColor = "var(--brand)";
@@ -4691,7 +4774,7 @@
                     const cnt = ctrl.querySelector(".count");
                     const rawAttr = cnt?.dataset?.raw;
                     const raw = (rawAttr !== undefined)
-                        ? (parseInt(rawAttr) || 0)      // n° coppie reale per 'couple'
+                        ? (parseInt(rawAttr) || 0)      // nÂ° coppie reale per 'couple'
                         : (parseInt(cnt?.textContent) || 0);
                     counts[key] = raw;
                 });
@@ -4726,7 +4809,7 @@
                 const box = document.querySelector(".rolesBox");
                 if (!box) return;
 
-                // evita di aggiungere più volte i listener, ma re-inizializza SEMPRE la vista
+                // evita di aggiungere piÃ¹ volte i listener, ma re-inizializza SEMPRE la vista
                 if (box.dataset.listenersAttached !== "1") {
                     const shake = (el) => el?.animate?.(
                         [{ transform: 'translateX(0)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(0)' }],
@@ -4777,7 +4860,7 @@
                     box.dataset.listenersAttached = "1";
                 }
 
-                // Inizializza SEMPRE i numerini (così 'couple' mostra ×2)
+                // Inizializza SEMPRE i numerini (cosÃ¬ 'couple' mostra Ã—2)
                 box.querySelectorAll(".number-control").forEach(ctrl => {
                     const roleKey = ctrl.dataset.role;
                     const cnt = ctrl.querySelector(".count");
@@ -4812,10 +4895,10 @@
                     const set = v => { cnt.textContent = String(Math.max(0, v)); updateRolesLeft(); };
 
                     if (btn.classList.contains("inc-btn")) {
-                        // 🔒 cap hard: max 2 coppie (== 4 giocatori)
+                        // ðŸ”’ cap hard: max 2 coppie (== 4 giocatori)
                         if (roleKey === 'couple' && get() >= 2) { shake(ctrl); return; }
 
-                        // 🔒 non superare i giocatori disponibili (usando slot: Coppia=2)
+                        // ðŸ”’ non superare i giocatori disponibili (usando slot: Coppia=2)
                         const totalPlayers = parseInt(document.getElementById("playerCount")?.textContent) || 0;
                         const counts = readRoleCounts();
 
@@ -4844,12 +4927,12 @@
             }
             wireRoleControls();
             function emptyCounts() {
-                return { wolves: 0, villagers: 0, guards: 0, seers: 0, scemo: 0, hunter: 0, witch: 0, lara: 0, mayor: 0, hitman: 0, medium: 0, couple: 0 };
+                return { wolves: 0, villagers: 0, guards: 0, seers: 0, scemo: 0, hunter: 0, witch: 0, lara: 0, mayor: 0, hitman: 0, medium: 0, silencer: 0, couple: 0 };
             }
 
-            // quando l’HOST avvia la partita leggiamo i numeri selezionati nei controlli
+            // quando lâ€™HOST avvia la partita leggiamo i numeri selezionati nei controlli
             function countsFromControls() {
-                // readRoleCounts() c’è già ed è perfetta; attenzione: couple è già “raw” (numero coppie)
+                // readRoleCounts() câ€™Ã¨ giÃ  ed Ã¨ perfetta; attenzione: couple Ã¨ giÃ  â€œrawâ€ (numero coppie)
                 return readRoleCounts();
             }
 
@@ -4871,6 +4954,7 @@
                         case "mayor": c.mayor++; break;
                         case "hitman": c.hitman++; break;
                         case "medium": c.medium++; break;
+                        case "silencer": c.silencer++; break;
                         case "couple": c.couple++; break;           // nel caso il server usi "couple"
                         case "romeo": case "giulietta": c.couple += 0.5; break; // romeo+giulietta = 1 coppia
                     }
@@ -4887,7 +4971,7 @@
 
                 const order = [
                     ["wolves", "wolf"], ["guards", "guard"], ["seers", "seer"], ["witch", "witch"],
-                    ["hunter", "hunter"], ["medium", "medium"], ["lara", "lara"], ["mayor", "mayor"],
+                    ["hunter", "hunter"], ["medium", "medium"], ["silencer", "silencer"], ["lara", "lara"], ["mayor", "mayor"],
                     ["hitman", "hitman"], ["scemo", "scemo"], ["couple", "couple"], ["villagers", "villager"]
                 ];
 
@@ -4913,9 +4997,9 @@
 
                     const badge = document.createElement("span");
                     badge.className = "badge";
-                    const rn = roleNames[roleKey] || roleKey;  // es. "🐺 Lupo"
-                    const maybeEmoji = rn.split(" ")[0] || "🃏";
-                    badge.textContent = /\p{Extended_Pictographic}/u.test(maybeEmoji) ? maybeEmoji : "🃏";
+                    const rn = roleNames[roleKey] || roleKey;  // es. "ðŸº Lupo"
+                    const maybeEmoji = rn.split(" ")[0] || "ðŸƒ";
+                    badge.textContent = /\p{Extended_Pictographic}/u.test(maybeEmoji) ? maybeEmoji : "ðŸƒ";
 
                     const label = document.createElement("span");
                     label.textContent = rn;                    // emoji + nome ruolo
@@ -4926,9 +5010,9 @@
                     cnt.style.marginLeft = "auto";
                     cnt.style.fontWeight = "800";
 
-                    // 👇 qui la logica: 1 coppia => 2 giocatori
+                    // ðŸ‘‡ qui la logica: 1 coppia => 2 giocatori
                     const displayN = (key === "couple") ? raw * 2 : raw;
-                    cnt.textContent = "× " + displayN;
+                    cnt.textContent = "Ã— " + displayN;
 
                     title.appendChild(badge);
                     title.appendChild(label);
@@ -4962,10 +5046,10 @@
 
                 if (connection.state === S.Disconnected) {
                     connectPromise = connection.start()
-                        .then(() => { logLobby("✅ Connesso al server"); })
+                        .then(() => { logLobby("âœ… Connesso al server"); })
                         .catch(e => {
                             console.error("Connessione fallita:", e);
-                            logLobby("× Server non raggiungibile (controlla /gamehub).");
+                            logLobby("Ã— Server non raggiungibile (controlla /gamehub).");
                             throw e;
                         })
                         .finally(() => { connectPromise = null; updateConnectionUI(); });
@@ -5035,9 +5119,9 @@
                 [
                     { text: "Nome", class: "col-name" },
                     { text: "Ruolo", class: "col-role", roleToggle: true },
-                    { text: "🔗  ", class: "col-status" },
-                    { text: "🗣️ ", class: "col-votes" },
-                    { text: "📣", class: "col-actions" }
+                    { text: "ðŸ”—  ", class: "col-status" },
+                    { text: "ðŸ—£ï¸ ", class: "col-votes" },
+                    { text: "ðŸ“£", class: "col-actions" }
                 ].forEach(h => {
                     const th = document.createElement("th");
                     if (h.class) th.className = h.class;
@@ -5045,7 +5129,7 @@
                         const btn = document.createElement("button");
                         btn.type = "button";
                         btn.className = "role-visibility-toggle";
-                        btn.textContent = hostRolesVisible ? "🎭 Ruolo" : "🙈 Ruolo";
+                        btn.textContent = hostRolesVisible ? "ðŸŽ­ Ruolo" : "ðŸ™ˆ Ruolo";
                         btn.title = hostRolesVisible ? "Nascondi ruoli nella tabella" : "Mostra ruoli nella tabella";
                         btn.setAttribute("aria-pressed", hostRolesVisible ? "true" : "false");
                         btn.addEventListener("click", () => {
@@ -5060,7 +5144,7 @@
                 });
                 table.appendChild(header);
 
-                // Calcola leader/parità SOLO se la votazione è aperta
+                // Calcola leader/paritÃ  SOLO se la votazione Ã¨ aperta
                 let maxVotes = 0, isTie = false;
                 if (votingOpen) {
                     const votes = players.filter(p => !(p.eliminated ?? p.Eliminated)).map(p => (p.votes ?? p.Votes) || 0);
@@ -5072,7 +5156,7 @@
                 const roleEmojiOf = (k) => {
                     const label = roleNames[k] || "";
                     const first = (label.split(" ")[0] || "");
-                    return first || "🃏";
+                    return first || "ðŸƒ";
                 };
 
                 players.forEach(p => {
@@ -5094,7 +5178,7 @@
                     tdName.className = "col-name";
                     const nameSpan = document.createElement("span");
                     nameSpan.className = "name-clamp";
-                    const nameDisplay = eliminated ? `☠️ ${name}` : name;
+                    const nameDisplay = eliminated ? `â˜ ï¸ ${name}` : name;
                     if (eliminated) {
                         tdName.style.color = 'gray';
                         tdName.style.textDecoration = 'line-through';
@@ -5113,12 +5197,12 @@
                         } else {
                             const mask = document.createElement("span");
                             mask.className = "role-hidden-mask";
-                            mask.textContent = "••••";
+                            mask.textContent = "â€¢â€¢â€¢â€¢";
                             tdRole.appendChild(mask);
                             tdRole.title = "Ruolo nascosto";
                         }
                     } else {
-                        tdRole.textContent = "—";
+                        tdRole.textContent = "â€”";
                         tdRole.style.color = "#9ca3af";
                     }
 
@@ -5143,7 +5227,7 @@
                         reviveBtn.className = "btn-icon btn-icon--ok";
                         reviveBtn.title = `Resuscita ${name}`;
                         reviveBtn.setAttribute("aria-label", `Resuscita ${name}`);
-                        reviveBtn.textContent = "💚";
+                        reviveBtn.textContent = "ðŸ’š";
                         reviveBtn.addEventListener("click", () => revivePlayer(name));
                         tdActions.appendChild(reviveBtn);
                     } else {
@@ -5151,7 +5235,7 @@
                         delBtn.className = "btn-icon";
                         delBtn.title = `Elimina ${name}`;
                         delBtn.setAttribute("aria-label", `Elimina ${name}`);
-                        delBtn.textContent = "×";
+                        delBtn.textContent = "Ã—";
                         delBtn.addEventListener("click", () => eliminatePlayer(name));
                         tdActions.appendChild(delBtn);
                     }
@@ -5165,14 +5249,17 @@
                 const container = document.getElementById("playersGrid"); if (!container) return;
                 container.innerHTML = "";
                 const meEliminated = isCurrentPlayerEliminated();
+                const mePlayer = (players || []).find(p => (p.name ?? p.Name) === myName);
+                const meSilenced = !!(mePlayer?.silenced ?? mePlayer?.Silenced);
                 updateEliminatedPlayerView();
 
                 players.forEach(p => {
                     const card = document.createElement("div");
                     card.className = "playersGridItem";
 
-                    let displayName = p.eliminated ? `☠️ ${p.name}` : p.name;
-                    if (p.role === "mayor") displayName += " 🎖️";
+                    let displayName = p.eliminated ? `â˜ ï¸ ${p.name}` : p.name;
+                    if (!!(p.silenced ?? p.Silenced)) displayName += " ðŸ¤";
+                    if (p.role === "mayor") displayName += " ðŸŽ–ï¸";
                     const baseText = (!p.eliminated && p.votes > 0) ? `${displayName} (${p.votes})` : displayName;
                     const title = document.createElement("div");
                     title.className = "playerTitle";
@@ -5181,10 +5268,10 @@
 
                     const isMyPick = (myVote === p.name);
                     card.style.backgroundColor = p.eliminated ? "#9ca3af" : (isMyPick ? "#f59e0b" : "#4A90E2");
-                    card.style.cursor = (votingOpen && !p.eliminated && !meEliminated) ? "pointer" : "default";
+                    card.style.cursor = (votingOpen && !p.eliminated && !meEliminated && !meSilenced) ? "pointer" : "default";
                     card.style.opacity = p.isOnline ? "1" : ".7";
 
-                    if (votingOpen && !p.eliminated && !meEliminated) {
+                    if (votingOpen && !p.eliminated && !meEliminated && !meSilenced) {
                         card.setAttribute('role', 'button');
                         card.tabIndex = 0;
                         card.title = isMyPick ? "Riclicca per togliere il voto" : "Clicca per votare";
@@ -5202,7 +5289,7 @@
                         card.appendChild(votersList);
                     }
 
-                    if (votingOpen && !p.eliminated && !meEliminated) {
+                    if (votingOpen && !p.eliminated && !meEliminated && !meSilenced) {
                         card.onclick = async () => {
                             const prev = myVote;
                             if (myVote === p.name) {
@@ -5232,6 +5319,20 @@
                 overlay.setAttribute("aria-hidden", "true");
             }
 
+            function closeSilencedNotice() {
+                const overlay = document.getElementById("silencedOverlay");
+                if (!overlay) return;
+                overlay.classList.remove("active");
+                overlay.setAttribute("aria-hidden", "true");
+            }
+
+            function showSilencedNotice() {
+                const overlay = document.getElementById("silencedOverlay");
+                if (!overlay) return;
+                overlay.classList.add("active");
+                overlay.setAttribute("aria-hidden", "false");
+            }
+
             function showFoolReveal(isFoolPlayer) {
                 const overlay = document.getElementById("foolRevealOverlay");
                 const card = document.getElementById("foolRevealCard");
@@ -5242,11 +5343,11 @@
 
                 card.classList.toggle("winner", isFoolPlayer);
                 if (isFoolPlayer) {
-                    icon.textContent = "🏆";
-                    quote.textContent = "Vincere è essere migliore? o trovarsi tra i peggiori?";
+                    icon.textContent = "ðŸ†";
+                    quote.textContent = "Vincere Ã¨ essere migliore? o trovarsi tra i peggiori?";
                     punch.textContent = "";
                 } else {
-                    icon.textContent = "🦧";
+                    icon.textContent = "ðŸ¦§";
                     quote.textContent = "E coloro che vennero visti danzare furono giudicati pazzi da coloro che non potevano sentire la musica.";
                     punch.textContent = "Idiota!";
                 }
@@ -5310,11 +5411,11 @@
 
                 const remaining = dayTimerEndsAtMs - (Date.now() + dayTimerServerOffsetMs);
                 if (remaining <= 0) {
-                    badge.textContent = "🌙 Buonanotte...";
+                    badge.textContent = "ðŸŒ™ Buonanotte...";
                     return;
                 }
 
-                badge.textContent = `🌙 Buonanotte tra ${formatCountdown(remaining)}`;
+                badge.textContent = `ðŸŒ™ Buonanotte tra ${formatCountdown(remaining)}`;
                 badge.classList.add("active");
             }
 
@@ -5373,13 +5474,13 @@
                 if (btn) btn.textContent = "Chiudi";
 
                 if (winningFaction === "village" && isWolfSide) {
-                    icon.textContent = "🐺🌘";
-                    title.textContent = "La caccia è finita";
+                    icon.textContent = "ðŸºðŸŒ˜";
+                    title.textContent = "La caccia Ã¨ finita";
                     copy.textContent = "Il villaggio ha resistito. I lupi tornano nel bosco a pancia vuota.";
                 } else {
-                    icon.textContent = "🏡🌞🎉";
+                    icon.textContent = "ðŸ¡ðŸŒžðŸŽ‰";
                     title.textContent = "Congratulazioni!";
-                    copy.textContent = "Il villaggio è salvo dai lupi. Le campane suonano, almeno per stanotte.";
+                    copy.textContent = "Il villaggio Ã¨ salvo dai lupi. Le campane suonano, almeno per stanotte.";
                 }
 
                 overlay.classList.add("active");
@@ -5400,12 +5501,21 @@
                     prize?.classList.remove("active");
                     prize?.setAttribute("aria-hidden", "true");
                     if (btn) btn.textContent = "Scopri il tuo premio!";
+                } else if (winningFaction === "village" && isWolfSide) {
+                    if (card) card.dataset.prizeAvailable = "true";
+                    prize?.classList.remove("active");
+                    prize?.setAttribute("aria-hidden", "true");
+                    if (btn) btn.textContent = "Scopri cos hai perso!";
                 }
             };
 
             document.getElementById("foolRevealClose")?.addEventListener("click", closeFoolReveal);
             document.getElementById("foolRevealOverlay")?.addEventListener("click", e => {
                 if (e.target?.id === "foolRevealOverlay") closeFoolReveal();
+            });
+            document.getElementById("silencedClose")?.addEventListener("click", closeSilencedNotice);
+            document.getElementById("silencedOverlay")?.addEventListener("click", e => {
+                if (e.target?.id === "silencedOverlay") closeSilencedNotice();
             });
             document.getElementById("gameResultClose")?.addEventListener("click", () => {
                 const card = document.getElementById("gameResultCard");
@@ -5476,31 +5586,42 @@
 
             connection.on("VotingStarted", () => {
                 votingOpen = true;
-                logGame("🗳️ Votazioni aperte!");
+                logGame("ðŸ—³ï¸ Votazioni aperte!");
                 renderPlayers(currentPlayers);
-                if (isHost) renderHostTable(currentPlayers);   // <— aggiunto
+                if (isHost) renderHostTable(currentPlayers);   // <â€” aggiunto
                 applyRoleUI();
             });
 
             connection.on("VotingEnded", () => {
                 votingOpen = false;
                 myVote = null;
-                logGame("🛑 Votazioni chiuse!");
+                logGame("ðŸ›‘ Votazioni chiuse!");
                 renderPlayers(currentPlayers);
-                if (isHost) renderHostTable(currentPlayers);   // <— aggiunto
+                if (isHost) renderHostTable(currentPlayers);   // <â€” aggiunto
                 applyRoleUI();
             });
 
+
+            connection.on("PlayerSilenced", () => {
+                myVote = null;
+                showSilencedNotice();
+                renderPlayers(currentPlayers);
+            });
 
             connection.on("UpdateVotes", (players) => {
                 currentPlayers = players || [];
                 syncMyRoleFromPlayers();
                 if (myName) {
+                    const me = currentPlayers.find(p => (p.name ?? p.Name) === myName);
+                    if (me && !!(me.silenced ?? me.Silenced)) {
+                        myVote = null;
+                    } else {
                     let mine = null;
                     for (const p of currentPlayers) {
                         if (!p.eliminated && Array.isArray(p.votedBy) && p.votedBy.includes(myName)) { mine = p.name; break; }
                     }
                     myVote = mine;
+                    }
                 }
                 renderPlayers(currentPlayers);
                 if (isHost) renderHostTable(currentPlayers);
@@ -5508,7 +5629,7 @@
                 if (isHost && nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
             });
 
-            connection.on("PlayerKicked", (playerName) => { logLobby(`🚫 ${playerName} è stato espulso dall'host.`); });
+            connection.on("PlayerKicked", (playerName) => { logLobby(`ðŸš« ${playerName} Ã¨ stato espulso dall'host.`); });
 
             connection.on("GameResult", (winningFaction, players) => {
                 currentPlayers = players || currentPlayers || [];
@@ -5529,7 +5650,7 @@
                 updateEliminatedPlayerView();
                 if (isHost && nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
                 const phase = reason === "popolo" ? "di giorno" : "di notte";
-                logGame(`⚰️ ${playerName} è morto ${phase}.`);
+                logGame(`âš°ï¸ ${playerName} Ã¨ morto ${phase}.`);
 
                 const role = (eliminatedRole || player?.role || player?.Role || "").toLowerCase();
                 if (reason === "popolo" && role === "scemo" && !isHost) {
@@ -5544,24 +5665,24 @@
                 renderPlayers(currentPlayers);
                 updateEliminatedPlayerView();
                 if (isHost && nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
-                // logGame(`💚 ${playerName} è tornato in vita!`);
+                // logGame(`ðŸ’š ${playerName} Ã¨ tornato in vita!`);
             });
             // === NUOVI HANDLER: Coppia & Medium (registrati una sola volta) ===
             connection.on("CouplePaired", (partnerName, partnerRole) => {
                 const rn = roleNames[partnerRole] || partnerRole;
-                logGame(`💘 Sei in coppia con ${partnerName} (${rn}).`);
+                logGame(`ðŸ’˜ Sei in coppia con ${partnerName} (${rn}).`);
             });
             connection.on("CoupleSaved", (julietName, romeoName) => {
                 // Evento notturno privato: niente log pubblico per evitare spoiler.
             });
             connection.on("CoupleDied", (romeo, giulietta) => {
-                // Le morti arrivano già come PlayerEliminated senza rivelare la causa.
+                // Le morti arrivano giÃ  come PlayerEliminated senza rivelare la causa.
             });
             connection.on("CoupleSleepSet", (where) => {
                 // Scelta notturna privata: niente log pubblico.
             });
             connection.on("MediumReveal", (deadName, deadRole) => {
-                logGame(`🔮 [Medium] ${deadName} era ${roleNames[deadRole] || deadRole}.`);
+                logGame(`ðŸ”® [Medium] ${deadName} era ${roleNames[deadRole] || deadRole}.`);
             });
 
             connection.on("DayTimerUpdated", state => {
@@ -5602,7 +5723,7 @@
                 try { localStorage.removeItem("lupus_selectedRoles_" + (currentRoomId || "")); } catch { }
 
 
-                logLobby("🔄 La partita è stata riavviata, siete tornati in lobby.");
+                logLobby("ðŸ”„ La partita Ã¨ stata riavviata, siete tornati in lobby.");
                 renderRolesGuide("rolesGuideHost");
                 setRoomLabels();
                 refreshInviteUI(currentRoomId);
@@ -5637,11 +5758,11 @@
                 const empty = !selectedRoleCounts || Object.values(selectedRoleCounts).every(v => !v);
 
                 if (isHost) {
-                    // l’host ha sempre i controlli: assicuriamoci che non sia mai vuoto
+                    // lâ€™host ha sempre i controlli: assicuriamoci che non sia mai vuoto
                     if (empty) selectedRoleCounts = countsFromControls();
                     renderSelectedRolesSummary("rolesSummaryHost", selectedRoleCounts);
                 } else {
-                    // se per il player è ancora vuoto, mostra la guida completa invece di nulla
+                    // se per il player Ã¨ ancora vuoto, mostra la guida completa invece di nulla
                     if (empty) {
                         renderRolesGuide("rolesGuidePlayer");
                     } else {
@@ -5702,7 +5823,7 @@
                     localStorage.setItem("lupus_hostRoomId", id);
 
                     setRoomLabels();
-                    logLobby(`🎪 Stanza creata: ${currentRoomId}`);
+                    logLobby(`ðŸŽª Stanza creata: ${currentRoomId}`);
 
                     showScreen("screenLobby");
                     renderRolesGuide("rolesGuideHost");
@@ -5714,7 +5835,7 @@
                     await notifyJukeboxAudioReady();
                 } catch (err) {
                     console.error(err);
-                    logLobby("× Errore nella creazione della stanza");
+                    logLobby("Ã— Errore nella creazione della stanza");
                     alert("Errore nella creazione della stanza");
                 } finally {
                     creatingRoom = false;
@@ -5748,7 +5869,7 @@
                     const roomId = (document.getElementById("roomIdInput").value || "").trim();
                     if (!roomId) {
                         if (showAlerts) alert("Inserisci l'ID stanza");
-                        else if (!silent) logLobby("× ID stanza mancante.");
+                        else if (!silent) logLobby("Ã— ID stanza mancante.");
                         return false;
                     }
 
@@ -5760,11 +5881,11 @@
                     if (connection.state !== signalR.HubConnectionState.Connected) {
                         try {
                             await connection.start();
-                            if (!silent) logLobby("✅ Connesso al server");
+                            if (!silent) logLobby("âœ… Connesso al server");
                             updateConnectionUI();
                         } catch (e) {
                             console.error("Connessione fallita:", e);
-                            const msg = "× Non connesso al server.";
+                            const msg = "Ã— Non connesso al server.";
                             if (showAlerts) alert(msg); else if (!silent) logLobby(msg);
                             return false;
                         }
@@ -5781,8 +5902,8 @@
                     try { result = await connection.invoke("JoinRoom", roomId, name, hostKeyToSend); }
                     catch (err) {
                         console.error(err);
-                        if (showAlerts) alert("× Errore durante il join.");
-                        else if (!silent) logLobby("× Errore durante il join.");
+                        if (showAlerts) alert("Ã— Errore durante il join.");
+                        else if (!silent) logLobby("Ã— Errore durante il join.");
                         return false;
                     }
 
@@ -5793,7 +5914,7 @@
                             currentRoomId = null;
                             clearStoredAutoLoginRoom();
                         }
-                        if (showAlerts) alert(`× ${msg}`); else if (!silent) logLobby(`× ${msg}`);
+                        if (showAlerts) alert(`Ã— ${msg}`); else if (!silent) logLobby(`Ã— ${msg}`);
                         return false;
                     }
 
@@ -5816,7 +5937,7 @@
                         if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
                     }
 
-                    // === 🔑 NUOVO: se entri a partita iniziata, usa i conteggi che il server già invia
+                    // === ðŸ”‘ NUOVO: se entri a partita iniziata, usa i conteggi che il server giÃ  invia
                     if (result?.dayTimer) applyDayTimerState(result.dayTimer);
                     else applyDayTimerState({ minutes: dayTimerMinutes, endsAtMs: null, serverNowMs: Date.now() });
 
@@ -5862,7 +5983,7 @@
                     applyRoleUI();
                     ensureHostLobbyControls();
 
-                    // === 🧩 NUOVO: render immediato del riquadro "Ruoli in partita" anche per i player
+                    // === ðŸ§© NUOVO: render immediato del riquadro "Ruoli in partita" anche per i player
                     if (gameStarted) {
                         if (isHost) {
                             const counts = (selectedRoleCounts && !countsAreEmpty(selectedRoleCounts))
@@ -5891,12 +6012,12 @@
             }
 
             async function startGame() {
-                if (!isHost) { alert("× Solo l'host può avviare la partita!"); return; }
+                if (!isHost) { alert("Ã— Solo l'host puÃ² avviare la partita!"); return; }
 
                 const r = readRoleCounts();                 // { wolves, villagers, ..., couple, medium }
                 const slots = calcRoleSlots(r);             // <-- coppia conta 2
                 if (slots < currentPlayers.length) {
-                    alert("× Ruoli insufficienti!");
+                    alert("Ã— Ruoli insufficienti!");
                     return;
                 }
 
@@ -5909,12 +6030,12 @@
                         "StartGame",
                         currentRoomId,
                         r.wolves, r.villagers, r.seers, r.guards, r.scemo, r.hunter, r.witch, r.lara, r.mayor, r.hitman,
-                        (r.medium || 0), (r.couple || 0)
+                        (r.medium || 0), (r.couple || 0), (r.silencer || 0)
                     );
-                    logLobby("🚀 Partita avviata!");
+                    logLobby("ðŸš€ Partita avviata!");
                 } catch (err) {
                     console.error(err);
-                    logLobby("× Errore nell'avvio della partita");
+                    logLobby("Ã— Errore nell'avvio della partita");
                 }
             }
 
@@ -5940,14 +6061,14 @@
                 const fallbackCopy = () => {
                     try {
                         if (navigator.clipboard && window.isSecureContext) {
-                            navigator.clipboard.writeText(url).then(() => alert('📋 Link copiato!'));
+                            navigator.clipboard.writeText(url).then(() => alert('ðŸ“‹ Link copiato!'));
                         } else {
                             const ta = document.createElement('textarea');
                             ta.value = url; ta.setAttribute('readonly', '');
                             ta.style.position = 'fixed'; ta.style.top = '-9999px';
                             document.body.appendChild(ta); ta.select();
                             document.execCommand('copy'); ta.remove();
-                            alert('📋 Link copiato!');
+                            alert('ðŸ“‹ Link copiato!');
                         }
                     } catch {
                         alert('Copia questo link:\n' + url);
@@ -5958,7 +6079,7 @@
                     // chiamata sincrona (necessaria su iOS)
                     navigator.share({ title: 'Lupus in Fabula', text: 'Entra nella mia stanza!', url })
                         .catch(err => {
-                            // se l’utente annulla non disturbiamo; altri errori → copia
+                            // se lâ€™utente annulla non disturbiamo; altri errori â†’ copia
                             if (!err || (err.name !== 'AbortError' && err.name !== 'NotAllowedError')) fallbackCopy();
                         });
                 } else {
@@ -5996,7 +6117,7 @@
                         try { await connection.invoke("ResurrectPlayer", currentRoomId, playerName); }
                         catch (_) { await connection.invoke("UneliminatePlayer", currentRoomId, playerName); }
                     }
-                    logGame(`💚 ${playerName} è stato resuscitato!`);
+                    logGame(`ðŸ’š ${playerName} Ã¨ stato resuscitato!`);
                 } catch (err) {
                     console.error("Revive fallito:", err);
                     alert("Errore durante il ripristino del giocatore");
@@ -6009,7 +6130,7 @@
                 if (!confirm(`Vuoi espellere ${playerName} dalla stanza?`)) return;
                 try {
                     await connection.invoke("KickPlayer", currentRoomId, playerName);
-                    logLobby(`🚫 Hai espulso ${playerName}`);
+                    logLobby(`ðŸš« Hai espulso ${playerName}`);
                 } catch (err) { console.error(err); alert("Errore durante l'espulsione"); }
             }
 
@@ -6017,14 +6138,14 @@
             function copyInvite() {
                 const input = document.getElementById('inviteLink'); if (!input) return;
                 if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(input.value).then(() => alert('📋 Link copiato!')).catch(() => fallbackCopy(input));
+                    navigator.clipboard.writeText(input.value).then(() => alert('ðŸ“‹ Link copiato!')).catch(() => fallbackCopy(input));
                 } else fallbackCopy(input);
             }
             function fallbackCopy(input) {
                 const tmp = document.createElement('textarea'); tmp.value = input.value; tmp.style.position = 'absolute'; tmp.style.left = '-9999px';
                 document.body.appendChild(tmp); tmp.select();
-                try { const ok = document.execCommand('copy'); alert(ok ? '📋 Link copiato!' : '⚠️ Copia manuale'); }
-                catch { alert('⚠️ Copia manuale'); }
+                try { const ok = document.execCommand('copy'); alert(ok ? 'ðŸ“‹ Link copiato!' : 'âš ï¸ Copia manuale'); }
+                catch { alert('âš ï¸ Copia manuale'); }
                 document.body.removeChild(tmp);
             }
 
@@ -6075,7 +6196,7 @@
                 cleanNameInput();
                 if (roomIdFromLink) {
                     roomInput.value = roomIdFromLink;
-                    logLobby(`🔗 Sei stato invitato alla stanza: ${roomIdFromLink}`);
+                    logLobby(`ðŸ”— Sei stato invitato alla stanza: ${roomIdFromLink}`);
                 } else if (forcedRoom || ridLS) {
                     roomInput.value = forcedRoom || ridLS;
                 }
@@ -6269,7 +6390,7 @@
                     text.textContent = 'Rilascia per aggiornare';
                 } else if (pull < THRESHOLD && armed) {
                     armed = false; setState('pulling');
-                    text.textContent = 'Trascina per aggiornare…';
+                    text.textContent = 'Trascina per aggiornareâ€¦';
                 }
             }
 
@@ -6280,10 +6401,10 @@
                 if (armed) {
                     setState('refreshing');
                     ptr.style.height = THRESHOLD + 'px';
-                    text.textContent = 'Aggiorno…';
+                    text.textContent = 'Aggiornoâ€¦';
                     const resetPull = () => {
                         ptr.style.height = '0px';
-                        text.textContent = 'Trascina per aggiornare…';
+                        text.textContent = 'Trascina per aggiornareâ€¦';
                         setState('');
                     };
                     try {
@@ -6320,7 +6441,7 @@
                 }
 
                 ptr.style.height = '0px';
-                text.textContent = 'Trascina per aggiornare…';
+                text.textContent = 'Trascina per aggiornareâ€¦';
                 setState('');
             }
 

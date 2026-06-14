@@ -9,7 +9,8 @@ namespace LupusInTabula.Models
         int Votes,
         bool Eliminated,
         string? CurrentVote,
-        List<string> VotedBy
+        List<string> VotedBy,
+        bool Silenced
     );
 
     public class Player
@@ -19,6 +20,7 @@ namespace LupusInTabula.Models
         public bool IsOnline { get; set; } = true;
         public string Role { get; set; } = "";
         public bool Eliminated { get; set; } = false;
+        public bool SilencedToday { get; set; } = false;
         public string? CurrentVote { get; set; }
     }
 }

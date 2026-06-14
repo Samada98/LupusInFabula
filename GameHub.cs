@@ -386,6 +386,7 @@ namespace LupusInTabula.Hubs
                 p.Role = "";
                 p.CurrentVote = null;
                 p.Eliminated = false;
+                p.SilencedToday = false;
             }
 
             // reset Coppia
@@ -394,6 +395,8 @@ namespace LupusInTabula.Hubs
             room.CoupleSleepAt = "romeo";
             room.WitchSavePotionUsed = false;
             room.WitchKillPotionUsed = false;
+            room.NightSilencerTarget = null;
+            room.NightSilencerChoiceDone = false;
 
             await Clients.Group(room.Id).SendAsync("GameRestarted", ToLobbyPlayers(room), room.HostName);
             await BroadcastLobbyAndVotes(room);
@@ -402,7 +405,7 @@ namespace LupusInTabula.Hubs
         public async Task StartGame(
             string roomId,
             int wolves, int villagers, int seers, int guards, int scemo, int hunter, int witch, int lara, int mayor, int hitman,
-            int medium, int couple)
+            int medium, int couple, int silencer = 0)
         {
             if (MaintenanceMode) return;
             if (!Rooms.TryGetValue(roomId, out var room)) return;
@@ -419,15 +422,18 @@ namespace LupusInTabula.Hubs
                 p.Role = "";
                 p.CurrentVote = null;
                 p.Eliminated = false;
+                p.SilencedToday = false;
             }
             room.CoupleRomeoName = null;
             room.CoupleJulietName = null;
             room.CoupleSleepAt = "romeo";
             room.WitchSavePotionUsed = false;
             room.WitchKillPotionUsed = false;
+            room.NightSilencerTarget = null;
+            room.NightSilencerChoiceDone = false;
 
             // 1) Costruisci deck ruoli
-            var roleCounts = BuildRoleCounts(wolves, villagers, seers, guards, scemo, hunter, witch, lara, mayor, hitman, medium, couple);
+            var roleCounts = BuildRoleCounts(wolves, villagers, seers, guards, scemo, hunter, witch, lara, mayor, hitman, medium, couple, silencer);
             var roles = BuildRoleDeck(roleCounts);
 
             // 2) Candidati: tutti i vivi
@@ -505,7 +511,7 @@ namespace LupusInTabula.Hubs
             if (!room.VotingOpen) return;
 
             var voter = room.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
-            if (voter == null || voter.Eliminated) return;
+            if (voter == null || voter.Eliminated || voter.SilencedToday) return;
 
             voter.CurrentVote = string.IsNullOrWhiteSpace(targetName) ? null : targetName;
             await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
@@ -677,6 +683,15 @@ namespace LupusInTabula.Hubs
                 return state;
             }
 
+            if (choiceType == "silencer")
+            {
+                room.NightSilencerTarget = target.Name;
+                room.NightSilencerChoiceDone = true;
+                var state = BuildNightState(room);
+                await Clients.Caller.SendAsync("NightChoiceUpdated", state);
+                return state;
+            }
+
             if (choiceType == "seer")
             {
                 var result = new
@@ -760,6 +775,27 @@ namespace LupusInTabula.Hubs
                     room.WitchKillPotionUsed = true;
                     await EliminatePlayerCore(room, poisonTarget, "notte");
                     messages.Add($"{poisonTarget.Name} è morto durante la notte.");
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(room.NightSilencerTarget))
+            {
+                var silencer = room.Players.FirstOrDefault(p => Same(p.Role, "silencer") && !p.Eliminated);
+                var silencedTarget = room.Players.FirstOrDefault(p => Same(p.Name, room.NightSilencerTarget) && !p.Eliminated);
+                if (silencer != null && silencedTarget != null)
+                {
+                    if (Same(silencedTarget.Role, "guard"))
+                    {
+                        await EliminatePlayerCore(room, silencer, "notte");
+                        messages.Add($"{silencer.Name} è morto durante la notte.");
+                    }
+                    else
+                    {
+                        silencedTarget.SilencedToday = true;
+                        silencedTarget.CurrentVote = null;
+                        if (!string.IsNullOrWhiteSpace(silencedTarget.ConnectionId))
+                            await Clients.Client(silencedTarget.ConnectionId!).SendAsync("PlayerSilenced");
+                    }
                 }
             }
 
@@ -1043,7 +1079,7 @@ namespace LupusInTabula.Hubs
         }
 
         private static IDictionary<string, int> BuildRoleCounts(
-            int wolves, int villagers, int seers, int guards, int scemo, int hunter, int witch, int lara, int mayor, int hitman, int medium, int couple)
+            int wolves, int villagers, int seers, int guards, int scemo, int hunter, int witch, int lara, int mayor, int hitman, int medium, int couple, int silencer)
         {
             return new Dictionary<string, int>
             {
@@ -1058,7 +1094,8 @@ namespace LupusInTabula.Hubs
                 ["mayor"] = mayor,
                 ["hitman"] = hitman,
                 ["medium"] = medium,
-                ["couple"] = couple // n° coppie (il client mostra ×2 persone)
+                ["couple"] = couple, // n° coppie (il client mostra ×2 persone)
+                ["silencer"] = silencer
             };
         }
 
@@ -1077,6 +1114,7 @@ namespace LupusInTabula.Hubs
             roles.AddRange(Enumerable.Repeat("mayor", rc.GetValueOrDefault("mayor")));
             roles.AddRange(Enumerable.Repeat("hitman", rc.GetValueOrDefault("hitman")));
             roles.AddRange(Enumerable.Repeat("medium", rc.GetValueOrDefault("medium")));
+            roles.AddRange(Enumerable.Repeat("silencer", rc.GetValueOrDefault("silencer")));
 
             // Ogni “coppia” = 1 romeo + 1 giulietta, cap a 2
             var couplesToMake = Math.Max(0, Math.Min(rc.GetValueOrDefault("couple"), 2));
@@ -1164,7 +1202,7 @@ namespace LupusInTabula.Hubs
             var voteCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             var voteDetails = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var voter in room.Players.Where(p => !p.Eliminated && !string.IsNullOrEmpty(p.CurrentVote)))
+            foreach (var voter in room.Players.Where(p => !p.Eliminated && !p.SilencedToday && !string.IsNullOrEmpty(p.CurrentVote)))
             {
                 var target = voter.CurrentVote!;
                 var isMayor = Same(voter.Role, "mayor");
@@ -1185,7 +1223,8 @@ namespace LupusInTabula.Hubs
                     Votes: voteCounts.TryGetValue(p.Name, out var c) ? c : 0,
                     Eliminated: p.Eliminated,
                     CurrentVote: p.CurrentVote,
-                    VotedBy: voteDetails.TryGetValue(p.Name, out var list) ? list : new List<string>()
+                    VotedBy: voteDetails.TryGetValue(p.Name, out var list) ? list : new List<string>(),
+                    Silenced: p.SilencedToday
                 ))
                 .ToList();
         }
@@ -1206,6 +1245,8 @@ namespace LupusInTabula.Hubs
             protectChoiceDone = room.NightProtectChoiceDone,
             witchChoiceDone = room.NightWitchChoiceDone,
             seerChoiceDone = room.NightSeerChoiceDone,
+            silencerChoiceDone = room.NightSilencerChoiceDone,
+            silencerTarget = room.NightSilencerTarget,
             ready = NightReady(room),
             romeoName = room.CoupleRomeoName,
             julietName = room.CoupleJulietName
@@ -1241,13 +1282,19 @@ namespace LupusInTabula.Hubs
             room.NightProtectedTarget = null;
             room.NightWitchSave = false;
             room.NightWitchKillTarget = null;
+            room.NightSilencerTarget = null;
             room.NightCoupleChoiceDone = false;
             room.NightWolfChoiceDone = false;
             room.NightProtectChoiceDone = false;
             room.NightWitchChoiceDone = false;
             room.NightSeerChoiceDone = false;
+            room.NightSilencerChoiceDone = false;
             room.VotingOpen = false;
-            foreach (var p in room.Players) p.CurrentVote = null;
+            foreach (var p in room.Players)
+            {
+                p.CurrentVote = null;
+                p.SilencedToday = false;
+            }
 
             var state = BuildNightState(room);
             await hubContext.Clients.Group(room.Id).SendAsync("NightStarted", state);
@@ -1298,11 +1345,13 @@ namespace LupusInTabula.Hubs
             room.NightProtectedTarget = null;
             room.NightWitchSave = false;
             room.NightWitchKillTarget = null;
+            room.NightSilencerTarget = null;
             room.NightCoupleChoiceDone = false;
             room.NightWolfChoiceDone = false;
             room.NightProtectChoiceDone = false;
             room.NightWitchChoiceDone = false;
             room.NightSeerChoiceDone = false;
+            room.NightSilencerChoiceDone = false;
         }
 
         private static bool NightReady(GameRoom room)
@@ -1314,6 +1363,7 @@ namespace LupusInTabula.Hubs
                 && !(room.WitchSavePotionUsed && room.WitchKillPotionUsed)
                 && !room.NightWitchChoiceDone) return false;
             if (HasActiveRole(room, "seer") && !room.NightSeerChoiceDone) return false;
+            if (HasActiveRole(room, "silencer") && !room.NightSilencerChoiceDone) return false;
 
             var hasCouple = HasActiveRole(room, "romeo") && HasActiveRole(room, "giulietta");
             if (hasCouple && !room.NightCoupleChoiceDone) return false;
