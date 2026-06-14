@@ -13,7 +13,10 @@ namespace LupusInTabula.Models
         public List<Player> Players { get; } = new();
 
         public bool GameStarted { get; set; } = false;
+        public bool GameEnded { get; set; } = false;
         public bool VotingOpen { get; set; } = false;
+        public int DayTimerMinutes { get; set; } = 0;
+        public long? DayTimerEndsAtMs { get; set; }
         public bool NightInProgress { get; set; } = false;
         public int NightNumber { get; set; } = 0;
         public string? NightWolfTarget { get; set; }
