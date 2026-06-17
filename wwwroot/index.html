@@ -1335,6 +1335,100 @@
             color: #d1d5db;
         }
 
+        .jukebox-ready-panel {
+            display: none;
+            margin: 0 0 14px;
+            padding: 12px;
+            border: 1px solid rgba(96,165,250,.28);
+            border-radius: 16px;
+            background: rgba(15,23,42,.72);
+            text-align: left;
+        }
+
+        .jukebox-ready-panel.is-visible {
+            display: block;
+        }
+
+        .jukebox-ready-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 9px;
+        }
+
+        .jukebox-ready-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #eff6ff;
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .jukebox-ready-count {
+            flex: 0 0 auto;
+            padding: 5px 9px;
+            border-radius: 999px;
+            color: #052e16;
+            background: #86efac;
+            font-size: 12px;
+            font-weight: 950;
+        }
+
+        .jukebox-ready-list {
+            display: grid;
+            gap: 7px;
+        }
+
+        .jukebox-ready-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 8px;
+            min-height: 32px;
+            padding: 7px 8px;
+            border-radius: 12px;
+            background: rgba(255,255,255,.06);
+            color: #e5e7eb;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .jukebox-ready-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245,158,11,.16);
+        }
+
+        .jukebox-ready-row.ready .jukebox-ready-dot {
+            background: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34,197,94,.16);
+        }
+
+        .jukebox-ready-row.offline .jukebox-ready-dot {
+            background: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239,68,68,.16);
+        }
+
+        .jukebox-ready-label {
+            color: #cbd5e1;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .02em;
+        }
+
+        .jukebox-ready-note {
+            margin: 8px 0 0;
+            color: #9ca3af;
+            font-size: 11.5px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
         .jukebox-back-btn {
             width: 100%;
             margin-top: 12px;
@@ -2639,6 +2733,14 @@
                     <button id="jukeboxHostAudioToggle" class="jukebox-host-audio-toggle" type="button" title="Include o esclude l'host dai suoni random della notte">
                         🔊 Host nei random
                     </button>
+                    <section id="jukeboxReadyPanel" class="jukebox-ready-panel" aria-live="polite">
+                        <div class="jukebox-ready-head">
+                            <div class="jukebox-ready-title"><span aria-hidden="true">&#x1F3A7;</span> Stato dispositivi</div>
+                            <div id="jukeboxReadyCount" class="jukebox-ready-count">0/0 pronti</div>
+                        </div>
+                        <div id="jukeboxReadyList" class="jukebox-ready-list"></div>
+                        <p id="jukeboxReadyNote" class="jukebox-ready-note">Le tracce manuali partono sui dispositivi pronti. Chi non e pronto deve abilitare l'audio.</p>
+                    </section>
                     <div id="jukeboxMainView" class="jukebox-view active">
                         <p class="jukebox-subtitle">Scegli una traccia o avvia la scena Notte.</p>
                         <div class="jukebox-grid">
@@ -3160,6 +3262,10 @@
             const jukeboxMainView = document.getElementById("jukeboxMainView");
             const jukeboxNightView = document.getElementById("jukeboxNightView");
             const jukeboxHostAudioToggle = document.getElementById("jukeboxHostAudioToggle");
+            const jukeboxReadyPanel = document.getElementById("jukeboxReadyPanel");
+            const jukeboxReadyCount = document.getElementById("jukeboxReadyCount");
+            const jukeboxReadyList = document.getElementById("jukeboxReadyList");
+            const jukeboxReadyNote = document.getElementById("jukeboxReadyNote");
             let jukeboxView = "main";
             let hostRandomAudioEnabled = localStorage.getItem("lupus_hostRandomAudioEnabled") !== "false";
             const jukeboxAudios = new Map();
@@ -3300,6 +3406,7 @@
                             jukeboxAudios.delete(key);
                             audioUnlocked = false;
                             localStorage.removeItem("lupus_audioUnlocked");
+                            notifyJukeboxAudioNotReady();
                             showAudioPermissionIfNeeded();
                         });
                 }
@@ -3310,6 +3417,58 @@
                 jukeboxMainView?.classList.toggle("active", view === "main");
                 jukeboxNightView?.classList.toggle("active", view === "night");
                 if (jukeboxTitle) jukeboxTitle.textContent = view === "night" ? "🌙 Notte" : "🎵 JukeBox";
+            }
+
+            function renderJukeboxStatus(state) {
+                if (!jukeboxReadyPanel || !jukeboxReadyCount || !jukeboxReadyList) return;
+                jukeboxReadyPanel.classList.toggle("is-visible", !!isHost);
+                if (!isHost) return;
+
+                const devices = Array.isArray(state?.devices) ? state.devices : [];
+                const ready = Number(state?.ready || 0);
+                const total = Number(state?.total || devices.length || 0);
+                const online = Number(state?.online || 0);
+                jukeboxReadyCount.textContent = `${ready}/${total} pronti`;
+                jukeboxReadyList.innerHTML = "";
+
+                if (!devices.length) {
+                    const empty = document.createElement("div");
+                    empty.className = "jukebox-ready-row offline";
+                    empty.innerHTML = `<span class="jukebox-ready-dot"></span><span>Nessun dispositivo collegato</span><span class="jukebox-ready-label">offline</span>`;
+                    jukeboxReadyList.appendChild(empty);
+                    return;
+                }
+
+                devices.forEach(device => {
+                    const row = document.createElement("div");
+                    const isOnline = !!(device.online ?? device.Online);
+                    const isReady = !!(device.ready ?? device.Ready);
+                    const kind = (device.kind ?? device.Kind ?? "player").toString();
+                    const randomEnabled = !!(device.randomEnabled ?? device.RandomEnabled ?? true);
+                    row.className = "jukebox-ready-row" + (isReady ? " ready" : "") + (!isOnline ? " offline" : "");
+
+                    const dot = document.createElement("span");
+                    dot.className = "jukebox-ready-dot";
+
+                    const name = document.createElement("span");
+                    const labelName = device.name ?? device.Name ?? "?";
+                    name.textContent = kind === "host" ? `${labelName} (host)` : labelName;
+
+                    const label = document.createElement("span");
+                    label.className = "jukebox-ready-label";
+                    if (!isOnline) label.textContent = "offline";
+                    else if (isReady) label.textContent = kind === "host" && !randomEnabled ? "pronto manuale" : "pronto";
+                    else label.textContent = "abilita audio";
+
+                    row.append(dot, name, label);
+                    jukeboxReadyList.appendChild(row);
+                });
+
+                if (jukeboxReadyNote) {
+                    jukeboxReadyNote.textContent = ready === total && total > 0
+                        ? "Tutti i dispositivi sono pronti per le tracce manuali sincronizzate."
+                        : `${online}/${total} online. Chi non e pronto deve premere il popup audio.`;
+                }
             }
 
             function renderHostRandomAudioToggle() {
@@ -3355,7 +3514,11 @@
             function openJukebox() {
                 renderJukeboxView();
                 renderHostRandomAudioToggle();
+                jukeboxReadyPanel?.classList.toggle("is-visible", !!isHost);
                 if (jbOverlay) jbOverlay.style.display = "flex";
+                if (isHost && currentRoomId && connection?.state === signalR.HubConnectionState.Connected) {
+                    connection.invoke("RequestJukeboxStatus", currentRoomId).catch(() => { });
+                }
             }
 
             function closeJukebox() {
@@ -3487,6 +3650,9 @@
                 hostRandomAudioEnabled = !!enabled;
                 localStorage.setItem("lupus_hostRandomAudioEnabled", String(hostRandomAudioEnabled));
                 renderHostRandomAudioToggle();
+            });
+            connection.on("JukeboxStatusUpdated", state => {
+                renderJukeboxStatus(state);
             });
 
             connection.on("MaintenanceChanged", enabled => {
@@ -4329,14 +4495,17 @@ function updateNightButtonState() {
                 const subtitle = document.querySelector("#audioPermission .audio-copy span");
                 let done = 0;
                 const total = jukeboxTracksToPreload.length;
+                let allOk = true;
 
                 for (const track of jukeboxTracksToPreload) {
                     if (subtitle) subtitle.textContent = `Preparo le tracce... ${done + 1}/${total}`;
-                    await preloadOneJukeboxTrack(track);
+                    const ok = await preloadOneJukeboxTrack(track);
+                    if (!ok) allOk = false;
                     done++;
                 }
 
-                if (subtitle) subtitle.textContent = "Audio pronto. Buona partita!";
+                if (subtitle) subtitle.textContent = allOk ? "Audio pronto. Buona partita!" : "Audio quasi pronto. Riprova se non senti una traccia.";
+                return allOk;
             }
 
             function withAudioTimeout(promise, ms, fallback = false) {
@@ -4353,11 +4522,27 @@ function updateNightButtonState() {
                 if (!audioUnlocked || !currentRoomId || !connection) return;
                 try {
                     if (connection.state === signalR.HubConnectionState.Connected) {
+                        const preloaded = await withAudioTimeout(preloadJukeboxTracks(), 4500, false);
+                        if (!preloaded) {
+                            await notifyJukeboxAudioNotReady();
+                            return;
+                        }
                         await syncJukeboxClock(true);
                         await connection.invoke("JukeboxAudioReady", currentRoomId);
                     }
                 } catch (err) {
                     console.warn("Registrazione audio JukeBox fallita:", err);
+                }
+            }
+
+            async function notifyJukeboxAudioNotReady() {
+                if (!currentRoomId || !connection) return;
+                try {
+                    if (connection.state === signalR.HubConnectionState.Connected) {
+                        await connection.invoke("JukeboxAudioNotReady", currentRoomId);
+                    }
+                } catch (err) {
+                    console.warn("Reset stato audio JukeBox fallito:", err);
                 }
             }
 
@@ -4401,6 +4586,7 @@ function updateNightButtonState() {
                     console.error("Audio non abilitato:", err);
                     audioUnlocked = false;
                     localStorage.removeItem("lupus_audioUnlocked");
+                    await notifyJukeboxAudioNotReady();
                     alert("Non riesco ad abilitare l'audio su questo dispositivo. Riprova con un tap sul pulsante.");
                 } finally {
                     audioUnlockInProgress = false;
@@ -4627,6 +4813,7 @@ function showScreen(id) {
                 }
                 const nbtn = document.getElementById("nightBtn");
                 if (nbtn) nbtn.disabled = !(isHost && gameStarted);
+                jukeboxReadyPanel?.classList.toggle("is-visible", !!isHost);
             }
 
             function ensureHostLobbyControls() {

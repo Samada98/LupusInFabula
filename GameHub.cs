@@ -56,6 +56,7 @@ namespace LupusInTabula.Hubs
                 }
 
                 await BroadcastLobbyAndVotes(room);
+                await SendJukeboxStatusToHost(room);
             }
 
             await base.OnDisconnectedAsync(exception);
@@ -347,6 +348,7 @@ namespace LupusInTabula.Hubs
                 RemoveAudioReady(roomId, Context.ConnectionId);
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
                 await BroadcastLobbyAndVotes(room);
+                await SendJukeboxStatusToHost(room);
                 return;
             }
 
@@ -362,6 +364,7 @@ namespace LupusInTabula.Hubs
             RemoveAudioReady(roomId, Context.ConnectionId);
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
             await BroadcastLobbyAndVotes(room);
+            await SendJukeboxStatusToHost(room);
         }
 
         // =========================================================
@@ -900,18 +903,41 @@ namespace LupusInTabula.Hubs
             await Clients.Group(room.Id).SendAsync("JukeboxStop");
         }
 
-        public Task JukeboxAudioReady(string roomId)
+        public async Task JukeboxAudioReady(string roomId)
         {
-            if (MaintenanceMode) return Task.CompletedTask;
-            if (!Rooms.TryGetValue(roomId, out var room)) return Task.CompletedTask;
+            if (MaintenanceMode) return;
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
 
             var connId = Context.ConnectionId;
             var isHost = SameConn(room.HostConnectionId, connId);
             var isPlayer = room.Players.Any(p => SameConn(p.ConnectionId, connId));
-            if (!isHost && !isPlayer) return Task.CompletedTask;
+            if (!isHost && !isPlayer) return;
 
             AudioReady.GetOrAdd(room.Id, _ => new ConcurrentDictionary<string, byte>())[connId] = 1;
-            return Task.CompletedTask;
+            await SendJukeboxStatusToHost(room);
+        }
+
+        public async Task JukeboxAudioNotReady(string roomId)
+        {
+            if (MaintenanceMode) return;
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
+
+            var connId = Context.ConnectionId;
+            var isHost = SameConn(room.HostConnectionId, connId);
+            var isPlayer = room.Players.Any(p => SameConn(p.ConnectionId, connId));
+            if (!isHost && !isPlayer) return;
+
+            RemoveAudioReady(room.Id, connId);
+            await SendJukeboxStatusToHost(room);
+        }
+
+        public async Task RequestJukeboxStatus(string roomId)
+        {
+            if (MaintenanceMode) return;
+            if (!Rooms.TryGetValue(roomId, out var room)) return;
+            if (!SameConn(room.HostConnectionId, Context.ConnectionId)) return;
+
+            await SendJukeboxStatusToHost(room);
         }
 
         public async Task JukeboxSetHostRandomAudio(string roomId, bool enabled)
@@ -922,6 +948,7 @@ namespace LupusInTabula.Hubs
 
             room.HostAvailableForJukeboxRandom = enabled;
             await Clients.Caller.SendAsync("JukeboxHostRandomAudioChanged", enabled);
+            await SendJukeboxStatusToHost(room);
         }
 
         public async Task JukeboxStartNight(string roomId)
@@ -1049,6 +1076,65 @@ namespace LupusInTabula.Hubs
             var targets = ready.Keys.Where(validConnections.Contains).ToList();
 
             return targets.Count == 0 ? null : targets[RandomNumberGenerator.GetInt32(targets.Count)];
+        }
+
+        private object BuildJukeboxStatus(GameRoom room)
+        {
+            AudioReady.TryGetValue(room.Id, out var ready);
+            ready ??= new ConcurrentDictionary<string, byte>();
+
+            var devices = new List<object>();
+            var readyCount = 0;
+            var onlineCount = 0;
+
+            var hostOnline = IsHostOnline(room);
+            var hostReady = hostOnline
+                && !string.IsNullOrEmpty(room.HostConnectionId)
+                && ready.ContainsKey(room.HostConnectionId);
+            if (hostOnline) onlineCount++;
+            if (hostReady) readyCount++;
+
+            devices.Add(new
+            {
+                name = room.HostName,
+                kind = "host",
+                online = hostOnline,
+                ready = hostReady,
+                randomEnabled = room.HostAvailableForJukeboxRandom
+            });
+
+            foreach (var p in room.Players.OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                var online = p.IsOnline && !string.IsNullOrEmpty(p.ConnectionId);
+                var isReady = online && ready.ContainsKey(p.ConnectionId!);
+                if (online) onlineCount++;
+                if (isReady) readyCount++;
+                devices.Add(new
+                {
+                    name = p.Name,
+                    kind = "player",
+                    online,
+                    ready = isReady,
+                    randomEnabled = true
+                });
+            }
+
+            return new
+            {
+                ready = readyCount,
+                online = onlineCount,
+                total = devices.Count,
+                hostRandomEnabled = room.HostAvailableForJukeboxRandom,
+                devices
+            };
+        }
+
+        private async Task SendJukeboxStatusToHost(GameRoom room)
+        {
+            if (string.IsNullOrEmpty(room.HostConnectionId)) return;
+            if (!ConnIndex.ContainsKey(room.HostConnectionId)) return;
+
+            await Clients.Client(room.HostConnectionId).SendAsync("JukeboxStatusUpdated", BuildJukeboxStatus(room));
         }
 
         private static List<object> ToLobbyPlayers(GameRoom room) =>
@@ -1502,6 +1588,7 @@ namespace LupusInTabula.Hubs
             );
 
             await Clients.Group(room.Id).SendAsync("UpdateVotes", MapPlayers(room));
+            await SendJukeboxStatusToHost(room);
         }
 
         private async Task RevealToMediums(GameRoom room, Player dead)
