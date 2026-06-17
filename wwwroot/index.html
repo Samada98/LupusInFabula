@@ -13,7 +13,7 @@
          ICONS / MANIFEST
     ========================================================== -->
     <link rel="icon"
-          href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="24" ry="24" fill="%238b0000"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" font-size="88">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½</text></svg>'>
+          href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="24" ry="24" fill="%238b0000"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" font-size="88">🐺</text></svg>'>
     <link rel="apple-touch-icon" href="/icons/wolf-180.png" sizes="180x180">
     <link rel="icon" href="/icons/wolf-192.png" type="image/png" sizes="192x192">
     <link rel="manifest" href="/site.webmanifest">
@@ -42,7 +42,7 @@
             s.onload = callback;
             s.onerror = () => {
                 console.error('Impossibile caricare SignalR (CDN e locale).');
-                alert('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½sÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Errore nel caricare la libreria SignalR.');
+                alert('⚠️ Errore nel caricare la libreria SignalR.');
             };
             document.head.appendChild(s);
         }
@@ -827,7 +827,7 @@
                 text-align: left;
             }
         }
-        /* ellissi elegante se il testo ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ lungo */
+        /* ellissi elegante se il testo è lungo */
         #playersTable td.nowrap, #playersTable th.nowrap {
             white-space: nowrap;
             overflow: hidden;
@@ -1212,7 +1212,7 @@
             display: block;
         }
 
-                    <div class="eliminated-decor">&#x26B0;&#xFE0F;&#x1F490;</div>
+        .eliminated-decor {
             font-size: 42px;
             line-height: 1;
             margin-bottom: 8px;
@@ -1265,7 +1265,7 @@
         #jukeboxContent {
             margin-top: 16px;
             margin-bottom: 24px;
-            min-height: 200px; /* cosÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ sembra un contenitore vuoto pronto */
+            min-height: 200px; /* così sembra un contenitore vuoto pronto */
         }
 
         .jukebox-grid {
@@ -1593,7 +1593,7 @@
             background: #374151;
         }
 
-                <div class="night-sleep-icon">&#x1F319;</div>
+        .night-sleep-icon {
             font-size: 54px;
             margin-bottom: 10px;
         }
@@ -2098,7 +2098,7 @@
             animation: floatIn .22s ease both;
         }
 
-                    <div class="game-result-prize-icon" aria-hidden="true">&#x1F44C;</div>
+        .game-result-prize-icon {
             font-size: 92px;
             line-height: 1;
             filter: drop-shadow(0 10px 18px rgba(0,0,0,.18));
@@ -2118,56 +2118,6 @@
             min-height: 48px;
             border-radius: 16px;
             color: #052e16;
-            background: linear-gradient(180deg, #facc15, #eab308);
-            font-weight: 950;
-        }
-
-        .silenced-overlay {
-            position: fixed;
-            inset: 0;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 18px;
-            background: rgba(17, 24, 39, .56);
-            backdrop-filter: blur(4px);
-            z-index: 146;
-        }
-
-        .silenced-overlay.active {
-            display: flex;
-        }
-
-        .silenced-card {
-            width: min(90vw, 390px);
-            padding: 24px 20px 20px;
-            border-radius: 24px;
-            text-align: center;
-            color: #f8fafc;
-            background: linear-gradient(180deg, #1f2937, #0f172a);
-            border: 2px solid rgba(148, 163, 184, .62);
-            box-shadow: 0 24px 68px rgba(0,0,0,.42);
-        }
-
-        .silenced-icon {
-            font-size: 82px;
-            line-height: 1;
-            margin-bottom: 12px;
-        }
-
-        .silenced-card p {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 900;
-            line-height: 1.25;
-        }
-
-        .silenced-close {
-            margin-top: 18px;
-            width: 100%;
-            min-height: 46px;
-            border-radius: 16px;
-            color: #111827;
             background: linear-gradient(180deg, #facc15, #eab308);
             font-weight: 950;
         }
@@ -2467,9 +2417,9 @@
             <div class="maintenance-house" style="transform:scale(1.08); margin-top:-6px"></div>
         </div>
         <main class="maintenance-card">
-            <button id="maintenanceMoon" class="maintenance-moon" type="button" aria-label="Sblocco nascosto">&#x1F319;</button>
+            <button id="maintenanceMoon" class="maintenance-moon" type="button" aria-label="Sblocco nascosto">🌙</button>
             <h1 id="maintenanceTitle">Il villaggio dorme</h1>
-            <p>Il server ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ spento. Per giocare chiedi a Mark.</p>
+            <p>Il server è spento. Per giocare chiedi a Mark.</p>
             <div id="maintenanceStatus" class="maintenance-status">Accesso al gioco momentaneamente chiuso</div>
             <div class="maintenance-code" aria-label="Sblocco nascosto">
                 <input id="maintenanceCode" inputmode="numeric" autocomplete="off" placeholder="codice segreto">
@@ -2481,14 +2431,14 @@
 
     <div id="audioPermission" class="audio-permission" role="status" aria-live="polite">
         <div class="audio-copy">
-            <strong>Accetta sti biscotti! &#x1F36A;</strong>
+            <strong>Accetta sti biscotti! 🍪</strong>
             <span>Non fare lo sciacqua cozze.</span>
         </div>
         <div class="audio-progress" aria-hidden="true">
             <span class="audio-track">
                 <span class="audio-track-fill"></span>
-                <span class="audio-wolf">&#x1F43A;</span>
-                <span class="audio-farmer">&#x1F468;&#x200D;&#x1F33E;</span>
+                <span class="audio-wolf">🐺</span>
+                <span class="audio-farmer">👨‍🌾</span>
             </span>
         </div>
         <button id="audioPermissionBtn" class="audio-confirm-btn" type="button">Abilita audio</button>
@@ -2499,12 +2449,12 @@
     ========================================================== -->
     <div id="ptr" aria-hidden="true">
         <div id="ptr-bar"></div>
-        <span id="ptr-text">Trascina per aggiornareÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½</span>
+        <span id="ptr-text">Trascina per aggiornare…</span>
     </div>
 
     <div id="rejoinOverlay" class="rejoin-overlay" aria-live="polite" aria-hidden="true">
         <div class="rejoin-card">
-            <strong>Rientro nel villaggioÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½</strong>
+            <strong>Rientro nel villaggio…</strong>
             <span>Sto recuperando stanza e giocatori.</span>
         </div>
     </div>
@@ -2516,9 +2466,9 @@
     ========================================================== -->
     <div class="app-shell">
         <header class="brandbar" aria-label="Intestazione">
-            <div id="maintenanceWolfSwitch" class="brand-mark" role="button" tabindex="0" aria-label="Interruttore nascosto">&#x1F43A;</div>
+            <div id="maintenanceWolfSwitch" class="brand-mark" role="button" tabindex="0" aria-label="Interruttore nascosto">🐺</div>
             <div class="brand-title">Lupus<br><span>in Fabula</span></div>
-            <div class="brand-sub">Tieniti stretti gli amici,<br>ma ancora di piÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¹ i tuoi nemici.</div>
+            <div class="brand-sub">Tieniti stretti gli amici,<br>ma ancora di più i tuoi nemici.</div>
         </header>
 
         <!-- ====================== ACCESSO ====================== -->
@@ -2527,7 +2477,7 @@
                 <div class="login-field">
                     <label for="name">Il tuo nome</label>
                     <div class="login-input-wrap">
-                        <span aria-hidden="true">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½</span>
+                        <span aria-hidden="true">👤</span>
                         <input id="name" placeholder="Come ti chiami?" aria-label="Nome" maxlength="10" />
                     </div>
                 </div>
@@ -2542,10 +2492,10 @@
 
                 <div class="btn-row">
                     <button id="createBtn">
-                        <span class="login-button-content"><span class="login-button-icon" aria-hidden="true">&#x1F3AA;</span>Crea stanza</span>
+                        <span class="login-button-content"><span class="login-button-icon" aria-hidden="true">🎪</span>Crea stanza</span>
                     </button>
                     <button id="joinBtn">
-                        <span class="login-button-content"><span class="login-button-icon" aria-hidden="true">&#x27A1;&#xFE0F;</span>Entra nel villaggio</span>
+                        <span class="login-button-content"><span class="login-button-icon" aria-hidden="true">➜</span>Entra nel villaggio</span>
                     </button>
                 </div>
 
@@ -2560,47 +2510,47 @@
             <div class="panel">
                 <h2 id="lobbyTitolo">Lobby</h2>
                 <p class="hostRow">
-                    &#x1F451; Host: <span id="hostNameText"></span>
-                    &nbsp;&bull;&nbsp; &#x1F3F7;&#xFE0F; ID: <code id="currentRoomIdText"></code>
+                    👑 Host: <span id="hostNameText"></span>
+                    &nbsp;•&nbsp; 🏷️ ID: <code id="currentRoomIdText"></code>
                 </p>
                 <p class="hostRow lobby-me-row">
-                    ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YT< Tu:<br>
-                    &#x1F64B; Tu:<br>
+                    🙋 Tu:<br>
+                    <strong id="myNameLobby">-</strong>
                 </p>
 
                 <div id="inviteBox">
                     <p>Invita altri giocatori con questo link:</p>
                     <input id="inviteLink" type="text" readonly />
                     <div class="btn-row" style="margin-top:8px;">
-                        <button onclick="copyInvite()">&#x1F4CB; Copia link</button>
+                        <button onclick="copyInvite()">📋 Copia link</button>
                         <button id="shareBtn" type="button" class="btn-secondary" onclick="return shareInvite(event)">
-                            &#x1F4E4; Condividi
+                            📤 Condividi
                         </button>
                     </div>
                 </div>
 
                 <div class="btn-row" style="margin-top:8px;">
-                    <button class="btn-secondary" onclick="exitToLogin()">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Esci</button>
+                    <button class="btn-secondary" onclick="exitToLogin()">⏏️ Esci</button>
                 </div>
             </div>
 
             <div class="panel">
-                <h3 class="centered-heading">&#x1F465; Giocatori connessi</h3>
+                <h3 class="centered-heading">👥 Giocatori connessi</h3>
                 <div id="playerList"></div>
             </div>
 
             <!-- SOLO HOST -->
             <div id="hostControls" class="panel" style="display:none;">
-                <h3 class="centered-heading">&#x2694;&#xFE0F; Imposta ruoli e avvia</h3>
+                <h3 class="centered-heading">⚔️ Imposta ruoli e avvia</h3>
 
                 <div class="countWrap" style="margin:6px 0 12px;">
-                    <span class="count-left">&#x1F465; In stanza: <span id="playerCount">0</span></span>
-                    <span class="muted">&bull; Mancano: <strong id="rolesRemaining">0</strong></span>
+                    <span class="count-left">👥 In stanza: <span id="playerCount">0</span></span>
+                    <span class="muted">• Mancano: <strong id="rolesRemaining">0</strong></span>
                 </div>
 
                 <div class="day-timer-panel">
-                    <label for="dayTimerSelect">&#x2600;&#xFE0F; Timer Buongiorno</label>
-                    <label for="dayTimerSelect">&#x2600;&#xFE0F; Timer Buongiorno</label>
+                    <label for="dayTimerSelect">☀️ Timer Buongiorno</label>
+                    <select id="dayTimerSelect" aria-label="Timer automatico Buonanotte">
                         <option value="0">Off - senza timer</option>
                         <option value="1">1 minuto</option>
                         <option value="2">2 minuti</option>
@@ -2613,69 +2563,69 @@
                         <option value="9">9 minuti</option>
                         <option value="10">10 minuti</option>
                     </select>
-                    <span class="day-timer-note">Se attivo, dopo il Buongiorno partirÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  il conto alla rovescia e allo zero sarÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  Buonanotte.</span>
+                    <span class="day-timer-note">Se attivo, dopo il Buongiorno partirà il conto alla rovescia e allo zero sarà Buonanotte.</span>
                 </div>
 
                 <div class="rolesBox">
-                    <div class="number-control" data-role="wolves"><label>&#x1F43A; Lupi</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
-                    <div class="number-control" data-role="villagers"><label>&#x1F33E; Contadini</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
-                    <div class="number-control" data-role="guards"><label>&#x1F48B; Puttane</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
-                    <div class="number-control" data-role="seers"><label>&#x1F52E; Veggenti</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
-                    <div class="number-control" data-role="scemo"><label>&#x1F9A7; Scemo</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
-                    <div class="number-control" data-role="hunter"><label>&#x1F3F9; Cacciatore</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
-                    <div class="number-control" data-role="witch"><label>&#x1F9EA; Strega</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
-                    <div class="number-control" data-role="lara"><label>&#x1F319; Lara</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
-                    <div class="number-control" data-role="mayor"><label>&#x1F396;&#xFE0F; Sindaco</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
-                    <div class="number-control" data-role="hitman"><label>&#x1F52B; Sicario</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
-                    <div class="number-control" data-role="medium"><label>&#x1FA84; Medium</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
-                    <div class="number-control" data-role="silencer"><label>&#x1F910; Silenziatore</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
-                    <div class="number-control" data-role="couple"><label>&#x1F498; Romeo & Giulietta</label><span class="dec-btn" role="button" tabindex="0">&#x2796;</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">&#x2795;</span></div>
+                    <div class="number-control" data-role="wolves"><label>🐺 Lupi</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="villagers"><label>🌾 Contadini</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="guards"><label>💋 Puttane</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="seers"><label>🔮 Veggenti</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="scemo"><label>🦧 Scemo</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="hunter"><label>🏹 Cacciatore</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="witch"><label>🧪 Strega</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="lara"><label>🌙 Lara</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="mayor"><label>🎖️ Sindaco</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="hitman"><label>🔫 Sicario</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="medium"><label>🪄 Medium</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="silencer"><label>🤐 Silenziatore</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
+                    <div class="number-control" data-role="couple"><label>💘 Romeo & Giulietta</label><span class="dec-btn" role="button" tabindex="0">➖</span><span class="count" aria-live="polite">0</span><span class="inc-btn" role="button" tabindex="0">➕</span></div>
                 </div>
 
                 <div class="btn-row" style="margin-top:10px;">
-                    <button class="btn-full" onclick="startGame()">&#x1F680; Avvia partita</button>
+                    <button class="btn-full" onclick="startGame()">🚀 Avvia partita</button>
                 </div>
             </div>
 
             <div class="panel" id="rolesPanelHost">
-                <h3>&#x1F4D8; Ruoli del gioco</h3>
+                <h3>📘 Ruoli del gioco</h3>
                 <div id="rolesGuideHost" class="rolesGuideGrid"></div>
             </div>
 
             <div class="panel" id="logPanelLobby">
-                <h3>&#x1F4DC; Log eventi</h3>
+                <h3>📜 Log eventi</h3>
                 <ul id="log" aria-live="polite"></ul>
             </div>
         </section>
 
         <!-- ====================== SCHERMATA HOST ====================== -->
-                <h2 id="giocoHostTitolo" class="centered-heading">&#x1F3B2; Partita in corso</h2>
+        <section id="screenGame" class="screen" aria-labelledby="giocoHostTitolo" aria-hidden="true" hidden>
 
             <!-- Panel 1: info + tabella + pulsanti -->
             <div class="panel">
-                <h2 id="giocoHostTitolo" class="centered-heading">&#x1F3B2; Partita in corso</h2>
-                <p>&#x1F451; Host: <span id="hostNameInGame"></span> &nbsp;&bull;&nbsp; &#x1F3F7;&#xFE0F; ID: <code id="roomIdInGame"></code></p>
+                <h2 id="giocoHostTitolo" class="centered-heading">🎲 Partita in corso</h2>
+                <p>👑 Host: <span id="hostNameInGame"></span> &nbsp;•&nbsp; 🏷️ ID: <code id="roomIdInGame"></code></p>
 
-                <h3 class="centered-heading">&#x1F465; Giocatori e ruoli</h3>
+                <h3 class="centered-heading">👥 Giocatori e ruoli</h3>
                 <table id="playersTable" border="0"></table>
 
                 <div class="btn-row" style="margin-top:10px;">
                     <button id="votingBtn" onclick="toggleVoting()">Votazione</button>
-                    <button id="nightBtn" class="bigButton" type="button">&#x1F319; Buonanotte</button>
-                    <button id="jukeboxBtn" class="bigButton">&#x1F3B5; JukeBox</button>
+                    <button id="nightBtn" class="bigButton" type="button">🌙 Buonanotte</button>
+                    <button id="jukeboxBtn" class="bigButton">🎵 JukeBox</button>
 
-                    <button id="restartBtn" class="btn-secondary" onclick="restartGame()">&#x1F504; Restart</button>
-                    <button class="btn-secondary" onclick="exitToLogin()">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Esci</button>
+                    <button id="restartBtn" class="btn-secondary" onclick="restartGame()">🔄 Restart</button>
+                    <button class="btn-secondary" onclick="exitToLogin()">⏏️ Esci</button>
                 </div>
             </div> <!-- /panel 1 -->
             <!-- Panel 2: log eventi -->
             <div class="panel">
-                <h3 style="margin-top:14px;">&#x1F4DC; Log eventi</h3>
+                <h3 style="margin-top:14px;">📜 Log eventi</h3>
                 <ul id="gameLog" aria-live="polite"></ul>
             </div> <!-- /panel 2 -->
-                <h3 class="centered-heading" style="margin-top:14px;">&#x1F4D8; Ruoli in partita</h3>
+            <!-- Panel 3: ruoli in partita -->
             <div class="panel">
-                <h3 class="centered-heading" style="margin-top:14px;">&#x1F4D8; Ruoli in partita</h3>
+                <h3 class="centered-heading" style="margin-top:14px;">📘 Ruoli in partita</h3>
                 <div id="rolesSummaryHost" class="rolesGuideGrid"></div>
             </div> <!-- /panel 3 -->
 
@@ -2683,11 +2633,11 @@
 
         <div id="jukeboxOverlay" class="overlay" style="display:none;">
             <div id="jukeboxCard" class="modal">
-                <button id="closeJukebox" class="closeBtn" aria-label="Chiudi">&times;</button>
-                <h2 id="jukeboxTitle">&#x1F3B5; JukeBox</h2>
+                <button id="closeJukebox" class="closeBtn" aria-label="Chiudi">×</button>
+                <h2 id="jukeboxTitle">🎵 JukeBox</h2>
                 <div id="jukeboxContent">
                     <button id="jukeboxHostAudioToggle" class="jukebox-host-audio-toggle" type="button" title="Include o esclude l'host dai suoni random della notte">
-                        ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"S Host nei random
+                        🔊 Host nei random
                     </button>
                     <div id="jukeboxMainView" class="jukebox-view active">
                         <p class="jukebox-subtitle">Scegli una traccia o avvia la scena Notte.</p>
@@ -2713,7 +2663,7 @@
                     <button id="jukeboxStopBtn" class="jukebox-stop-btn" type="button">Stop</button>
                     <div id="jukeboxStatus" class="jukebox-status">Scegli una traccia da riprodurre.</div>
                 </div>
-                <button id="backFromJukebox" class="bigButton">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½.ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Torna al gioco</button>
+                <button id="backFromJukebox" class="bigButton">⬅️ Torna al gioco</button>
             </div>
         </div>
 
@@ -2728,7 +2678,7 @@
                 <div class="night-actions">
                     <button id="nightPrevBtn" type="button" class="btn-secondary">Indietro</button>
                     <button id="nightNextBtn" type="button">Avanti</button>
-                    <button id="nightOpenJukeboxBtn" type="button" class="night-jukebox-btn">&#x1F3B5; Apri JukeBox</button>
+                    <button id="nightOpenJukeboxBtn" type="button" class="night-jukebox-btn">🎵 Apri JukeBox</button>
                     <button id="nightFinishBtn" type="button">Annulla Notte</button>
                 </div>
             </div>
@@ -2736,24 +2686,24 @@
 
         <div id="nightPlayerCurtain">
             <div class="night-player-box">
-                <div class="night-sleep-icon">&#x1F319;</div>
-                <h2>ÃƒË† notte...</h2>
+                <div class="night-sleep-icon">🌙</div>
+                <h2>È notte...</h2>
                 <p>Chiudi gli occhi e aspetta la voce dell'host.</p>
             </div>
         </div>
 
 
         <!-- ====================== SCHERMATA GIOCATORI ====================== -->
-                <h2 id="giocoPlayerTitolo" class="centered-heading">&#x1F3B2; Partita in corso</h2>
+        <section id="screenGamePlayer" class="screen" aria-labelledby="giocoPlayerTitolo" aria-hidden="true" hidden>
 
             <!-- Panel 1: griglia giocatori + pulsanti -->
             <div class="panel">
-                <h2 id="giocoPlayerTitolo" class="centered-heading">&#x1F3B2; Partita in corso</h2>
-                <p>&#x1F451; Host: <span id="hostNamePlayer"></span> &nbsp;&bull;&nbsp; &#x1F3F7;&#xFE0F; ID: <code id="roomIdPlayer"></code> &nbsp;&bull;&nbsp; &#x1F64B; Tu: <strong id="myNamePlayer">-</strong></p>
+                <h2 id="giocoPlayerTitolo" class="centered-heading">🎲 Partita in corso</h2>
+                <p>👑 Host: <span id="hostNamePlayer"></span> &nbsp;•&nbsp; 🏷️ ID: <code id="roomIdPlayer"></code> &nbsp;•&nbsp; 🙋 Tu: <strong id="myNamePlayer">-</strong></p>
 
-                <h3 class="centered-heading">&#x1F465; Giocatori</h3>
+                <h3 class="centered-heading">👥 Giocatori</h3>
                 <div id="eliminatedCurtain" aria-live="polite">
-                    <div class="eliminated-decor">&#x26B0;&#xFE0F;&#x1F490;</div>
+                    <div class="eliminated-decor">⚰️💐</div>
                     <div class="eliminated-title">Sei fuori dal villaggio</div>
                     <p class="eliminated-copy">Puoi ancora mostrare il ruolo e uscire dal gioco, ma niente voti: ormai sei leggenda.</p>
                 </div>
@@ -2761,17 +2711,17 @@
 
                 <button id="showRoleBtn" style="display:none;">Mostra ruolo</button>
                 <div class="btn-row" style="justify-content:center; margin-top:8px;">
-                    <button class="btn-secondary" onclick="exitToLogin()" style="width:min(360px,92%);">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Esci</button>
+                    <button class="btn-secondary" onclick="exitToLogin()" style="width:min(360px,92%);">⏏️ Esci</button>
                 </div>
             </div> <!-- /panel 1 -->
             <!-- Panel 2: log eventi -->
             <div class="panel">
-                <h3 style="margin-top:14px;">&#x1F4DC; Log eventi</h3>
+                <h3 style="margin-top:14px;">📜 Log eventi</h3>
                 <ul id="gameLogPlayer" aria-live="polite"></ul>
             </div> <!-- /panel 2 -->
-                <h3 class="centered-heading" style="margin-top:14px;">&#x1F4D8; Ruoli in partita</h3>
+            <!-- Panel 3: ruoli in partita -->
             <div class="panel">
-                <h3 class="centered-heading" style="margin-top:14px;">&#x1F4D8; Ruoli in partita</h3>
+                <h3 class="centered-heading">📘 Ruoli in partita</h3>
                 <div id="rolesGuidePlayer" class="rolesGuideGrid"></div>
             </div> <!-- /panel 3 -->
 
@@ -2781,7 +2731,7 @@
         <!-- ====================== MODALE RUOLO ====================== -->
         <div id="overlay"></div>
         <div id="roleCard" role="dialog" aria-modal="true" aria-labelledby="roleTitle" aria-hidden="true">
-            <h2 id="roleTitle">&#x1F0CF; Il tuo ruolo</h2>
+            <h2 id="roleTitle">🃏 Il tuo ruolo</h2>
             <img id="nicoEasterEgg" alt="nico-gay" src="images/easter-egg.png" />
             <p id="roleText">Nessun ruolo</p>
             <p id="roleDescription" style="margin-top:10px; font-style:italic; color:#555;">Descrizione</p>
@@ -2790,28 +2740,29 @@
 
         <div id="foolRevealOverlay" class="fool-reveal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
             <div id="foolRevealCard" class="fool-reveal-card">
-                <div id="foolRevealIcon" class="fool-reveal-icon" aria-hidden="true">&#x1F9A7;</div>
+                <div id="foolRevealIcon" class="fool-reveal-icon" aria-hidden="true">🦧</div>
                 <p id="foolRevealQuote" class="fool-reveal-quote"></p>
                 <p id="foolRevealPunch" class="fool-reveal-punch"></p>
                 <button id="foolRevealClose" class="fool-reveal-close" type="button">Ok</button>
             </div>
         </div>
 
-        <div id="silencedOverlay" class="silenced-overlay" role="dialog" aria-modal="true" aria-hidden="true">
-            <div class="silenced-card">
-                <div class="silenced-icon" aria-hidden="true">&#x1F910;</div>
-                <p>Ti hanno messo il bavaglio: oggi non puoi parlare nÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© votare.</p>
-                <button id="silencedClose" class="silenced-close" type="button">Ok</button>
+        <div id="silencedOverlay" class="fool-reveal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+            <div class="fool-reveal-card">
+                <div class="fool-reveal-icon" aria-hidden="true">&#x1F910;</div>
+                <p class="fool-reveal-quote">Ti hanno messo il bavaglio.</p>
+                <p class="fool-reveal-punch">Oggi niente voto.</p>
+                <button id="silencedClose" class="fool-reveal-close" type="button">Ok</button>
             </div>
         </div>
 
         <div id="gameResultOverlay" class="game-result-overlay" role="dialog" aria-modal="true" aria-hidden="true">
             <div id="gameResultCard" class="game-result-card">
-                <div id="gameResultIcon" class="game-result-icon" aria-hidden="true">&#x1F3E1;</div>
+                <div id="gameResultIcon" class="game-result-icon" aria-hidden="true">🏡</div>
                 <h2 id="gameResultTitle" class="game-result-title"></h2>
                 <p id="gameResultCopy" class="game-result-copy"></p>
                 <div id="gameResultPrize" class="game-result-prize" aria-hidden="true">
-                    <div class="game-result-prize-icon" aria-hidden="true">&#x1F44C;</div>
+                    <div class="game-result-prize-icon" aria-hidden="true">👌</div>
                     <div class="game-result-prize-text">Sto cazzo.</div>
                 </div>
                 <button id="gameResultClose" class="game-result-close" type="button">Chiudi</button>
@@ -2819,13 +2770,13 @@
         </div>
 
         <footer>
-            ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© Sti Cazzi, sti grandissimi ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?" Mark
+            © Sti Cazzi, sti grandissimi — Mark
         </footer>
     </div>
 
     <!-- =========================================================
-         SCRIPT GLOBALI (A11Y helpers + mapping) ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?" PRIMA di initApp
-         (cosÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ evitiamo ReferenceError e riusiamo in piÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¹ punti)
+         SCRIPT GLOBALI (A11Y helpers + mapping) — PRIMA di initApp
+         (così evitiamo ReferenceError e riusiamo in più punti)
     ========================================================== -->
     <script>
         // === Globals usati anche fuori da initApp ===
@@ -2910,7 +2861,7 @@
         function applyNameMapping(s) {
             const original = (s || "").trim();
             const normalized = normalizeName(original);
-            if (EUGENIA_NAMES.has(normalized)) return `${original} \u2696\uFE0F\u{1F49B}`;
+            if (EUGENIA_NAMES.has(normalized)) return `${original} ⚖️❤️`;
             return NAME_MAP[normalized] || original;
         }
     </script>
@@ -2991,23 +2942,21 @@
             const roleNames = {
                 wolf: "\u{1F43A} Lupo", villager: "\u{1F468}\u200D\u{1F33E} Contadino", seer: "\u{1F52E} Veggente", guard: "\u{1F48B} Puttana",
                 scemo: "\u{1F9A7} Scemo", hunter: "\u{1F3F9} Cacciatore", witch: "\u{1F9EA} Strega", lara: "\u{1F319} Lara",
-                mayor: "\u{1F396}\uFE0F Sindaco", hitman: "\u{1F52B} Sicario", medium: "\u{1FA84} Medium", silencer: "\u{1F910} Silenziatore",
-                romeo: "\u{1F498} Romeo", giulietta: "\u{1F498} Giulietta", couple: "\u{1F498} Romeo & Giulietta"
+                mayor: "\u{1F396}\uFE0F Sindaco", hitman: "\u{1F52B} Sicario", medium: "\u{1FA84} Medium", silencer: "\u{1F910} Silenziatore", romeo: "\u{1F498} Romeo", giulietta: "\u{1F498} Giulietta", couple: "\u{1F498} Romeo & Giulietta"
             };
-
             const roleDescriptions = {
                 wolf: `Di notte scegliete insieme una vittima.\nVincete se i lupi eliminano tutti gli altri.`,
                 villager: `Non hai poteri speciali.\nUsa l'astuzia per smascherare i lupi.`,
-                seer: `Ogni notte puoi scoprire se un giocatore e lupo.`,
+                seer: `Ogni notte puoi scoprire se un giocatore è lupo.`,
                 guard: `Ogni notte puoi proteggere un giocatore o te stessa\ndall'attacco dei lupi.`,
                 scemo: `Vinci se vieni eliminato dai voti del villaggio.`,
                 hunter: `Se vieni eliminato, puoi scegliere immediatamente\nun altro giocatore da portare con te.`,
                 witch: `Hai due pozioni: una per salvare una vittima, una per uccidere.\nPuoi usarle solo una volta ciascuna.`,
-                lara: `All'inizio sei una cittadina.\nSe vieni uccisa dai lupi, diventi un Lupo.\nVinci con i cittadini finche sei cittadina,\nma se diventi Lupo vinci con i lupi.`,
+                lara: `All'inizio sei una cittadina.\nSe vieni uccisa dai lupi, diventi un Lupo.\nVinci con i cittadini finché sei cittadina,\nma se diventi Lupo vinci con i lupi.`,
                 mayor: `Durante le votazioni il tuo voto conta doppio.`,
                 hitman: `Hai una pistola con un solo colpo.\nPuoi usarla una volta in tutta la partita per eliminare un giocatore.`,
                 medium: `Ogni morte ti rivela in segreto il ruolo del defunto.`,
-                silencer: `Ogni notte scegli un giocatore: il giorno dopo non potra votare. Se scegli la Puttana, il Silenziatore muore.`,
+                silencer: `Di notte scegli un giocatore da zittire.\nIl giorno dopo non potra votare. Se scegli la Puttana, muori tu.`,
                 romeo: `In coppia con Giulietta. Ogni notte scegliete se dormire a casa di Romeo o di Giulietta. Se i lupi attaccano la casa vuota non muore nessuno; se attaccano la casa dove dormite, morite entrambi.`,
                 giulietta: `In coppia con Romeo. Ogni notte scegliete dove dormire. La casa vuota inganna i lupi, ma se trovano la coppia nella casa scelta morite entrambi.`,
                 couple: `Romeo & Giulietta: si svegliano insieme, conoscono i ruoli e scelgono ogni notte in quale casa dormire. Casa vuota: nessuna vittima. Casa con la coppia: muoiono entrambi.`
@@ -3030,17 +2979,7 @@
                 if (roleDescEl) roleDescEl.textContent = roleDescriptions[roleKey] || "Nessuna descrizione.";
                 openRoleCard();
             }
-
-            function getMyAssignedRole() {
-                const me = (currentPlayers || []).find(p => (p.name ?? p.Name) === myName);
-                const serverRole = ((me?.role ?? me?.Role) || "").trim();
-                const localRole = (myRole || "").trim();
-                const role = serverRole || localRole;
-                if (role && role !== myRole) myRole = role;
-                return role;
-            }
-
-            /* ======================================================
+/* ======================================================
                3) RIFERIMENTI DOM & LISTENER BASE
             ====================================================== */
             // Assegna ai global usati fuori (A11Y)
@@ -3199,7 +3138,7 @@
             const showRoleBtn = document.getElementById("showRoleBtn");
             if (showRoleBtn) {
                 showRoleBtn.onclick = () => {
-                    if (!myRole) { alert("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- Nessun ruolo assegnato ancora."); return; }
+                    if (!myRole) { alert("× Nessun ruolo assegnato ancora."); return; }
                     closeRoleCardEEFn();
                     if (roleText) roleText.textContent = roleNames[myRole] || myRole;
                     if (roleDescEl) roleDescEl.textContent = roleDescriptions[myRole] || "Nessuna descrizione.";
@@ -3370,17 +3309,17 @@
                 jukeboxView = view;
                 jukeboxMainView?.classList.toggle("active", view === "main");
                 jukeboxNightView?.classList.toggle("active", view === "night");
-                if (jukeboxTitle) jukeboxTitle.textContent = view === "night" ? "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YOT Notte" : "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YZÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ JukeBox";
+                if (jukeboxTitle) jukeboxTitle.textContent = view === "night" ? "🌙 Notte" : "🎵 JukeBox";
             }
 
             function renderHostRandomAudioToggle() {
                 if (!jukeboxHostAudioToggle) return;
                 jukeboxHostAudioToggle.classList.toggle("off", !hostRandomAudioEnabled);
                 jukeboxHostAudioToggle.textContent = hostRandomAudioEnabled
-                    ? "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"S Host nei random"
-                    : "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"? Host escluso";
+                    ? "🔊 Host nei random"
+                    : "🔇 Host escluso";
                 jukeboxHostAudioToggle.title = hostRandomAudioEnabled
-                    ? "Il dispositivo host puÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â² essere scelto per ambiente e rumori random."
+                    ? "Il dispositivo host può essere scelto per ambiente e rumori random."
                     : "Il dispositivo host viene escluso da ambiente e rumori random.";
             }
 
@@ -3568,10 +3507,10 @@
                 nightBtn.id = "nightBtn";
                 nightBtn.className = "bigButton";
                 nightBtn.type = "button";
-                nightBtn.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YOT Buonanotte";
+                nightBtn.textContent = "🌙 Buonanotte";
                 hostJukeboxBtn.parentElement.insertBefore(nightBtn, hostJukeboxBtn);
             } else if (nightBtn && hostJukeboxBtn?.parentElement && nightBtn.nextElementSibling !== hostJukeboxBtn) {
-                nightBtn.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YOT Buonanotte";
+                nightBtn.textContent = "🌙 Buonanotte";
                 hostJukeboxBtn.parentElement.insertBefore(nightBtn, hostJukeboxBtn);
             }
             const nightHostOverlay = document.getElementById("nightHostOverlay");
@@ -3585,7 +3524,7 @@
             const nightPrevBtn = document.getElementById("nightPrevBtn");
             const nightNextBtn = document.getElementById("nightNextBtn");
             const nightFinishBtn = document.getElementById("nightFinishBtn");
-                    <button id="nightOpenJukeboxBtn" type="button" class="night-jukebox-btn">&#x1F3B5; Apri JukeBox</button>
+            const nightOpenJukeboxBtn = document.getElementById("nightOpenJukeboxBtn");
             const nightCard = nightHostOverlay?.querySelector(".night-card");
             let nightActionBusy = false;
 
@@ -3660,7 +3599,7 @@
                     steps.push({
                         id: "witch",
                         title: "Strega",
-                        instruction: "Chiama la Strega. PuÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â² usare una volta la pozione di salvataggio sulla vittima dei lupi e una volta la pozione veleno su un giocatore.",
+                        instruction: "Chiama la Strega. Può usare una volta la pozione di salvataggio sulla vittima dei lupi e una volta la pozione veleno su un giocatore.",
                         type: "witch"
                     });
                 }
@@ -3669,7 +3608,7 @@
                     steps.push({
                         id: "seer",
                         title: "Veggente",
-                        instruction: "Apre gli occhi il Veggente. Indica un giocatore da controllare. Tocca il nome: l'app ti dirÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  se ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ Lupo o non Lupo.",
+                        instruction: "Apre gli occhi il Veggente. Indica un giocatore da controllare. Tocca il nome: l'app ti dirà se è Lupo o non Lupo.",
                         type: "seer"
                     });
                 }
@@ -3678,7 +3617,7 @@
                     steps.push({
                         id: "medium",
                         title: "Medium",
-                        instruction: "Apre gli occhi il Medium. PuÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â² interagire con i giocatori eliminati e consultare chi ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ giÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  uscito dal villaggio.",
+                        instruction: "Apre gli occhi il Medium. Può interagire con i giocatori eliminati e consultare chi è già uscito dal villaggio.",
                         type: "medium"
                     });
                 }
@@ -3687,7 +3626,7 @@
                     steps.push({
                         id: "silencer",
                         title: "Silenziatore",
-                        instruction: "Apre gli occhi il Silenziatore. Sceglie un giocatore da zittire: domani non potrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½fÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  votare. Se sceglie la Puttana, il Silenziatore muore.",
+                        instruction: "Apre gli occhi il Silenziatore. Sceglie un giocatore da zittire: domani non potra votare. Se sceglie la Puttana, il Silenziatore muore.",
                         type: "silencer"
                     });
                 }
@@ -3712,31 +3651,24 @@
             }
 
             function nightStepIcon(step) {
-                if (step?.type === "silencer") return "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½";
                 const map = {
-                    couplehouse: "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y'~",
-                    wolf: "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½",
-                    protect: "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y'<",
-                    witch: "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½",
-                    seer: "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½",
-                    info: "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YOT",
-                    summary: "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½~?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â"
+                    couplehouse: "\u{1F498}",
+                    wolf: "\u{1F43A}",
+                    protect: "\u{1F48B}",
+                    witch: "\u{1F9EA}",
+                    seer: "\u{1F52E}",
+                    medium: "\u{1FA84}",
+                    silencer: "\u{1F910}",
+                    info: "\u{1F319}",
+                    summary: "\u2600\uFE0F"
                 };
-                return map[step?.type] || "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YOT";
+                return map[step?.type] || "\u{1F319}";
             }
-
-            function setNightButtonsBusy(busy) {
-                nightActionBusy = !!busy;
-                    <button id="nightOpenJukeboxBtn" type="button" class="night-jukebox-btn">&#x1F3B5; Apri JukeBox</button>
-                    if (btn) btn.disabled = !!busy || btn.dataset.locked === "true";
-                });
-            }
-
-            function updateNightButtonState() {
+function updateNightButtonState() {
                 if (!nightBtn) return;
                 nightBtn.classList.toggle("night-active", !!nightDirector.active);
                 nightBtn.setAttribute("aria-pressed", nightDirector.active ? "true" : "false");
-                nightBtn.textContent = nightDirector.active ? "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YOT Buonanotte attiva" : "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YOT Buonanotte";
+                nightBtn.textContent = nightDirector.active ? "\u{1F319} Buonanotte attiva" : "\u{1F319} Buonanotte";
             }
 
             function openNightDirectorPanel() {
@@ -3791,26 +3723,26 @@
                     const romeo = nightDirector.romeoName || "Romeo";
                     const juliet = nightDirector.julietName || "Giulietta";
                     const house = nightDirector.coupleHouse === "giulietta" ? `${juliet} (Giulietta)` : `${romeo} (Romeo)`;
-                    return `Romeo ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?' ${romeo}. Giulietta ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?' ${juliet}. Dormono da ${house}.`;
+                    return `Romeo → ${romeo}. Giulietta → ${juliet}. Dormono da ${house}.`;
                 }
                 if (step.type === "wolf") return nightDirector.wolfTarget ? `Vittima segnata: ${nightDirector.wolfTarget}` : "Nessuna vittima segnata.";
                 if (step.type === "protect") return nightDirector.protectedTarget ? `Protetto: ${nightDirector.protectedTarget}` : "Nessun protetto segnato.";
                 if (step.type === "silencer") return nightDirector.silencerTarget ? `Silenziato: ${nightDirector.silencerTarget}` : "Nessun giocatore silenziato.";
                 if (step.type === "witch") {
                     const save = nightDirector.witchSavePotionUsed
-                        ? "salvataggio giÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  usato"
+                        ? "salvataggio già usato"
                         : nightDirector.witchSave
                             ? "salva la vittima dei lupi"
                             : "non salva";
                     const kill = nightDirector.witchKillPotionUsed
-                        ? "veleno giÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  usato"
+                        ? "veleno già usato"
                         : nightDirector.witchKillTarget
                             ? `veleno su ${nightDirector.witchKillTarget}`
                             : "veleno non usato";
                     return `Strega: ${save}. ${kill}.`;
                 }
                 if (step.type === "seer" && nightDirector.seerResult) {
-                    return `${nightDirector.seerResult.target}: ${nightDirector.seerResult.isWolf ? "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½^ Lupo" : "Non ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ Lupo"}`;
+                    return `${nightDirector.seerResult.target}: ${nightDirector.seerResult.isWolf ? "È Lupo" : "Non è Lupo"}`;
                 }
                 if (step.type === "medium") {
                     if (!eliminatedPlayers().length) return "Non ci sono ancora eliminati da consultare.";
@@ -3865,11 +3797,11 @@
                 const life = document.createElement("section");
                 life.className = "witch-section life";
                 const lifeTitle = document.createElement("h4");
-                lifeTitle.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y's Pozione della vita";
+                lifeTitle.textContent = "💚 Pozione della vita";
                 const lifeText = document.createElement("p");
                 lifeText.textContent = nightDirector.wolfTarget
                     ? `Vittima dei lupi: ${nightDirector.wolfTarget}. Vuoi salvarla?`
-                    : "Prima scegli la vittima dei lupi, poi la Strega potrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  decidere se salvarla.";
+                    : "Prima scegli la vittima dei lupi, poi la Strega potrà decidere se salvarla.";
                 const lifeGrid = document.createElement("div");
                 lifeGrid.className = "witch-choice-grid";
                 applyNightChoiceLayout(lifeGrid, 2);
@@ -3877,7 +3809,7 @@
                 const saveBtn = document.createElement("button");
                 saveBtn.type = "button";
                 saveBtn.className = "night-pick-btn" + (nightDirector.witchSave ? " selected" : "");
-                saveBtn.textContent = nightDirector.witchSavePotionUsed ? "GiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  usata" : "Salva vittima";
+                saveBtn.textContent = nightDirector.witchSavePotionUsed ? "Già usata" : "Salva vittima";
                 saveBtn.disabled = nightDirector.witchSavePotionUsed || !nightDirector.wolfTarget;
                 saveBtn.addEventListener("click", () => chooseNightTarget("witchsave", "save"));
 
@@ -3894,7 +3826,7 @@
                 const poison = document.createElement("section");
                 poison.className = "witch-section poison";
                 const poisonTitle = document.createElement("h4");
-                poisonTitle.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½~ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Pozione del veleno";
+                poisonTitle.textContent = "☠️ Pozione del veleno";
                 const poisonText = document.createElement("p");
                 poisonText.textContent = "Scegli se avvelenare qualcuno stanotte oppure conserva la pozione.";
                 const poisonGrid = document.createElement("div");
@@ -3974,7 +3906,7 @@
                 }
                 if (nightInstruction) {
                     const coupleLine = step.type === "couplehouse"
-                        ? `\n\nRomeo ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?' ${nightDirector.romeoName || "?"}\nGiulietta ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?' ${nightDirector.julietName || "?"}`
+                        ? `\n\nRomeo → ${nightDirector.romeoName || "?"}\nGiulietta → ${nightDirector.julietName || "?"}`
                         : "";
                     nightInstruction.textContent = step.instruction + coupleLine;
                 }
@@ -4011,45 +3943,6 @@
                     } else if (step.type === "witch") {
                         applyNightChoiceLayout(nightPickList, 1);
                         renderWitchNightChoices(nightPickList);
-                    } else if (false && step.type === "witch") {
-                        const saveBtn = document.createElement("button");
-                        saveBtn.type = "button";
-                        saveBtn.className = "night-pick-btn" + (nightDirector.witchSave ? " selected" : "");
-                        saveBtn.textContent = nightDirector.witchSavePotionUsed
-                            ? "Salvataggio giÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  usato"
-                            : nightDirector.wolfTarget
-                                ? "Salva la vittima"
-                                : "Prima scegli la vittima";
-                        saveBtn.disabled = nightDirector.witchSavePotionUsed || !nightDirector.wolfTarget;
-                        saveBtn.addEventListener("click", () => chooseNightTarget("witchsave", "save"));
-                        nightPickList.appendChild(saveBtn);
-
-                        const noSaveBtn = document.createElement("button");
-                        noSaveBtn.type = "button";
-                        noSaveBtn.className = "night-pick-btn" + (!nightDirector.witchSave ? " selected" : "");
-                        noSaveBtn.textContent = "Non salvare";
-                        noSaveBtn.disabled = nightDirector.witchSavePotionUsed;
-                        noSaveBtn.addEventListener("click", () => chooseNightTarget("witchsave", "skip"));
-                        nightPickList.appendChild(noSaveBtn);
-
-                        const skipPoisonBtn = document.createElement("button");
-                        skipPoisonBtn.type = "button";
-                        skipPoisonBtn.className = "night-pick-btn" + (!nightDirector.witchKillTarget ? " selected" : "");
-                        skipPoisonBtn.textContent = nightDirector.witchKillPotionUsed ? "Veleno giÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  usato" : "Non usare veleno";
-                        skipPoisonBtn.disabled = nightDirector.witchKillPotionUsed;
-                        skipPoisonBtn.addEventListener("click", () => chooseNightTarget("witchkill", "skip"));
-                        nightPickList.appendChild(skipPoisonBtn);
-
-                        alivePlayers().forEach(p => {
-                            const name = playerNameOf(p);
-                            const btn = document.createElement("button");
-                            btn.type = "button";
-                            btn.className = "night-pick-btn" + (nightDirector.witchKillTarget === name ? " selected" : "");
-                            btn.textContent = `Veleno: ${name}`;
-                            btn.disabled = nightDirector.witchKillPotionUsed;
-                            btn.addEventListener("click", () => chooseNightTarget("witchkill", name));
-                            nightPickList.appendChild(btn);
-                        });
                     } else if (step.type === "medium") {
                         renderMediumNightChoices(nightPickList);
                     } else if (["wolf", "protect", "seer", "silencer"].includes(step.type)) {
@@ -4074,7 +3967,7 @@
                 if (nightFinishBtn) {
                     nightFinishBtn.disabled = nightActionBusy;
                     nightFinishBtn.classList.toggle("ready", ready);
-                    nightFinishBtn.textContent = ready ? "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½~?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Buongiorno" : "Annulla Notte";
+                    nightFinishBtn.textContent = ready ? "☀️ Buongiorno" : "Annulla Notte";
                 }
             }
 
@@ -4203,7 +4096,7 @@
                 renderNightDirector();
             });
             nightFinishBtn?.addEventListener("click", submitNightFinishAction);
-                    <button id="nightOpenJukeboxBtn" type="button" class="night-jukebox-btn">&#x1F3B5; Apri JukeBox</button>
+            nightOpenJukeboxBtn?.addEventListener("click", openJukebox);
 
             connection.on("NightStarted", state => {
                 const wasActive = nightDirector.active;
@@ -4218,7 +4111,7 @@
                 } else if (nightPlayerCurtain) {
                     nightPlayerCurtain.style.display = "flex";
                 }
-                logGame("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YOT ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½^ notte.");
+                logGame("🌙 È notte.");
             });
 
             connection.on("NightChoiceUpdated", state => {
@@ -4256,8 +4149,6 @@
                 nightDirector.protectChoiceDone = false;
                 nightDirector.witchChoiceDone = false;
                 nightDirector.seerChoiceDone = false;
-                nightDirector.silencerChoiceDone = false;
-                nightDirector.silencerTarget = null;
                 updateNightButtonState();
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
                 document.body.classList.remove("night-modal-open");
@@ -4267,7 +4158,7 @@
                     renderPlayers(currentPlayers);
                     if (isHost) renderHostTable(currentPlayers);
                 }
-                logGame(`ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½~?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ${message || "Il villaggio si risveglia."}`);
+                logGame(`☀️ ${message || "Il villaggio si risveglia."}`);
             });
 
             connection.on("NightCancelled", players => {
@@ -4285,8 +4176,6 @@
                 nightDirector.protectChoiceDone = false;
                 nightDirector.witchChoiceDone = false;
                 nightDirector.seerChoiceDone = false;
-                nightDirector.silencerChoiceDone = false;
-                nightDirector.silencerTarget = null;
                 updateNightButtonState();
                 if (nightHostOverlay) nightHostOverlay.style.display = "none";
                 document.body.classList.remove("night-modal-open");
@@ -4582,15 +4471,7 @@
                 applyRoleUI();
                 updateConnectionUI();
             }
-
-            function focusFirstInside(id) {
-                const target = document.getElementById(id);
-                if (!target) return;
-                const el = target.querySelector('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
-                if (el) el.focus();
-            }
-
-            function showScreen(id) {
+function showScreen(id) {
                 const target = document.getElementById(id);
                 if (!target) return;
 
@@ -4615,7 +4496,7 @@
                 document.querySelectorAll(".screen").forEach(s => {
                     if (s === target) return;
                     if (s.contains(document.activeElement)) {
-                        // nel caso improbabile in cui il focus sia ancora lÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬, rimuovilo
+                        // nel caso improbabile in cui il focus sia ancora lì, rimuovilo
                         try { document.activeElement.blur(); } catch { }
                     }
                     s.classList.remove("active");
@@ -4642,14 +4523,14 @@
             function setRoomLabels() {
                 const rid = currentRoomId || "";
                 const ridHost = document.getElementById("roomIdInGame");
-                    &nbsp;&bull;&nbsp; &#x1F3F7;&#xFE0F; ID: <code id="currentRoomIdText"></code>
+                const ridLobby = document.getElementById("currentRoomIdText");
                 const ridPlayer = document.getElementById("roomIdPlayer");
-                    &#x1F64B; Tu:<br>
+                const myNameLobby = document.getElementById("myNameLobby");
                 const myNamePlayer = document.getElementById("myNamePlayer");
                 if (ridLobby) ridLobby.textContent = rid;
                 if (ridHost) ridHost.textContent = rid;
                 if (ridPlayer) ridPlayer.textContent = rid;
-                    &#x1F64B; Tu:<br>
+                if (myNameLobby) myNameLobby.textContent = myName || "-";
                 if (myNamePlayer) myNamePlayer.textContent = myName || "-";
             }
 
@@ -4701,8 +4582,8 @@
                 clear("#rolesGuideHost");
                 clear("#rolesGuidePlayer");
 
-                    <span class="count-left">&#x1F465; In stanza: <span id="playerCount">0</span></span>
-                    <span class="muted">&bull; Mancano: <strong id="rolesRemaining">0</strong></span>
+                const pc = document.getElementById("playerCount");
+                const rr = document.getElementById("rolesRemaining");
                 if (pc) pc.textContent = "0";
                 if (rr) rr.textContent = "0";
 
@@ -4737,7 +4618,7 @@
                 const vbtn = document.getElementById("votingBtn");
                 if (vbtn) {
                     if (isHost) {
-                        if (votingOpen) { vbtn.style.backgroundColor = "#4A90E2"; vbtn.textContent = "Il dado ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ tratto"; }
+                        if (votingOpen) { vbtn.style.backgroundColor = "#4A90E2"; vbtn.textContent = "Il dado è tratto"; }
                         else { vbtn.style.backgroundColor = "var(--brand)"; vbtn.textContent = "Votazione"; }
                     } else {
                         vbtn.style.backgroundColor = "var(--brand)";
@@ -4762,7 +4643,7 @@
 
             function updateLobbyCounters(players) {
                 const total = players.length;
-                    <span class="count-left">&#x1F465; In stanza: <span id="playerCount">0</span></span>
+                const totalEl = document.getElementById("playerCount");
                 if (totalEl) totalEl.textContent = total;
                 updateRolesLeft(total);
             }
@@ -4774,7 +4655,7 @@
                     const cnt = ctrl.querySelector(".count");
                     const rawAttr = cnt?.dataset?.raw;
                     const raw = (rawAttr !== undefined)
-                        ? (parseInt(rawAttr) || 0)      // nÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° coppie reale per 'couple'
+                        ? (parseInt(rawAttr) || 0)      // n° coppie reale per 'couple'
                         : (parseInt(cnt?.textContent) || 0);
                     counts[key] = raw;
                 });
@@ -4790,18 +4671,16 @@
                 return sum;
             }
 
-            const calcAssignedRoles = () => calcRoleSlots(readRoleCounts());
-
             function updateRolesLeft(totalPlayersOverride = null) {
                 const totalPlayers = (typeof totalPlayersOverride === 'number')
                     ? totalPlayersOverride
-                    <span class="count-left">&#x1F465; In stanza: <span id="playerCount">0</span></span>
+                    : (parseInt(document.getElementById("playerCount")?.textContent) || 0);
 
                 const counts = readRoleCounts();
                 const assigned = calcRoleSlots(counts);  // <-- usa gli slot (Coppia = 2)
                 const left = Math.max(0, totalPlayers - assigned);
 
-                    <span class="muted">&bull; Mancano: <strong id="rolesRemaining">0</strong></span>
+                const el = document.getElementById("rolesRemaining");
                 if (el) el.textContent = String(left);
             }
 
@@ -4809,7 +4688,7 @@
                 const box = document.querySelector(".rolesBox");
                 if (!box) return;
 
-                // evita di aggiungere piÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¹ volte i listener, ma re-inizializza SEMPRE la vista
+                // evita di aggiungere più volte i listener, ma re-inizializza SEMPRE la vista
                 if (box.dataset.listenersAttached !== "1") {
                     const shake = (el) => el?.animate?.(
                         [{ transform: 'translateX(0)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(0)' }],
@@ -4837,7 +4716,7 @@
                             if (roleKey === 'couple' && getRaw() >= 2) { shake(ctrl); return; }
 
                             // non superare posti disponibili
-                    <span class="count-left">&#x1F465; In stanza: <span id="playerCount">0</span></span>
+                            const totalPlayers = parseInt(document.getElementById("playerCount")?.textContent) || 0;
                             const counts = readRoleCounts();
                             const nextCounts = { ...counts, [roleKey]: (counts[roleKey] || 0) + 1 };
                             const nextSlots = calcRoleSlots(nextCounts);
@@ -4860,7 +4739,7 @@
                     box.dataset.listenersAttached = "1";
                 }
 
-                // Inizializza SEMPRE i numerini (cosÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ 'couple' mostra ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½-2)
+                // Inizializza SEMPRE i numerini (così 'couple' mostra ×2)
                 box.querySelectorAll(".number-control").forEach(ctrl => {
                     const roleKey = ctrl.dataset.role;
                     const cnt = ctrl.querySelector(".count");
@@ -4873,66 +4752,14 @@
 
                 updateRolesLeft();
             }
-            {
-                const box = document.querySelector(".rolesBox");
-                if (!box || box.dataset.wired === "1") return;
-                box.dataset.wired = "1";
-
-                const shake = (el) => el?.animate?.(
-                    [{ transform: 'translateX(0)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(0)' }],
-                    { duration: 180 }
-                );
-
-                box.addEventListener("click", (e) => {
-                    const btn = e.target.closest(".inc-btn,.dec-btn");
-                    if (!btn) return;
-                    const ctrl = btn.closest(".number-control");
-                    if (!ctrl) return;
-
-                    const roleKey = ctrl.dataset.role;
-                    const cnt = ctrl.querySelector(".count");
-                    const get = () => parseInt(cnt.textContent) || 0;
-                    const set = v => { cnt.textContent = String(Math.max(0, v)); updateRolesLeft(); };
-
-                    if (btn.classList.contains("inc-btn")) {
-                        // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"' cap hard: max 2 coppie (== 4 giocatori)
-                        if (roleKey === 'couple' && get() >= 2) { shake(ctrl); return; }
-
-                        // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"' non superare i giocatori disponibili (usando slot: Coppia=2)
-                    <span class="count-left">&#x1F465; In stanza: <span id="playerCount">0</span></span>
-                        const counts = readRoleCounts();
-
-                        // Simula l'incremento
-                        const nextCounts = { ...counts };
-                        nextCounts[roleKey] = (parseInt(nextCounts[roleKey]) || 0) + 1;
-
-                        const nextSlots = calcRoleSlots(nextCounts); // Coppia=2
-                        if (nextSlots > totalPlayers) { shake(ctrl); return; }
-
-                        set(get() + 1);
-                    } else {
-                        set(get() - 1);
-                    }
-                });
-
-                box.addEventListener("keydown", (e) => {
-                    if (e.key !== "Enter" && e.key !== " ") return;
-                    const btn = e.target.closest(".inc-btn,.dec-btn");
-                    if (!btn) return;
-                    e.preventDefault();
-                    btn.click();
-                });
-
-                updateRolesLeft();
-            }
             wireRoleControls();
             function emptyCounts() {
                 return { wolves: 0, villagers: 0, guards: 0, seers: 0, scemo: 0, hunter: 0, witch: 0, lara: 0, mayor: 0, hitman: 0, medium: 0, silencer: 0, couple: 0 };
             }
 
-            // quando lÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?THOST avvia la partita leggiamo i numeri selezionati nei controlli
+            // quando l’HOST avvia la partita leggiamo i numeri selezionati nei controlli
             function countsFromControls() {
-                // readRoleCounts() cÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?TÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ giÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  ed ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ perfetta; attenzione: couple ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ giÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?orawÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ (numero coppie)
+                // readRoleCounts() c’è già ed è perfetta; attenzione: couple è già “raw” (numero coppie)
                 return readRoleCounts();
             }
 
@@ -4997,9 +4824,9 @@
 
                     const badge = document.createElement("span");
                     badge.className = "badge";
-                    const rn = roleNames[roleKey] || roleKey;  // es. "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ Lupo"
-                    const maybeEmoji = rn.split(" ")[0] || "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YfÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½";
-                    badge.textContent = /\p{Extended_Pictographic}/u.test(maybeEmoji) ? maybeEmoji : "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YfÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½";
+                    const rn = roleNames[roleKey] || roleKey;  // es. "🐺 Lupo"
+                    const maybeEmoji = rn.split(" ")[0] || "🃏";
+                    badge.textContent = /\p{Extended_Pictographic}/u.test(maybeEmoji) ? maybeEmoji : "🃏";
 
                     const label = document.createElement("span");
                     label.textContent = rn;                    // emoji + nome ruolo
@@ -5010,9 +4837,9 @@
                     cnt.style.marginLeft = "auto";
                     cnt.style.fontWeight = "800";
 
-                    // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y'? qui la logica: 1 coppia => 2 giocatori
+                    // 👇 qui la logica: 1 coppia => 2 giocatori
                     const displayN = (key === "couple") ? raw * 2 : raw;
-                    cnt.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- " + displayN;
+                    cnt.textContent = "× " + displayN;
 
                     title.appendChild(badge);
                     title.appendChild(label);
@@ -5046,10 +4873,10 @@
 
                 if (connection.state === S.Disconnected) {
                     connectPromise = connection.start()
-                        .then(() => { logLobby("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½o. Connesso al server"); })
+                        .then(() => { logLobby("✅ Connesso al server"); })
                         .catch(e => {
                             console.error("Connessione fallita:", e);
-                            logLobby("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- Server non raggiungibile (controlla /gamehub).");
+                            logLobby("× Server non raggiungibile (controlla /gamehub).");
                             throw e;
                         })
                         .finally(() => { connectPromise = null; updateConnectionUI(); });
@@ -5119,9 +4946,9 @@
                 [
                     { text: "Nome", class: "col-name" },
                     { text: "Ruolo", class: "col-role", roleToggle: true },
-                    { text: "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"-  ", class: "col-status" },
-                    { text: "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ", class: "col-votes" },
-                    { text: "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½", class: "col-actions" }
+                    { text: "🔗  ", class: "col-status" },
+                    { text: "🗣️ ", class: "col-votes" },
+                    { text: "📣", class: "col-actions" }
                 ].forEach(h => {
                     const th = document.createElement("th");
                     if (h.class) th.className = h.class;
@@ -5129,7 +4956,7 @@
                         const btn = document.createElement("button");
                         btn.type = "button";
                         btn.className = "role-visibility-toggle";
-                        btn.textContent = hostRolesVisible ? "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YZÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ Ruolo" : "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YT^ Ruolo";
+                        btn.textContent = hostRolesVisible ? "🎭 Ruolo" : "🙈 Ruolo";
                         btn.title = hostRolesVisible ? "Nascondi ruoli nella tabella" : "Mostra ruoli nella tabella";
                         btn.setAttribute("aria-pressed", hostRolesVisible ? "true" : "false");
                         btn.addEventListener("click", () => {
@@ -5144,7 +4971,7 @@
                 });
                 table.appendChild(header);
 
-                // Calcola leader/paritÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  SOLO se la votazione ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ aperta
+                // Calcola leader/parità SOLO se la votazione è aperta
                 let maxVotes = 0, isTie = false;
                 if (votingOpen) {
                     const votes = players.filter(p => !(p.eliminated ?? p.Eliminated)).map(p => (p.votes ?? p.Votes) || 0);
@@ -5152,14 +4979,7 @@
                     const leaders = players.filter(p => !(p.eliminated ?? p.Eliminated) && ((p.votes ?? p.Votes) || 0) === maxVotes);
                     isTie = (maxVotes > 0 && leaders.length > 1);
                 }
-
-                const roleEmojiOf = (k) => {
-                    const label = roleNames[k] || "";
-                    const first = (label.split(" ")[0] || "");
-                    return first || "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YfÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½";
-                };
-
-                players.forEach(p => {
+players.forEach(p => {
                     const name = p.name ?? p.Name ?? "";
                     const roleKey = p.role ?? p.Role ?? "";
                     const eliminated = p.eliminated ?? p.Eliminated ?? false;
@@ -5178,7 +4998,7 @@
                     tdName.className = "col-name";
                     const nameSpan = document.createElement("span");
                     nameSpan.className = "name-clamp";
-                    const nameDisplay = eliminated ? `ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½~ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ${name}` : name;
+                    const nameDisplay = eliminated ? `☠️ ${name}` : name;
                     if (eliminated) {
                         tdName.style.color = 'gray';
                         tdName.style.textDecoration = 'line-through';
@@ -5197,12 +5017,12 @@
                         } else {
                             const mask = document.createElement("span");
                             mask.className = "role-hidden-mask";
-                            mask.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½";
+                            mask.textContent = "••••";
                             tdRole.appendChild(mask);
                             tdRole.title = "Ruolo nascosto";
                         }
                     } else {
-                        tdRole.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?"";
+                        tdRole.textContent = "—";
                         tdRole.style.color = "#9ca3af";
                     }
 
@@ -5227,7 +5047,7 @@
                         reviveBtn.className = "btn-icon btn-icon--ok";
                         reviveBtn.title = `Resuscita ${name}`;
                         reviveBtn.setAttribute("aria-label", `Resuscita ${name}`);
-                        reviveBtn.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y's";
+                        reviveBtn.textContent = "💚";
                         reviveBtn.addEventListener("click", () => revivePlayer(name));
                         tdActions.appendChild(reviveBtn);
                     } else {
@@ -5235,7 +5055,7 @@
                         delBtn.className = "btn-icon";
                         delBtn.title = `Elimina ${name}`;
                         delBtn.setAttribute("aria-label", `Elimina ${name}`);
-                        delBtn.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½-";
+                        delBtn.textContent = "×";
                         delBtn.addEventListener("click", () => eliminatePlayer(name));
                         tdActions.appendChild(delBtn);
                     }
@@ -5257,9 +5077,9 @@
                     const card = document.createElement("div");
                     card.className = "playersGridItem";
 
-                    let displayName = p.eliminated ? `ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½~ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ${p.name}` : p.name;
-                    if (!!(p.silenced ?? p.Silenced)) displayName += " ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½";
-                    if (p.role === "mayor") displayName += " ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YZ-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â";
+                    let displayName = p.eliminated ? `☠️ ${p.name}` : p.name;
+                    if (!!(p.silenced ?? p.Silenced)) displayName += " \u{1F910}";
+                    if (p.role === "mayor") displayName += " 🎖️";
                     const baseText = (!p.eliminated && p.votes > 0) ? `${displayName} (${p.votes})` : displayName;
                     const title = document.createElement("div");
                     title.className = "playerTitle";
@@ -5319,20 +5139,6 @@
                 overlay.setAttribute("aria-hidden", "true");
             }
 
-            function closeSilencedNotice() {
-                const overlay = document.getElementById("silencedOverlay");
-                if (!overlay) return;
-                overlay.classList.remove("active");
-                overlay.setAttribute("aria-hidden", "true");
-            }
-
-            function showSilencedNotice() {
-                const overlay = document.getElementById("silencedOverlay");
-                if (!overlay) return;
-                overlay.classList.add("active");
-                overlay.setAttribute("aria-hidden", "false");
-            }
-
             function showFoolReveal(isFoolPlayer) {
                 const overlay = document.getElementById("foolRevealOverlay");
                 const card = document.getElementById("foolRevealCard");
@@ -5343,15 +5149,29 @@
 
                 card.classList.toggle("winner", isFoolPlayer);
                 if (isFoolPlayer) {
-                    icon.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?";
-                    quote.textContent = "Vincere ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ essere migliore? o trovarsi tra i peggiori?";
+                    icon.textContent = "🏆";
+                    quote.textContent = "Vincere è essere migliore? o trovarsi tra i peggiori?";
                     punch.textContent = "";
                 } else {
-                    icon.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½";
+                    icon.textContent = "🦧";
                     quote.textContent = "E coloro che vennero visti danzare furono giudicati pazzi da coloro che non potevano sentire la musica.";
                     punch.textContent = "Idiota!";
                 }
 
+                overlay.classList.add("active");
+                overlay.setAttribute("aria-hidden", "false");
+            }
+
+            function closeSilencedNotice() {
+                const overlay = document.getElementById("silencedOverlay");
+                if (!overlay) return;
+                overlay.classList.remove("active");
+                overlay.setAttribute("aria-hidden", "true");
+            }
+
+            function showSilencedNotice() {
+                const overlay = document.getElementById("silencedOverlay");
+                if (!overlay) return;
                 overlay.classList.add("active");
                 overlay.setAttribute("aria-hidden", "false");
             }
@@ -5411,11 +5231,11 @@
 
                 const remaining = dayTimerEndsAtMs - (Date.now() + dayTimerServerOffsetMs);
                 if (remaining <= 0) {
-                    badge.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YOT Buonanotte...";
+                    badge.textContent = "🌙 Buonanotte...";
                     return;
                 }
 
-                badge.textContent = `ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YOT Buonanotte tra ${formatCountdown(remaining)}`;
+                badge.textContent = `🌙 Buonanotte tra ${formatCountdown(remaining)}`;
                 badge.classList.add("active");
             }
 
@@ -5474,13 +5294,13 @@
                 if (btn) btn.textContent = "Chiudi";
 
                 if (winningFaction === "village" && isWolfSide) {
-                    icon.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YO~";
-                    title.textContent = "La caccia ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ finita";
+                    icon.textContent = "🐺🌘";
+                    title.textContent = "La caccia è finita";
                     copy.textContent = "Il villaggio ha resistito. I lupi tornano nel bosco a pancia vuota.";
                 } else {
-                    icon.textContent = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YOzÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YZ?";
+                    icon.textContent = "🏡🌞🎉";
                     title.textContent = "Congratulazioni!";
-                    copy.textContent = "Il villaggio ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ salvo dai lupi. Le campane suonano, almeno per stanotte.";
+                    copy.textContent = "Il villaggio è salvo dai lupi. Le campane suonano, almeno per stanotte.";
                 }
 
                 overlay.classList.add("active");
@@ -5501,11 +5321,6 @@
                     prize?.classList.remove("active");
                     prize?.setAttribute("aria-hidden", "true");
                     if (btn) btn.textContent = "Scopri il tuo premio!";
-                } else if (winningFaction === "village" && isWolfSide) {
-                    if (card) card.dataset.prizeAvailable = "true";
-                    prize?.classList.remove("active");
-                    prize?.setAttribute("aria-hidden", "true");
-                    if (btn) btn.textContent = "Scopri cos hai perso!";
                 }
             };
 
@@ -5541,9 +5356,9 @@
                     ? hostOnlineArg
                     : (players || []).some(p => (p.name ?? p.Name) === hostName && ((typeof p.isOnline === "boolean") ? p.isOnline : !!p.IsOnline));
 
-                    &#x1F451; Host: <span id="hostNameText"></span>
-                <p>&#x1F451; Host: <span id="hostNameInGame"></span> &nbsp;&bull;&nbsp; &#x1F3F7;&#xFE0F; ID: <code id="roomIdInGame"></code></p>
-                <p>&#x1F451; Host: <span id="hostNamePlayer"></span> &nbsp;&bull;&nbsp; &#x1F3F7;&#xFE0F; ID: <code id="roomIdPlayer"></code> &nbsp;&bull;&nbsp; &#x1F64B; Tu: <strong id="myNamePlayer">-</strong></p>
+                setHostLabel("hostNameText", hostName || "Sconosciuto", hostOnline);
+                setHostLabel("hostNameInGame", hostName || "Sconosciuto", hostOnline);
+                setHostLabel("hostNamePlayer", hostName || "Sconosciuto", hostOnline);
 
                 const list = document.getElementById("playerList");
                 if (list) {
@@ -5586,42 +5401,31 @@
 
             connection.on("VotingStarted", () => {
                 votingOpen = true;
-                logGame("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Votazioni aperte!");
+                logGame("🗳️ Votazioni aperte!");
                 renderPlayers(currentPlayers);
-                if (isHost) renderHostTable(currentPlayers);   // <ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?" aggiunto
+                if (isHost) renderHostTable(currentPlayers);   // <— aggiunto
                 applyRoleUI();
             });
 
             connection.on("VotingEnded", () => {
                 votingOpen = false;
                 myVote = null;
-                logGame("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y>' Votazioni chiuse!");
+                logGame("🛑 Votazioni chiuse!");
                 renderPlayers(currentPlayers);
-                if (isHost) renderHostTable(currentPlayers);   // <ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?" aggiunto
+                if (isHost) renderHostTable(currentPlayers);   // <— aggiunto
                 applyRoleUI();
             });
 
-
-            connection.on("PlayerSilenced", () => {
-                myVote = null;
-                showSilencedNotice();
-                renderPlayers(currentPlayers);
-            });
 
             connection.on("UpdateVotes", (players) => {
                 currentPlayers = players || [];
                 syncMyRoleFromPlayers();
                 if (myName) {
-                    const me = currentPlayers.find(p => (p.name ?? p.Name) === myName);
-                    if (me && !!(me.silenced ?? me.Silenced)) {
-                        myVote = null;
-                    } else {
                     let mine = null;
                     for (const p of currentPlayers) {
                         if (!p.eliminated && Array.isArray(p.votedBy) && p.votedBy.includes(myName)) { mine = p.name; break; }
                     }
                     myVote = mine;
-                    }
                 }
                 renderPlayers(currentPlayers);
                 if (isHost) renderHostTable(currentPlayers);
@@ -5629,7 +5433,7 @@
                 if (isHost && nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
             });
 
-            connection.on("PlayerKicked", (playerName) => { logLobby(`ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YsÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ ${playerName} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ stato espulso dall'host.`); });
+            connection.on("PlayerKicked", (playerName) => { logLobby(`🚫 ${playerName} è stato espulso dall'host.`); });
 
             connection.on("GameResult", (winningFaction, players) => {
                 currentPlayers = players || currentPlayers || [];
@@ -5641,6 +5445,12 @@
                 showGameResult(winningFaction);
             });
 
+            connection.on("PlayerSilenced", () => {
+                showSilencedNotice();
+                myVote = null;
+                renderPlayers(currentPlayers);
+            });
+
             connection.on("PlayerEliminated", (playerName, reason, eliminatedRole) => {
                 const player = currentPlayers.find(p => (p.name ?? p.Name) === playerName);
                 if (player) player.eliminated = true;
@@ -5650,7 +5460,7 @@
                 updateEliminatedPlayerView();
                 if (isHost && nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
                 const phase = reason === "popolo" ? "di giorno" : "di notte";
-                logGame(`ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½sÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ${playerName} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ morto ${phase}.`);
+                logGame(`⚰️ ${playerName} è morto ${phase}.`);
 
                 const role = (eliminatedRole || player?.role || player?.Role || "").toLowerCase();
                 if (reason === "popolo" && role === "scemo" && !isHost) {
@@ -5665,24 +5475,24 @@
                 renderPlayers(currentPlayers);
                 updateEliminatedPlayerView();
                 if (isHost && nightDirector.active && nightHostOverlay?.style.display === "flex") renderNightDirector();
-                // logGame(`ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y's ${playerName} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ tornato in vita!`);
+                // logGame(`💚 ${playerName} è tornato in vita!`);
             });
             // === NUOVI HANDLER: Coppia & Medium (registrati una sola volta) ===
             connection.on("CouplePaired", (partnerName, partnerRole) => {
                 const rn = roleNames[partnerRole] || partnerRole;
-                logGame(`ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y'~ Sei in coppia con ${partnerName} (${rn}).`);
+                logGame(`💘 Sei in coppia con ${partnerName} (${rn}).`);
             });
             connection.on("CoupleSaved", (julietName, romeoName) => {
                 // Evento notturno privato: niente log pubblico per evitare spoiler.
             });
             connection.on("CoupleDied", (romeo, giulietta) => {
-                // Le morti arrivano giÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  come PlayerEliminated senza rivelare la causa.
+                // Le morti arrivano già come PlayerEliminated senza rivelare la causa.
             });
             connection.on("CoupleSleepSet", (where) => {
                 // Scelta notturna privata: niente log pubblico.
             });
             connection.on("MediumReveal", (deadName, deadRole) => {
-                logGame(`ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ [Medium] ${deadName} era ${roleNames[deadRole] || deadRole}.`);
+                logGame(`🔮 [Medium] ${deadName} era ${roleNames[deadRole] || deadRole}.`);
             });
 
             connection.on("DayTimerUpdated", state => {
@@ -5702,10 +5512,10 @@
                 updateNightButtonState();
                 applyRoleUI();
 
-                    &#x1F451; Host: <span id="hostNameText"></span>
-                <p>&#x1F451; Host: <span id="hostNameInGame"></span> &nbsp;&bull;&nbsp; &#x1F3F7;&#xFE0F; ID: <code id="roomIdInGame"></code></p>
-                <p>&#x1F451; Host: <span id="hostNamePlayer"></span> &nbsp;&bull;&nbsp; &#x1F3F7;&#xFE0F; ID: <code id="roomIdPlayer"></code> &nbsp;&bull;&nbsp; &#x1F64B; Tu: <strong id="myNamePlayer">-</strong></p>
-                    &nbsp;&bull;&nbsp; &#x1F3F7;&#xFE0F; ID: <code id="currentRoomIdText"></code>
+                (document.getElementById("hostNameText") || {}).textContent = hostName || "Sconosciuto";
+                (document.getElementById("hostNameInGame") || {}).textContent = hostName || "Sconosciuto";
+                (document.getElementById("hostNamePlayer") || {}).textContent = hostName || "Sconosciuto";
+                (document.getElementById("currentRoomIdText") || {}).textContent = currentRoomId || "";
                 (document.getElementById("playersGrid") || {}).innerHTML = "";
                 (document.getElementById("gameLog") || {}).innerHTML = "";
                 (document.getElementById("gameLogPlayer") || {}).innerHTML = "";
@@ -5723,7 +5533,7 @@
                 try { localStorage.removeItem("lupus_selectedRoles_" + (currentRoomId || "")); } catch { }
 
 
-                logLobby("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"" La partita ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ stata riavviata, siete tornati in lobby.");
+                logLobby("🔄 La partita è stata riavviata, siete tornati in lobby.");
                 renderRolesGuide("rolesGuideHost");
                 setRoomLabels();
                 refreshInviteUI(currentRoomId);
@@ -5758,11 +5568,11 @@
                 const empty = !selectedRoleCounts || Object.values(selectedRoleCounts).every(v => !v);
 
                 if (isHost) {
-                    // lÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?Thost ha sempre i controlli: assicuriamoci che non sia mai vuoto
+                    // l’host ha sempre i controlli: assicuriamoci che non sia mai vuoto
                     if (empty) selectedRoleCounts = countsFromControls();
                     renderSelectedRolesSummary("rolesSummaryHost", selectedRoleCounts);
                 } else {
-                    // se per il player ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ ancora vuoto, mostra la guida completa invece di nulla
+                    // se per il player è ancora vuoto, mostra la guida completa invece di nulla
                     if (empty) {
                         renderRolesGuide("rolesGuidePlayer");
                     } else {
@@ -5773,7 +5583,7 @@
                 const hostOnline = (typeof hostOnlineArg === "boolean")
                     ? hostOnlineArg
                     : (players || []).some(p => (p.name ?? p.Name) === hostName && ((typeof p.isOnline === "boolean") ? p.isOnline : !!p.IsOnline));
-                <p>&#x1F451; Host: <span id="hostNameInGame"></span> &nbsp;&bull;&nbsp; &#x1F3F7;&#xFE0F; ID: <code id="roomIdInGame"></code></p>
+                ["hostNameInGame", "hostNamePlayer"].forEach(id => setHostLabel(id, hostName || "Sconosciuto", hostOnline));
 
                 if (!isHost) {
                     const grid = document.getElementById("playersGrid");
@@ -5823,7 +5633,7 @@
                     localStorage.setItem("lupus_hostRoomId", id);
 
                     setRoomLabels();
-                    logLobby(`ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YZÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ Stanza creata: ${currentRoomId}`);
+                    logLobby(`🎪 Stanza creata: ${currentRoomId}`);
 
                     showScreen("screenLobby");
                     renderRolesGuide("rolesGuideHost");
@@ -5835,7 +5645,7 @@
                     await notifyJukeboxAudioReady();
                 } catch (err) {
                     console.error(err);
-                    logLobby("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- Errore nella creazione della stanza");
+                    logLobby("× Errore nella creazione della stanza");
                     alert("Errore nella creazione della stanza");
                 } finally {
                     creatingRoom = false;
@@ -5869,7 +5679,7 @@
                     const roomId = (document.getElementById("roomIdInput").value || "").trim();
                     if (!roomId) {
                         if (showAlerts) alert("Inserisci l'ID stanza");
-                        else if (!silent) logLobby("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- ID stanza mancante.");
+                        else if (!silent) logLobby("× ID stanza mancante.");
                         return false;
                     }
 
@@ -5881,11 +5691,11 @@
                     if (connection.state !== signalR.HubConnectionState.Connected) {
                         try {
                             await connection.start();
-                            if (!silent) logLobby("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½o. Connesso al server");
+                            if (!silent) logLobby("✅ Connesso al server");
                             updateConnectionUI();
                         } catch (e) {
                             console.error("Connessione fallita:", e);
-                            const msg = "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- Non connesso al server.";
+                            const msg = "× Non connesso al server.";
                             if (showAlerts) alert(msg); else if (!silent) logLobby(msg);
                             return false;
                         }
@@ -5902,8 +5712,8 @@
                     try { result = await connection.invoke("JoinRoom", roomId, name, hostKeyToSend); }
                     catch (err) {
                         console.error(err);
-                        if (showAlerts) alert("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- Errore durante il join.");
-                        else if (!silent) logLobby("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- Errore durante il join.");
+                        if (showAlerts) alert("× Errore durante il join.");
+                        else if (!silent) logLobby("× Errore durante il join.");
                         return false;
                     }
 
@@ -5914,7 +5724,7 @@
                             currentRoomId = null;
                             clearStoredAutoLoginRoom();
                         }
-                        if (showAlerts) alert(`ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- ${msg}`); else if (!silent) logLobby(`ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- ${msg}`);
+                        if (showAlerts) alert(`× ${msg}`); else if (!silent) logLobby(`× ${msg}`);
                         return false;
                     }
 
@@ -5937,7 +5747,7 @@
                         if (nightPlayerCurtain) nightPlayerCurtain.style.display = "none";
                     }
 
-                    // === ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"' NUOVO: se entri a partita iniziata, usa i conteggi che il server giÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  invia
+                    // === 🔑 NUOVO: se entri a partita iniziata, usa i conteggi che il server già invia
                     if (result?.dayTimer) applyDayTimerState(result.dayTimer);
                     else applyDayTimerState({ minutes: dayTimerMinutes, endsAtMs: null, serverNowMs: Date.now() });
 
@@ -5983,7 +5793,7 @@
                     applyRoleUI();
                     ensureHostLobbyControls();
 
-                <h3 class="centered-heading" style="margin-top:14px;">&#x1F4D8; Ruoli in partita</h3>
+                    // === 🧩 NUOVO: render immediato del riquadro "Ruoli in partita" anche per i player
                     if (gameStarted) {
                         if (isHost) {
                             const counts = (selectedRoleCounts && !countsAreEmpty(selectedRoleCounts))
@@ -6012,12 +5822,12 @@
             }
 
             async function startGame() {
-                if (!isHost) { alert("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- Solo l'host puÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â² avviare la partita!"); return; }
+                if (!isHost) { alert("× Solo l'host può avviare la partita!"); return; }
 
                 const r = readRoleCounts();                 // { wolves, villagers, ..., couple, medium }
                 const slots = calcRoleSlots(r);             // <-- coppia conta 2
                 if (slots < currentPlayers.length) {
-                    alert("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- Ruoli insufficienti!");
+                    alert("× Ruoli insufficienti!");
                     return;
                 }
 
@@ -6032,10 +5842,10 @@
                         r.wolves, r.villagers, r.seers, r.guards, r.scemo, r.hunter, r.witch, r.lara, r.mayor, r.hitman,
                         (r.medium || 0), (r.couple || 0), (r.silencer || 0)
                     );
-                    logLobby("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Ys? Partita avviata!");
+                    logLobby("🚀 Partita avviata!");
                 } catch (err) {
                     console.error(err);
-                    logLobby("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½- Errore nell'avvio della partita");
+                    logLobby("× Errore nell'avvio della partita");
                 }
             }
 
@@ -6061,14 +5871,14 @@
                 const fallbackCopy = () => {
                     try {
                         if (navigator.clipboard && window.isSecureContext) {
-                            navigator.clipboard.writeText(url).then(() => alert('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"< Link copiato!'));
+                            navigator.clipboard.writeText(url).then(() => alert('📋 Link copiato!'));
                         } else {
                             const ta = document.createElement('textarea');
                             ta.value = url; ta.setAttribute('readonly', '');
                             ta.style.position = 'fixed'; ta.style.top = '-9999px';
                             document.body.appendChild(ta); ta.select();
                             document.execCommand('copy'); ta.remove();
-                            alert('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"< Link copiato!');
+                            alert('📋 Link copiato!');
                         }
                     } catch {
                         alert('Copia questo link:\n' + url);
@@ -6079,7 +5889,7 @@
                     // chiamata sincrona (necessaria su iOS)
                     navigator.share({ title: 'Lupus in Fabula', text: 'Entra nella mia stanza!', url })
                         .catch(err => {
-                            // se lÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?Tutente annulla non disturbiamo; altri errori ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?' copia
+                            // se l’utente annulla non disturbiamo; altri errori → copia
                             if (!err || (err.name !== 'AbortError' && err.name !== 'NotAllowedError')) fallbackCopy();
                         });
                 } else {
@@ -6117,7 +5927,7 @@
                         try { await connection.invoke("ResurrectPlayer", currentRoomId, playerName); }
                         catch (_) { await connection.invoke("UneliminatePlayer", currentRoomId, playerName); }
                     }
-                    logGame(`ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y's ${playerName} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ stato resuscitato!`);
+                    logGame(`💚 ${playerName} è stato resuscitato!`);
                 } catch (err) {
                     console.error("Revive fallito:", err);
                     alert("Errore durante il ripristino del giocatore");
@@ -6130,22 +5940,22 @@
                 if (!confirm(`Vuoi espellere ${playerName} dalla stanza?`)) return;
                 try {
                     await connection.invoke("KickPlayer", currentRoomId, playerName);
-                    logLobby(`ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½YsÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ Hai espulso ${playerName}`);
+                    logLobby(`🚫 Hai espulso ${playerName}`);
                 } catch (err) { console.error(err); alert("Errore durante l'espulsione"); }
             }
 
 
-                        <button onclick="copyInvite()">&#x1F4CB; Copia link</button>
+            function copyInvite() {
                 const input = document.getElementById('inviteLink'); if (!input) return;
                 if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(input.value).then(() => alert('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"< Link copiato!')).catch(() => fallbackCopy(input));
+                    navigator.clipboard.writeText(input.value).then(() => alert('📋 Link copiato!')).catch(() => fallbackCopy(input));
                 } else fallbackCopy(input);
             }
             function fallbackCopy(input) {
                 const tmp = document.createElement('textarea'); tmp.value = input.value; tmp.style.position = 'absolute'; tmp.style.left = '-9999px';
                 document.body.appendChild(tmp); tmp.select();
-                try { const ok = document.execCommand('copy'); alert(ok ? 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"< Link copiato!' : 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½sÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Copia manuale'); }
-                catch { alert('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½sÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Copia manuale'); }
+                try { const ok = document.execCommand('copy'); alert(ok ? '📋 Link copiato!' : '⚠️ Copia manuale'); }
+                catch { alert('⚠️ Copia manuale'); }
                 document.body.removeChild(tmp);
             }
 
@@ -6196,7 +6006,7 @@
                 cleanNameInput();
                 if (roomIdFromLink) {
                     roomInput.value = roomIdFromLink;
-                    logLobby(`ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½Y"- Sei stato invitato alla stanza: ${roomIdFromLink}`);
+                    logLobby(`🔗 Sei stato invitato alla stanza: ${roomIdFromLink}`);
                 } else if (forcedRoom || ridLS) {
                     roomInput.value = forcedRoom || ridLS;
                 }
@@ -6390,7 +6200,7 @@
                     text.textContent = 'Rilascia per aggiornare';
                 } else if (pull < THRESHOLD && armed) {
                     armed = false; setState('pulling');
-                    text.textContent = 'Trascina per aggiornareÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½';
+                    text.textContent = 'Trascina per aggiornare…';
                 }
             }
 
@@ -6401,10 +6211,10 @@
                 if (armed) {
                     setState('refreshing');
                     ptr.style.height = THRESHOLD + 'px';
-                    text.textContent = 'AggiornoÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½';
+                    text.textContent = 'Aggiorno…';
                     const resetPull = () => {
                         ptr.style.height = '0px';
-                        text.textContent = 'Trascina per aggiornareÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½';
+                        text.textContent = 'Trascina per aggiornare…';
                         setState('');
                     };
                     try {
@@ -6441,7 +6251,7 @@
                 }
 
                 ptr.style.height = '0px';
-                text.textContent = 'Trascina per aggiornareÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½?ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â½';
+                text.textContent = 'Trascina per aggiornare…';
                 setState('');
             }
 
@@ -6455,4 +6265,3 @@
     </script>
 </body>
 </html>
-
