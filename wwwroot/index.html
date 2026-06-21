@@ -2644,7 +2644,7 @@
 
                 <div class="day-timer-panel">
                     <label for="dayTimerSelect">☀️ Timer Buongiorno</label>
-                    <select id="dayTimerSelect" aria-label="Timer automatico Buonanotte">
+                    <select id="dayTimerSelect" class="day-timer-select" aria-label="Timer automatico Buonanotte">
                         <option value="0">Off - senza timer</option>
                         <option value="1">1 minuto</option>
                         <option value="2">2 minuti</option>
@@ -2702,6 +2702,24 @@
 
                 <h3 class="centered-heading">👥 Giocatori e ruoli</h3>
                 <table id="playersTable" border="0"></table>
+
+                <div class="day-timer-panel day-timer-panel--game">
+                    <label for="dayTimerSelectGame">☀️ Timer Buongiorno</label>
+                    <select id="dayTimerSelectGame" class="day-timer-select" aria-label="Modifica timer automatico Buonanotte durante la partita">
+                        <option value="0">Off - senza timer</option>
+                        <option value="1">1 minuto</option>
+                        <option value="2">2 minuti</option>
+                        <option value="3">3 minuti</option>
+                        <option value="4">4 minuti</option>
+                        <option value="5">5 minuti</option>
+                        <option value="6">6 minuti</option>
+                        <option value="7">7 minuti</option>
+                        <option value="8">8 minuti</option>
+                        <option value="9">9 minuti</option>
+                        <option value="10">10 minuti</option>
+                    </select>
+                    <span class="day-timer-note">Puoi modificarlo anche a partita iniziata. Il nuovo conto riparte subito dalla durata scelta.</span>
+                </div>
 
                 <div class="btn-row" style="margin-top:10px;">
                     <button id="votingBtn" onclick="toggleVoting()">Votazione</button>
@@ -3227,11 +3245,10 @@
             nameInputEl?.addEventListener("paste", () => window.setTimeout(cleanNameInput, 0));
             createBtn?.addEventListener("click", createRoom);
             joinBtn?.addEventListener("click", () => joinRoom({ showAlerts: true }));
-            const dayTimerSelect = document.getElementById("dayTimerSelect");
-            if (dayTimerSelect) {
-                dayTimerSelect.value = String(dayTimerMinutes);
-                dayTimerSelect.addEventListener("change", setDayTimerFromSelect);
-            }
+            document.querySelectorAll(".day-timer-select").forEach(select => {
+                select.value = String(dayTimerMinutes);
+                select.addEventListener("change", setDayTimerFromSelect);
+            });
             document.getElementById("roomIdInput")?.addEventListener("keydown", e => {
                 if (e.key === "Enter") joinRoom({ showAlerts: true });
             });
@@ -3419,15 +3436,46 @@
                 if (jukeboxTitle) jukeboxTitle.textContent = view === "night" ? "🌙 Notte" : "🎵 JukeBox";
             }
 
+            let lastJukeboxStatus = null;
+
+            function fallbackJukeboxStatus() {
+                const devices = [
+                    {
+                        name: document.getElementById("hostNameInGame")?.textContent?.trim() || myName || "Host",
+                        kind: "host",
+                        online: true,
+                        ready: audioUnlocked,
+                        randomEnabled: hostRandomAudioEnabled
+                    },
+                    ...(currentPlayers || []).map(player => ({
+                        name: playerNameOf(player),
+                        kind: "player",
+                        online: !!(player.isOnline ?? player.IsOnline ?? true),
+                        ready: false,
+                        randomEnabled: true
+                    }))
+                ];
+                return {
+                    devices,
+                    total: devices.length,
+                    online: devices.filter(device => device.online).length,
+                    ready: devices.filter(device => device.ready).length
+                };
+            }
+
             function renderJukeboxStatus(state) {
                 if (!jukeboxReadyPanel || !jukeboxReadyCount || !jukeboxReadyList) return;
+                if (state) lastJukeboxStatus = state;
                 jukeboxReadyPanel.classList.toggle("is-visible", !!isHost);
+                jukeboxReadyPanel.hidden = !isHost;
+                jukeboxReadyPanel.style.display = isHost ? "block" : "none";
                 if (!isHost) return;
 
-                const devices = Array.isArray(state?.devices) ? state.devices : [];
-                const ready = Number(state?.ready || 0);
-                const total = Number(state?.total || devices.length || 0);
-                const online = Number(state?.online || 0);
+                const visibleState = state || lastJukeboxStatus || fallbackJukeboxStatus();
+                const devices = Array.isArray(visibleState?.devices) ? visibleState.devices : [];
+                const ready = Number(visibleState?.ready || 0);
+                const total = Number(visibleState?.total || devices.length || 0);
+                const online = Number(visibleState?.online || 0);
                 jukeboxReadyCount.textContent = `${ready}/${total} pronti`;
                 jukeboxReadyList.innerHTML = "";
 
@@ -3514,7 +3562,7 @@
             function openJukebox() {
                 renderJukeboxView();
                 renderHostRandomAudioToggle();
-                jukeboxReadyPanel?.classList.toggle("is-visible", !!isHost);
+                renderJukeboxStatus(lastJukeboxStatus);
                 if (jbOverlay) jbOverlay.style.display = "flex";
                 if (isHost && currentRoomId && connection?.state === signalR.HubConnectionState.Connected) {
                     connection.invoke("RequestJukeboxStatus", currentRoomId).catch(() => { });
@@ -3725,10 +3773,29 @@
             }
 
             function hasNightRole(countKey, roleKey) {
-                const fromPlayers = (currentPlayers || []).some(p => playerRoleOf(p) === roleKey && !playerEliminatedOf(p));
-                if (gameStarted || (currentPlayers || []).length) return fromPlayers;
-                const fromCounts = selectedRoleCounts && Number(selectedRoleCounts[countKey] || 0) > 0;
-                return fromCounts || fromPlayers;
+                const configuredCount = Number(selectedRoleCounts?.[countKey] || 0);
+                if (gameStarted && selectedRoleCounts && Object.prototype.hasOwnProperty.call(selectedRoleCounts, countKey)) {
+                    return configuredCount > 0;
+                }
+                return configuredCount > 0 || (currentPlayers || []).some(p => playerRoleOf(p) === roleKey);
+            }
+
+            function hasActiveNightActor(step) {
+                if (!step || ["info", "summary"].includes(step.type)) return true;
+                if (step.type === "couplehouse") {
+                    return (currentPlayers || []).some(p => playerRoleOf(p) === "romeo" && !playerEliminatedOf(p))
+                        && (currentPlayers || []).some(p => playerRoleOf(p) === "giulietta" && !playerEliminatedOf(p));
+                }
+                const roleByType = {
+                    wolf: "wolf",
+                    protect: "guard",
+                    witch: "witch",
+                    seer: "seer",
+                    medium: "medium",
+                    silencer: "silencer"
+                };
+                const role = roleByType[step.type];
+                return !role || (currentPlayers || []).some(p => playerRoleOf(p) === role && !playerEliminatedOf(p));
             }
 
             function buildNightSteps() {
@@ -3940,6 +4007,7 @@ function updateNightButtonState() {
 
             function nightStepDone(step) {
                 if (!step) return false;
+                if (!hasActiveNightActor(step)) return true;
                 if (step.type === "couplehouse") return !!nightDirector.coupleChoiceDone;
                 if (step.type === "wolf") return !!nightDirector.wolfChoiceDone;
                 if (step.type === "protect") return !!nightDirector.protectChoiceDone;
@@ -4090,7 +4158,13 @@ function updateNightButtonState() {
                 if (nightPickList) {
                     nightPickList.innerHTML = "";
                     nightPickList.classList.remove("one-column", "two-column");
-                    if (step.type === "couplehouse") {
+                    if (!hasActiveNightActor(step)) {
+                        const inactive = document.createElement("div");
+                        inactive.className = "night-result";
+                        inactive.style.gridColumn = "1 / -1";
+                        inactive.textContent = "Il ruolo resta nella sequenza, ma stanotte non deve compiere azioni.";
+                        nightPickList.appendChild(inactive);
+                    } else if (step.type === "couplehouse") {
                         applyNightChoiceLayout(nightPickList, 2);
                         [
                             ["romeo", "Casa di Romeo"],
@@ -5434,8 +5508,9 @@ players.forEach(p => {
                 dayTimerMinutes = Math.max(0, Math.min(10, minutes));
                 localStorage.setItem("lupus_dayTimerMinutes", String(dayTimerMinutes));
 
-                const select = document.getElementById("dayTimerSelect");
-                if (select && select.value !== String(dayTimerMinutes)) select.value = String(dayTimerMinutes);
+                document.querySelectorAll(".day-timer-select").forEach(select => {
+                    if (select.value !== String(dayTimerMinutes)) select.value = String(dayTimerMinutes);
+                });
 
                 if (serverNow) dayTimerServerOffsetMs = serverNow - Date.now();
                 dayTimerEndsAtMs = endsAt ? Number(endsAt) : null;
@@ -5449,12 +5524,15 @@ players.forEach(p => {
                 renderDayTimerBadge();
             }
 
-            async function setDayTimerFromSelect() {
-                const select = document.getElementById("dayTimerSelect");
+            async function setDayTimerFromSelect(event) {
+                const select = event?.currentTarget || document.getElementById("dayTimerSelectGame") || document.getElementById("dayTimerSelect");
                 if (!select) return;
                 const minutes = Math.max(0, Math.min(10, Number(select.value) || 0));
                 dayTimerMinutes = minutes;
                 localStorage.setItem("lupus_dayTimerMinutes", String(minutes));
+                document.querySelectorAll(".day-timer-select").forEach(other => {
+                    if (other !== select) other.value = String(minutes);
+                });
                 if (!isHost || !currentRoomId || !connection || connection.state !== signalR.HubConnectionState.Connected) return;
                 try {
                     await connection.invoke("SetDayTimer", currentRoomId, minutes);
